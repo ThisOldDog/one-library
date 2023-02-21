@@ -1,0 +1,12 @@
+/* workspace */
+#projectExpand {
+    -fx-background-size: 92%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+#projectCollapse {
+    -fx-background-size: 92%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}

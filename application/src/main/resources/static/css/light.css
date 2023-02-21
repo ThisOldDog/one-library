@@ -1,0 +1,8 @@
+/* workspace */
+#projectExpand {
+    -fx-background-image: url(../icon/expand.png);
+}
+
+#projectCollapse {
+    -fx-background-image: url(../icon/collapse.png);
+}

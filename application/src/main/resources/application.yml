@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: one-library
+  datasource:
+    url: jdbc:h2:.data:one_library

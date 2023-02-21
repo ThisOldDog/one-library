@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.AnchorPane?>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="160.0"
+            xmlns="http://javafx.com/javafx/11.0.1">
+    <ProgressBar maxHeight="16.0" maxWidth="Infinity" minHeight="16.0" minWidth="-Infinity"
+                 prefWidth="16.0"
+                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+</AnchorPane>
