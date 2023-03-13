@@ -20,22 +20,21 @@ public class FileOperationHolder {
     private FileOperationHolder() {
     }
 
-    public static void register(String handlerName, FileOperationOption option, String applicationName) {
-        register(handlerName, option, applicationName, false);
+    public static FileOperationHandler register(String handlerName, FileOperationOption option, String applicationName) {
+        return register(handlerName, option, applicationName, false);
     }
 
-    public static void registerAsDefault(String handlerName, FileOperationOption option, String applicationName) {
-        register(handlerName, option, applicationName, true);
+    public static FileOperationHandler registerAsDefault(String handlerName, FileOperationOption option, String applicationName) {
+        return register(handlerName, option, applicationName, true);
     }
 
-    private static void register(String handlerName, FileOperationOption option, String applicationName, boolean asDefault) {
+    private static FileOperationHandler register(String handlerName, FileOperationOption option, String applicationName, boolean asDefault) {
         if (fileOperationHandlerMap.containsKey(handlerName)) {
             logger.warn("[File Operation] FileOperationHandler {} already exists.", handlerName);
-            return;
+            return getHandler(handlerName);
         }
         if (option.getLocation() == null) {
-            logger.error("[File Operation] FileOperationHandler {} no storage location specified.", handlerName);
-            return;
+            throw new IllegalArgumentException("[File Operation] FileOperationHandler " + handlerName + " no storage location specified.");
         }
         FileOperationHandler fileOperationHandler;
         switch (option.getLocation()) {
@@ -54,6 +53,7 @@ public class FileOperationHolder {
         }
         register(handlerName, fileOperationHandler);
         logger.debug("[File Operation] FileOperationHandler {} registered success.", handlerName);
+        return fileOperationHandler;
     }
 
 

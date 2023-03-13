@@ -7,6 +7,7 @@ module javafx.spring.boot.starter {
     requires spring.context;
     requires spring.boot;
     requires spring.boot.autoconfigure;
+    requires spring.boot.starter.data.jpa;
 
     requires org.slf4j;
     requires org.apache.commons.lang3;
@@ -14,21 +15,31 @@ module javafx.spring.boot.starter {
     requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
+    requires com.h2database;
 
     exports pers.dog.boot;
-    exports pers.dog.boot.context;
+    exports pers.dog.boot.autoconfiguration;
+    exports pers.dog.boot.component.cache;
+    exports pers.dog.boot.component.cache.status;
+    exports pers.dog.boot.component.control;
     exports pers.dog.boot.component.event;
     exports pers.dog.boot.component.file;
-    exports pers.dog.boot.component.cache.status;
-    exports pers.dog.boot.i18n;
-    exports pers.dog.boot.util;
-
-    opens pers.dog.boot.autoconfiguration to spring.core, spring.beans, spring.context;
-    opens pers.dog.boot.context.property to spring.core, spring.beans, spring.context;
-    opens pers.dog.boot.component.event to spring.core, spring.beans, spring.context;
-    opens pers.dog.boot.component.file to spring.core, spring.beans, spring.context, spring.boot;
-    exports pers.dog.boot.component.cache;
-    opens pers.dog.boot.util to javafx.fxml, spring.beans, spring.boot, spring.context, spring.core;
+    exports pers.dog.boot.context;
+    exports pers.dog.boot.context.property;
     exports pers.dog.boot.infra.constant;
-    opens pers.dog.boot.infra.constant to javafx.fxml, spring.beans, spring.boot, spring.context, spring.core;
+    exports pers.dog.boot.infra.i18n;
+    exports pers.dog.boot.infra.util;
+
+    opens pers.dog.boot;
+    opens pers.dog.boot.autoconfiguration;
+    opens pers.dog.boot.component.cache;
+    opens pers.dog.boot.component.cache.status;
+    opens pers.dog.boot.component.control;
+    opens pers.dog.boot.component.event;
+    opens pers.dog.boot.component.file;
+    opens pers.dog.boot.context;
+    opens pers.dog.boot.context.property;
+    opens pers.dog.boot.infra.constant;
+    opens pers.dog.boot.infra.i18n;
+    opens pers.dog.boot.infra.util;
 }

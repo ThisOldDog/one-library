@@ -4,11 +4,17 @@ module pers.dog {
     requires javafx.fxml;
 
     requires cglib;
+    requires java.persistence;
+    requires org.hibernate.orm.core;
+    requires org.hibernate.commons.annotations;
     requires spring.core;
     requires spring.beans;
     requires spring.context;
+    requires spring.data.jpa;
+    requires spring.data.commons;
     requires spring.boot;
     requires spring.boot.autoconfigure;
+    requires spring.boot.starter.data.jpa;
 
     requires javafx.spring.boot.starter;
 
@@ -17,21 +23,22 @@ module pers.dog {
     requires org.jfxtras.styles.jmetro;
     requires org.controlsfx.controls;
 
-    exports pers.dog;
-    exports pers.dog.controller;
-    exports pers.dog.app.service;
-    exports pers.dog.app.domain;
-    exports pers.dog.infra.control;
-    exports pers.dog.config.listener;
-    exports pers.dog.config.status;
-
     opens pers.dog;
-    opens pers.dog.infra.control;
+    opens pers.dog.api.controller;
+    opens pers.dog.api.callback;
+    opens pers.dog.api.item;
+    opens pers.dog.app.service;
+    opens pers.dog.app.service.impl;
+    opens pers.dog.domain.entity;
+    opens pers.dog.domain.repository;
     opens pers.dog.infra.action;
     opens pers.dog.infra.action.application;
-    opens pers.dog.controller;
-    opens pers.dog.config.listener;
-    opens pers.dog.config.status;
+    opens pers.dog.infra.action.project;
+    opens pers.dog.infra.constant;
+    opens pers.dog.infra.control;
+    opens pers.dog.infra.listener;
+    opens pers.dog.infra.resource;
+    opens pers.dog.infra.status;
     opens messages;
 
 }

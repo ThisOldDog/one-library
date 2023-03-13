@@ -20,10 +20,10 @@ import pers.dog.boot.component.cache.status.StatusConstants;
 import pers.dog.boot.component.cache.status.StatusStore;
 import pers.dog.boot.component.file.FileOperationHolder;
 import pers.dog.boot.context.property.ApplicationProperties;
-import pers.dog.boot.i18n.I18nMessageSource;
-import pers.dog.boot.i18n.I18nProperties;
-import pers.dog.boot.i18n.I18nResourceLoader;
-import pers.dog.boot.util.FXMLUtils;
+import pers.dog.boot.infra.i18n.I18nMessageSource;
+import pers.dog.boot.infra.i18n.I18nProperties;
+import pers.dog.boot.infra.i18n.I18nResourceLoader;
+import pers.dog.boot.infra.util.FXMLUtils;
 
 /**
  * @author 废柴 2021/6/15 20:03
@@ -37,7 +37,7 @@ public class JavaFXSpringBootStarterAutoConfiguration {
     @EnableConfigurationProperties(CacheProperties.class)
     public static class CacheAutoConfiguration {
 
-        @ConditionalOnProperty(name = "javafx.cache.status.enable", havingValue = "true", matchIfMissing = true)
+        @ConditionalOnProperty(name = "javafx.application.status.enable", havingValue = "true", matchIfMissing = true)
         public static class CacheStatusAutoConfiguration {
 
             public CacheStatusAutoConfiguration(CacheProperties cacheProperties,
@@ -66,7 +66,7 @@ public class JavaFXSpringBootStarterAutoConfiguration {
 
     @Configuration
     @EnableConfigurationProperties(I18nProperties.class)
-    @ConditionalOnProperty(value = "javafx.i18n.enable", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(value = "javafx.application.i18n.enable", havingValue = "true", matchIfMissing = true)
     public static class I18nAutoConfiguration {
         private static final String DEFAULT_I18N_SOURCE = "messages/messages";
 

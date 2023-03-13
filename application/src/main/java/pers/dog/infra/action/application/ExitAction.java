@@ -2,7 +2,7 @@ package pers.dog.infra.action.application;
 
 import javafx.application.Platform;
 import org.controlsfx.control.action.Action;
-import pers.dog.boot.i18n.I18nMessageSource;
+import pers.dog.boot.infra.i18n.I18nMessageSource;
 
 /**
  * @author 废柴 2022/6/2 22:40

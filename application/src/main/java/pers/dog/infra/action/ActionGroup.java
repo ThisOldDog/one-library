@@ -3,7 +3,7 @@ package pers.dog.infra.action;
 import java.util.Collections;
 
 import javafx.beans.DefaultProperty;
-import pers.dog.boot.i18n.I18nMessageSource;
+import pers.dog.boot.infra.i18n.I18nMessageSource;
 
 /**
  * @author 废柴 2022/6/4 23:58

@@ -2,4 +2,14 @@ spring:
   application:
     name: one-library
   datasource:
-    url: jdbc:h2:.data:one_library
+    url: jdbc:h2:file:./.data/one_library
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+javafx:
+  application:
+    status:
+      enable: false

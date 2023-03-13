@@ -8,6 +8,6 @@ import pers.dog.boot.component.file.FileOperationOption;
  *
  * @author 废柴 2023/2/20 19:36
  */
-@ConfigurationProperties(prefix = "javafx.cache")
+@ConfigurationProperties(prefix = "javafx.application.cache")
 public class CacheProperties extends FileOperationOption {
 }

@@ -9,7 +9,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import pers.dog.boot.component.file.FileOperationHandler;
-import pers.dog.boot.util.ObjectMapperUtils;
+import pers.dog.boot.infra.util.ObjectMapperUtils;
 
 /**
  * 程序状态保存监听器

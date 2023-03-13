@@ -26,4 +26,12 @@ public interface FileOperationHandler {
     <T> T read(String filename, TypeReference<T> type, String... relativePath);
 
     void walkFileTree(FileVisitor<Path> fileVisitor, String... relativePath);
+
+    boolean exists(String name, String... relativePath);
+
+    void createDirectory(String name, String... relativePath);
+
+    void createFile(String name, String... relativePath);
+
+    void delete(String name, String... relativePath);
 }

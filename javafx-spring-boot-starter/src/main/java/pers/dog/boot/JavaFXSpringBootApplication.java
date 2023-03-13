@@ -26,9 +26,9 @@ import pers.dog.boot.component.event.ApplicationRunEvent;
 import pers.dog.boot.component.event.SceneLoadedEvent;
 import pers.dog.boot.context.ApplicationContextHolder;
 import pers.dog.boot.context.property.ApplicationProperties;
-import pers.dog.boot.util.FXMLUtils;
-import pers.dog.boot.util.ImageLoader;
-import pers.dog.boot.util.WordUtils;
+import pers.dog.boot.infra.util.FXMLUtils;
+import pers.dog.boot.infra.util.ImageUtils;
+import pers.dog.boot.infra.util.WordUtils;
 
 /**
  * 基于 SpringBoot 的 JavaFX 开发脚手架
@@ -139,7 +139,7 @@ public abstract class JavaFXSpringBootApplication extends Application {
     }
 
     private void loadBanner(Scene startScene) {
-        ImageLoader.load(BANNER_NAME, inputStream -> {
+        ImageUtils.load(BANNER_NAME, inputStream -> {
             ImageView imageView = new ImageView(new Image(inputStream));
             imageView.setSmooth(true);
             imageView.setCache(true);
@@ -158,7 +158,7 @@ public abstract class JavaFXSpringBootApplication extends Application {
     }
 
 
-    protected void loadStartScene(Stage stage) throws IOException {
+    protected void loadStartScene(Stage stage) {
         String startSceneName = getStartSceneName();
         Scene scene = new Scene(FXMLUtils.loadFXML(startSceneName), Double.isNaN(stage.getWidth()) ? getStartSceneWidth() : stage.getWidth(), Double.isNaN(stage.getHeight()) ? getStartSceneHeight() : stage.getHeight());
         stage.setScene(scene);
@@ -167,7 +167,7 @@ public abstract class JavaFXSpringBootApplication extends Application {
     }
 
     protected void loadFavicon(Stage stage) {
-        ImageLoader.load(FAVICON_NAME, inputStream -> stage.getIcons().add(new Image(inputStream)));
+        ImageUtils.load(FAVICON_NAME, inputStream -> stage.getIcons().add(new Image(inputStream)));
     }
 
     protected void loadTitle(Stage stage) {
