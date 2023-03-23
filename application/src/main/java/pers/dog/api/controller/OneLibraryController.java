@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.Pane;
@@ -24,6 +25,8 @@ public class OneLibraryController implements Initializable {
     @FXML
     private Pane projectWorkspace;
     @FXML
+    private TabPane projectEditorWorkspace;
+    @FXML
     private TreeView<Project> projectTree;
 
     private final ProjectService projectService;
@@ -37,5 +40,6 @@ public class OneLibraryController implements Initializable {
         TreeItem<Project> projectTreeItem = projectService.tree();
         projectTree.setRoot(projectTreeItem);
         projectTree.requestFocus();
+        projectTree.setEditable(false);
     }
 }

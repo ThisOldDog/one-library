@@ -2,14 +2,10 @@ package pers.dog.boot.component.file;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileAttribute;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
@@ -162,5 +158,15 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
             }
         }
         Files.delete(file.toPath());
+    }
+
+    @Override
+    public boolean rename(String name, String newName, String[] relativePath) {
+        Path oldFile = targetFile(name, relativePath);
+        Path newFile = targetFile(newName, relativePath);
+        if (Files.exists(oldFile, LinkOption.NOFOLLOW_LINKS) && !Files.exists(newFile, LinkOption.NOFOLLOW_LINKS)) {
+            return oldFile.toFile().renameTo(newFile.toFile());
+        }
+        return false;
     }
 }

@@ -13,6 +13,7 @@ import javafx.scene.control.TreeView;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import pers.dog.api.controller.OneLibraryController;
 import pers.dog.app.service.ProjectService;
 import pers.dog.boot.component.control.FXMLControl;
@@ -34,7 +35,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final FileOperationHandler fileOperationHandler;
     @SuppressWarnings("unused")
-    @FXMLControl(controller = OneLibraryController.class, id = "projectTree")
+    @FXMLControl(controller = OneLibraryController.class)
     private TreeView<Project> projectTree;
 
     public ProjectServiceImpl(ProjectRepository projectRepository) {
@@ -74,6 +75,34 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public void updateProject(Project project) {
+        if (ObjectUtils.isEmpty(project.getNewProjectName()) || Objects.equals(project.getNewProjectName(), project.getProjectName())) {
+            return;
+        }
+        TreeItem<Project> parent = currentParent();
+        boolean renamed = fileOperationHandler.rename(project.getProjectName(), project.getNewProjectName(), getRelativePath(parent));
+        if (renamed) {
+            projectRepository.save(project.setProjectName(project.getNewProjectName()));
+        } else {
+            Alert renameFiled = new Alert(Alert.AlertType.ERROR);
+            renameFiled.setHeaderText(I18nMessageSource.getResource("error"));
+            renameFiled.setContentText(I18nMessageSource.getResource("error.project.rename.project"));
+            renameFiled.showAndWait();
+        }
+    }
+
+    @Override
+    public void openEditProject() {
+        TreeItem<Project> selected = projectTree.getSelectionModel().getSelectedItem();
+        Project selectedProject = selected != null && !ROOT.equals(selected) ? selected.getValue() : null;
+        if (selectedProject == null) {
+            return;
+        }
+        projectTree.setEditable(true);
+        projectTree.edit(selected);
+    }
+
+    @Override
     public void deleteProject() {
         TreeItem<Project> selected = projectTree.getSelectionModel().getSelectedItem();
         Project selectedProject = selected != null && !ROOT.equals(selected) ? selected.getValue() : null;
@@ -83,10 +112,11 @@ public class ProjectServiceImpl implements ProjectService {
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
         confirmation.setTitle(I18nMessageSource.getResource("info.project.delete.project"));
         if (ProjectType.DIRECTORY.equals(selectedProject.getProjectType())) {
-            confirmation.setContentText(I18nMessageSource.getResource("info.project.delete.project.confirmation.dir", selectedProject.getProjectName()));
+            confirmation.setHeaderText(I18nMessageSource.getResource("info.project.delete.project.confirmation.dir", selectedProject.getProjectName()));
         } else {
-            confirmation.setContentText(I18nMessageSource.getResource("info.project.delete.project.confirmation.file", selectedProject.getProjectName()));
+            confirmation.setHeaderText(I18nMessageSource.getResource("info.project.delete.project.confirmation.file", selectedProject.getProjectName()));
         }
+        confirmation.setContentText(I18nMessageSource.getResource("info.project.delete.project.confirmation.prompt"));
         confirmation.showAndWait().ifPresent(buttonType -> {
             if (ButtonType.OK.equals(buttonType)) {
                 delete(selected);
@@ -105,6 +135,14 @@ public class ProjectServiceImpl implements ProjectService {
         } else {
             return parentNode.getParent();
         }
+    }
+
+    private TreeItem<Project> currentParent() {
+        TreeItem<Project> parentNode = projectTree.getSelectionModel().getSelectedItem();
+        if (parentNode == null || parentNode.getValue() == null) {
+            return ROOT;
+        }
+        return parentNode.getParent();
     }
 
     private void delete(TreeItem<Project> selected) {

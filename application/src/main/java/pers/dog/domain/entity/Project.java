@@ -40,6 +40,8 @@ public class Project {
     /* Transient */
     @Transient
     private String simpleProjectName;
+    @Transient
+    private String newProjectName;
 
     /* Function */
     public String getSimpleProjectName() {
@@ -55,6 +57,13 @@ public class Project {
             }
         }
         return simpleProjectName;
+    }
+
+    public Project rename(String text) {
+        if (ProjectType.DIRECTORY.equals(projectType)) {
+            return setNewProjectName(text);
+        }
+        return setNewProjectName(text + "." + fileType.getSuffix());
     }
 
     /* Getter / Setter */
@@ -74,6 +83,7 @@ public class Project {
 
     public Project setProjectName(String projectName) {
         this.projectName = projectName;
+        this.simpleProjectName = null;
         return this;
     }
 
@@ -110,6 +120,15 @@ public class Project {
 
     public Project setSortIndex(Integer sortIndex) {
         this.sortIndex = sortIndex;
+        return this;
+    }
+
+    public String getNewProjectName() {
+        return newProjectName;
+    }
+
+    public Project setNewProjectName(String newProjectName) {
+        this.newProjectName = newProjectName;
         return this;
     }
 }

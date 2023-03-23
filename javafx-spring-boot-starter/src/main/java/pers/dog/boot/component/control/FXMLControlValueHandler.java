@@ -15,6 +15,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author qingsheng.chen@hand-china.com 2023/3/6 20:09
@@ -37,7 +38,7 @@ public class FXMLControlValueHandler implements BeanPostProcessor {
 
     private static void produce(Object bean, Field field, FXMLControl fxmlControl) {
         FXML_CONTROL_CACHE.computeIfAbsent(fxmlControl.controller(), key -> new HashMap<>())
-                .put(fxmlControl.id(), new Pair<>(bean, field));
+                .put(ObjectUtils.isEmpty(fxmlControl.id()) ? field.getName() : fxmlControl.id(), new Pair<>(bean, field));
         consumer(bean, field);
     }
 

@@ -34,4 +34,6 @@ public interface FileOperationHandler {
     void createFile(String name, String... relativePath);
 
     void delete(String name, String... relativePath);
+
+    boolean rename(String name, String newName, String[] relativePath);
 }

@@ -13,6 +13,7 @@
 <?import pers.dog.infra.action.ActionGroup?>
 <?import pers.dog.infra.action.application.ExitAction?>
 <?import pers.dog.infra.control.ActionMenuBar?>
+<?import javafx.scene.control.TabPane?>
 <BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="pers.dog.api.controller.OneLibraryController">
     <top>
@@ -52,7 +53,9 @@
                     </VBox.margin>
                 </TreeView>
             </VBox>
-            <VBox/>
+            <TabPane fx:id="projectEditorWorkspace">
+
+            </TabPane>
         </SplitPane>
     </center>
 </BorderPane>

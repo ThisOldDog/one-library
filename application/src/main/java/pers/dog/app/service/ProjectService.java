@@ -13,6 +13,9 @@ public interface ProjectService {
 
     TreeItem<Project> createFile(ProjectType projectType, FileType fileType);
 
-    void deleteProject();
+    void updateProject(Project project);
 
+    void openEditProject();
+
+    void deleteProject();
 }

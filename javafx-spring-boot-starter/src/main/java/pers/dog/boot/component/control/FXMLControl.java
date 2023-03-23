@@ -15,5 +15,5 @@ import java.lang.annotation.Target;
 public @interface FXMLControl {
     Class<?> controller();
 
-    String id();
+    String id() default "";
 }
