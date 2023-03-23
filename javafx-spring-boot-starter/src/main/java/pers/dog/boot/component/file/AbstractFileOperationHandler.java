@@ -6,6 +6,8 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
@@ -48,6 +50,20 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
             logger.error("[File Operation] Unable to write setting to {}", target, e);
             throw new FileOperationException("Unable to write file: " + target.toAbsolutePath());
         }
+    }
+
+    @Override
+    public List<String> readAllLines(String filename, String... relativePath) {
+        Path target = targetFile(filename, relativePath);
+        if (Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
+            try {
+                return Files.readAllLines(target);
+            } catch (IOException e) {
+                logger.error("[File Operation] Unable to read all line from {}", target, e);
+                throw new FileOperationException("Unable to read file: " + target.toAbsolutePath());
+            }
+        }
+        return Collections.emptyList();
     }
 
     @Override

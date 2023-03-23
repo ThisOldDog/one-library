@@ -1,4 +1,4 @@
-package pers.dog.api.item;
+package pers.dog.api.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;

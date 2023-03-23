@@ -3,15 +3,15 @@ package pers.dog.api.callback;
 import static org.controlsfx.control.action.ActionUtils.ACTION_SEPARATOR;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
-import javafx.event.Event;
+import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
@@ -20,8 +20,9 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.controlsfx.control.action.ActionUtils;
 import org.springframework.stereotype.Component;
 import pers.dog.api.controller.OneLibraryController;
-import pers.dog.api.item.ProjectItemController;
-import pers.dog.api.item.ProjectItemEditingController;
+import pers.dog.api.controller.ProjectEditorController;
+import pers.dog.api.controller.ProjectItemController;
+import pers.dog.api.controller.ProjectItemEditingController;
 import pers.dog.app.service.ProjectService;
 import pers.dog.boot.component.control.FXMLControl;
 import pers.dog.boot.infra.util.FXMLUtils;
@@ -39,6 +40,7 @@ import pers.dog.infra.constant.ProjectType;
 public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell<Project>> {
     private static final String PROJECT_ITEM_FXML = "project-item";
     private static final String PROJECT_ITEM_EDITING_FXML = "project-item-editing";
+    private static final String PROJECT_EDITOR_FXML = "project-editor";
     private final ContextMenu BLANK_CONTEXT_MENU;
     private final ContextMenu PROJECT_CONTEXT_MENU;
 
@@ -123,7 +125,20 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                 setOnMouseClicked(event -> {
                     if (ProjectType.FILE.equals(item.getProjectType()) &&
                             MouseButton.PRIMARY.equals(event.getButton()) && event.getClickCount() == 2) {
-                        projectEditorWorkspace.getTabs().add(new Tab(item.getProjectName()));
+                        ObservableList<Tab> tabs = projectEditorWorkspace.getTabs();
+                        for (Tab tab : tabs) {
+                            if (Objects.equals(tab.getUserData(), item)) {
+                                projectEditorWorkspace.getSelectionModel().select(tab);
+                                return;
+                            }
+                        }
+                        Tab tab = new Tab(item.getSimpleProjectName());
+                        tab.setId(String.valueOf(item.getProjectId()));
+                        Parent projectEditor = FXMLUtils.loadFXML(PROJECT_EDITOR_FXML);
+                        ProjectEditorController projectEditorController = FXMLUtils.getController(projectEditor);
+                        projectEditorController.setProject(item);
+                        tab.setContent(projectEditor);
+                        tabs.add(tab);
                     }
                 });
             }

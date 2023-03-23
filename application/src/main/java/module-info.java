@@ -26,7 +26,6 @@ module pers.dog {
     opens pers.dog;
     opens pers.dog.api.controller;
     opens pers.dog.api.callback;
-    opens pers.dog.api.item;
     opens pers.dog.app.service;
     opens pers.dog.app.service.impl;
     opens pers.dog.domain.entity;

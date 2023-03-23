@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import pers.dog.infra.action.project.EditorBoldAction?>
+<?import pers.dog.infra.control.ActionMenuBar?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="pers.dog.api.controller.ProjectEditorController">
+    <top>
+        <!-- 工具栏 -->
+        <ActionMenuBar maxWidth="Infinity">
+            <EditorBoldAction/>
+        </ActionMenuBar>
+    </top>
+    <center>
+        <!-- 编辑器 -->
+        <SplitPane dividerPositions="0.5">
+            <VBox fx:id="editorWorkspace" minWidth="600" style="-fx-background-color: #FF0000">
+            </VBox>
+            <VBox style="-fx-background-color: #00FF00">
+            </VBox>
+        </SplitPane>
+    </center>
+
+</BorderPane>

@@ -2,6 +2,7 @@ package pers.dog.boot.component.file;
 
 import java.nio.file.FileVisitor;
 import java.nio.file.Path;
+import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -20,6 +21,8 @@ public interface FileOperationHandler {
     }
 
     void write(WriteOption writeOption, String filename, Object content, String... relativePath);
+
+    List<String> readAllLines(String filename, String... relativePath);
 
     <T> T read(String filename, Class<T> type, String... relativePath);
 

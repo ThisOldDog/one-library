@@ -8,7 +8,7 @@
       maxHeight="24" minHeight="16" prefHeight="16"
       maxWidth="480" prefWidth="480"
       alignment="CENTER_LEFT"
-      fx:controller="pers.dog.api.item.ProjectItemEditingController">
+      fx:controller="pers.dog.api.controller.ProjectItemEditingController">
     <ImageView fx:id="projectIcon" fitWidth="16" fitHeight="16"/>
     <TextField fx:id="projectNameEditor"/>
 </HBox>
