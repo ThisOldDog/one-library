@@ -50,6 +50,7 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
     private final ProjectService projectService;
 
     public ProjectTreeCallback(ProjectService projectService,
+                               // Action
                                CreateMarkdownAction createMarkdownAction,
                                CreateDirectoryAction createDirectoryAction,
                                DeleteProjectAction deleteProjectAction,
@@ -136,8 +137,8 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                         tab.setId(String.valueOf(item.getProjectId()));
                         Parent projectEditor = FXMLUtils.loadFXML(PROJECT_EDITOR_FXML);
                         ProjectEditorController projectEditorController = FXMLUtils.getController(projectEditor);
-                        projectEditorController.setProject(item);
                         tab.setContent(projectEditor);
+                        projectEditorController.show(item);
                         tabs.add(tab);
                     }
                 });

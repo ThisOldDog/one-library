@@ -22,8 +22,11 @@ module pers.dog {
     requires org.apache.commons.lang3;
     requires org.jfxtras.styles.jmetro;
     requires org.controlsfx.controls;
+    requires org.fxmisc.richtext;
 
+    // resource
     opens pers.dog;
+    // package
     opens pers.dog.api.controller;
     opens pers.dog.api.callback;
     opens pers.dog.app.service;
