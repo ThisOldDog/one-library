@@ -17,5 +17,6 @@
     -fx-padding: 2 2 2 2;
 }
 
-#projectTree {
+.code-area .paragraph-box .text {
+    -fx-font-size: 14px;
 }

@@ -14,12 +14,14 @@
 <?import pers.dog.infra.action.application.ExitAction?>
 <?import pers.dog.infra.control.ActionMenuBar?>
 <?import javafx.scene.control.TabPane?>
+<?import pers.dog.infra.action.project.SaveProjectAction?>
 <BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="pers.dog.api.controller.OneLibraryController">
     <top>
         <ActionMenuBar maxWidth="Infinity">
             <ActionGroup text="%info.action.file">
                 <ExitAction fx:factory="getInstance"/>
+                <SaveProjectAction/>
             </ActionGroup>
         </ActionMenuBar>
     </top>
@@ -53,9 +55,7 @@
                     </VBox.margin>
                 </TreeView>
             </VBox>
-            <TabPane fx:id="projectEditorWorkspace">
-
-            </TabPane>
+            <TabPane fx:id="projectEditorWorkspace"/>
         </SplitPane>
     </center>
 </BorderPane>

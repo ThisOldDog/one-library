@@ -22,7 +22,7 @@ import org.springframework.util.ObjectUtils;
  */
 @Component
 public class FXMLControlValueHandler implements BeanPostProcessor {
-    private static final Map<Class<?>, Map<String, Pair<Object, Field>>> FXML_CONTROL_CACHE = new HashMap<>();
+    private static final Map<Class<?>, Map<String, List<Pair<Object, Field>>>> FXML_CONTROL_CACHE = new HashMap<>();
     private static final Set<Object> CONSUMED_CONTROLLER = new HashSet<>();
 
     @Override
@@ -38,7 +38,8 @@ public class FXMLControlValueHandler implements BeanPostProcessor {
 
     private static void produce(Object bean, Field field, FXMLControl fxmlControl) {
         FXML_CONTROL_CACHE.computeIfAbsent(fxmlControl.controller(), key -> new HashMap<>())
-                .put(ObjectUtils.isEmpty(fxmlControl.id()) ? field.getName() : fxmlControl.id(), new Pair<>(bean, field));
+                .computeIfAbsent(ObjectUtils.isEmpty(fxmlControl.id()) ? field.getName() : fxmlControl.id(), key -> new ArrayList<>())
+                .add(new Pair<>(bean, field));
         consumer(bean, field);
     }
 
@@ -62,21 +63,23 @@ public class FXMLControlValueHandler implements BeanPostProcessor {
             return;
         }
         CONSUMED_CONTROLLER.add(controller);
-        Map<String, Pair<Object, Field>> idBeanMap = FXML_CONTROL_CACHE.get(controller.getClass());
+        Map<String, List<Pair<Object, Field>>> idBeanMap = FXML_CONTROL_CACHE.get(controller.getClass());
         if (CollectionUtils.isEmpty(idBeanMap)) {
             return;
         }
         Field[] fields = controller.getClass().getDeclaredFields();
         for (Field field : fields) {
             if (field.isAnnotationPresent(FXML.class)) {
-                Pair<Object, Field> bean = idBeanMap.get(field.getName());
-                if (bean == null) {
+                List<Pair<Object, Field>> beans = idBeanMap.get(field.getName());
+                if (beans == null) {
                     continue;
                 }
-                try {
-                    FieldUtils.writeField(bean.getValue(), bean.getKey(), FieldUtils.readField(field, controller, true), true);
-                } catch (IllegalAccessException e) {
-                    throw new IllegalStateException("[FXMLControl] Unable set control " + field.getName() + " to bean " + bean.getKey().getClass(), e);
+                for (Pair<Object, Field> bean : beans) {
+                    try {
+                        FieldUtils.writeField(bean.getValue(), bean.getKey(), FieldUtils.readField(field, controller, true), true);
+                    } catch (IllegalAccessException e) {
+                        throw new IllegalStateException("[FXMLControl] Unable set control " + field.getName() + " to bean " + bean.getKey().getClass(), e);
+                    }
                 }
             }
         }

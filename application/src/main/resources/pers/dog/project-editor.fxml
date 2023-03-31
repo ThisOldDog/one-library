@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.layout.AnchorPane?>
-<?import org.fxmisc.richtext.CodeArea?>
+<?import pers.dog.infra.control.MarkdownCodeArea?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="pers.dog.api.controller.ProjectEditorController">
-    <CodeArea fx:id="codeArea" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0"
-              AnchorPane.rightAnchor="0"/>
+    <MarkdownCodeArea fx:id="codeArea"
+                      AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"/>
 </AnchorPane>

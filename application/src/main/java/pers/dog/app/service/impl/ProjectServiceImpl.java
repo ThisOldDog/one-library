@@ -110,13 +110,13 @@ public class ProjectServiceImpl implements ProjectService {
             return;
         }
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmation.setTitle(I18nMessageSource.getResource("info.project.delete.project"));
+        confirmation.setTitle(I18nMessageSource.getResource("confirmation"));
         if (ProjectType.DIRECTORY.equals(selectedProject.getProjectType())) {
-            confirmation.setHeaderText(I18nMessageSource.getResource("info.project.delete.project.confirmation.dir", selectedProject.getProjectName()));
+            confirmation.setHeaderText(I18nMessageSource.getResource("confirmation.project.delete.project.confirmation.dir", selectedProject.getProjectName()));
         } else {
-            confirmation.setHeaderText(I18nMessageSource.getResource("info.project.delete.project.confirmation.file", selectedProject.getProjectName()));
+            confirmation.setHeaderText(I18nMessageSource.getResource("confirmation.project.delete.project.confirmation.file", selectedProject.getProjectName()));
         }
-        confirmation.setContentText(I18nMessageSource.getResource("info.project.delete.project.confirmation.prompt"));
+        confirmation.setContentText(I18nMessageSource.getResource("confirmation.project.delete.project.confirmation.prompt"));
         confirmation.showAndWait().ifPresent(buttonType -> {
             if (ButtonType.OK.equals(buttonType)) {
                 delete(selected);
