@@ -9,11 +9,13 @@ import java.util.ResourceBundle;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.Paragraph;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
@@ -24,7 +26,7 @@ import pers.dog.domain.repository.ProjectRepository;
 import pers.dog.infra.control.MarkdownCodeArea;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/3/23 23:06
+ * @author 废柴 2023/3/23 23:06
  */
 public class ProjectEditorController implements Initializable {
     private final ObjectProperty<Project> projectProperty = new SimpleObjectProperty<>();
@@ -41,7 +43,6 @@ public class ProjectEditorController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
     }
 
     public void show(Project project) {
@@ -49,7 +50,6 @@ public class ProjectEditorController implements Initializable {
         setFileOperationHandler(project);
         setText(project);
         setChangeListener();
-        refresh();
     }
 
     private void setChangeListener() {
@@ -67,6 +67,7 @@ public class ProjectEditorController implements Initializable {
     private void setText(Project project) {
         String text = fileOperationHandler.read(project.getProjectName(), String.class);
         if (text != null) {
+            // FIXME: codeAre style scrambled
             codeArea.replaceText(0, 0, text);
             localText = codeArea.getText();
         }
@@ -99,13 +100,6 @@ public class ProjectEditorController implements Initializable {
 
     public boolean getDirty() {
         return dirty.get();
-    }
-
-    private void refresh() {
-//        codeArea.requestFocus();
-//        codeArea.requestLayout();
-//        codeArea.applyCss();
-//        codeArea.requestFollowCaret();
     }
 
     public ObjectProperty<Boolean> dirtyProperty() {

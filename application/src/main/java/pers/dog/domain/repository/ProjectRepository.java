@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import pers.dog.domain.entity.Project;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/2/21 23:21
+ * @author 废柴 2023/2/21 23:21
  */
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long>, JpaSpecificationExecutor<Project> {

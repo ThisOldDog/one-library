@@ -23,6 +23,7 @@ module pers.dog {
     requires org.jfxtras.styles.jmetro;
     requires org.controlsfx.controls;
     requires org.fxmisc.richtext;
+    requires org.fxmisc.flowless;
     requires reactfx;
 
     // resource

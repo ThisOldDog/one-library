@@ -32,14 +32,14 @@
                 <HBox>
                     <CustomTextField fx:id="projectSearch" focusTraversable="false" prefWidth="6400"
                                      promptText="%info.project.search"/>
-                    <Button fx:id="projectExpand" focusTraversable="false" maxHeight="24" maxWidth="24" minHeight="24"
-                            minWidth="24">
+                    <Button fx:id="projectExpand" focusTraversable="false" onAction="#expand"
+                            maxHeight="24" maxWidth="24" minHeight="24" minWidth="24">
                         <tooltip>
                             <Tooltip text="%info.project.expand"/>
                         </tooltip>
                     </Button>
-                    <Button fx:id="projectCollapse" focusTraversable="false" maxHeight="24" maxWidth="24" minHeight="24"
-                            minWidth="24">
+                    <Button fx:id="projectCollapse" focusTraversable="false" onAction="#collapse"
+                            maxHeight="24" maxWidth="24" minHeight="24" minWidth="24">
                         <tooltip>
                             <Tooltip text="%info.project.collapse"/>
                         </tooltip>

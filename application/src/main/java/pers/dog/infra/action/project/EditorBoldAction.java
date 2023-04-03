@@ -5,7 +5,7 @@ import org.controlsfx.control.action.Action;
 import org.springframework.stereotype.Component;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/3/23 21:59
+ * @author 废柴 2023/3/23 21:59
  */
 @Component
 public class EditorBoldAction extends Action {

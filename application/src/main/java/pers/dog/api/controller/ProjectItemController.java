@@ -8,7 +8,7 @@ import pers.dog.domain.entity.Project;
 import pers.dog.infra.constant.ProjectType;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/3/6 14:23
+ * @author 废柴 2023/3/6 14:23
  */
 public class ProjectItemController {
     @FXML

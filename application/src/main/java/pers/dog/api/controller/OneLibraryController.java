@@ -3,6 +3,7 @@ package pers.dog.api.controller;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -41,5 +42,22 @@ public class OneLibraryController implements Initializable {
         projectTree.setRoot(projectTreeItem);
         projectTree.requestFocus();
         projectTree.setEditable(false);
+    }
+
+    public void expand(ActionEvent event) {
+        expand(projectTree.getRoot(), true);
+    }
+
+    public void collapse(ActionEvent event) {
+        expand(projectTree.getRoot(), false);
+    }
+
+    private void expand(TreeItem<Project> node, boolean expanded) {
+        if (!projectTree.getRoot().equals(node)) {
+            node.setExpanded(expanded);
+        }
+        for (TreeItem<Project> child : node.getChildren()) {
+            expand(child, expanded);
+        }
     }
 }

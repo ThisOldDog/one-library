@@ -1,29 +1,28 @@
 package pers.dog.infra.control;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javafx.application.Platform;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import javafx.concurrent.Task;
 import org.fxmisc.richtext.CodeArea;
-import org.fxmisc.richtext.GenericStyledArea;
+import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.EditableStyledDocument;
-import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.richtext.model.StyledDocument;
-import org.reactfx.collection.ListModification;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/3/30 20:12
+ * @author 废柴 2023/3/30 20:12
  */
 public class MarkdownCodeArea extends CodeArea {
     public interface TextInsertionListener {
@@ -202,35 +201,6 @@ public class MarkdownCodeArea extends CodeArea {
         }
     }
 
-    static class VisibleParagraphStyler<PS, SEG, S> implements Consumer<ListModification<? extends Paragraph<PS, SEG, S>>> {
-        private final GenericStyledArea<PS, SEG, S> area;
-        private final Function<String, StyleSpans<S>> computeStyles;
-        private int prevParagraph, prevTextLength;
-
-        public VisibleParagraphStyler(GenericStyledArea<PS, SEG, S> area, Function<String, StyleSpans<S>> computeStyles) {
-            this.computeStyles = computeStyles;
-            this.area = area;
-        }
-
-        @Override
-        public void accept(ListModification<? extends Paragraph<PS, SEG, S>> lm) {
-            if (lm.getAddedSize() > 0) Platform.runLater(() ->
-            {
-                int paragraph = Math.min(area.firstVisibleParToAllParIndex() + lm.getFrom(), area.getParagraphs().size() - 1);
-                String text = area.getText(paragraph, 0, paragraph, area.getParagraphLength(paragraph));
-
-                if (paragraph != prevParagraph || text.length() != prevTextLength) {
-                    if (paragraph < area.getParagraphs().size() - 1) {
-                        int startPos = area.getAbsolutePosition(paragraph, 0);
-                        area.setStyleSpans(startPos, computeStyles.apply(text));
-                    }
-                    prevTextLength = text.length();
-                    prevParagraph = paragraph;
-                }
-            });
-        }
-    }
-
     private static final String HEADING_PATTERN = "^#{1,6}[ \\t]+[ \\S\\t]*$";
     private static final String BOLD_ITALIC_PATTERN = "(\\*\\*\\*.+\\*\\*\\*)|(___.+___)";
     private static final String BOLD_PATTERN = "(\\*\\*.+\\*\\*)|(__.+__)";
@@ -239,7 +209,7 @@ public class MarkdownCodeArea extends CodeArea {
     private static final String ORDERED_LIST_PATTERN = "\\s*\\d+\\.[ \\t]+[ \\S\\t]*$";
     private static final String UNORDERED_LIST_PATTERN = "\\s*((\\-)|(\\+)|(\\*))[ \\t]+[ \\S\\t]*$";
     private static final String CODE_PATTERN = "`[^\\n`]+`";
-    private static final String FENCED_CODE_PATTERN = "^```[\\w]+\\n[\\s\\S]*\\n```\\n$";
+    private static final String FENCED_CODE_PATTERN = "^```\\w+\\n[\\s\\S]*\\n```\\n$";
 
 
     private static final Pattern PATTERN = Pattern.compile(
@@ -255,6 +225,7 @@ public class MarkdownCodeArea extends CodeArea {
     );
 
     private final List<TextInsertionListener> insertionListeners;
+    private ExecutorService executor;
 
     /**
      * Creates an area with no text.
@@ -277,22 +248,43 @@ public class MarkdownCodeArea extends CodeArea {
         init(this);
     }
 
-    private static void init(MarkdownCodeArea codeArea) {
+    private void init(MarkdownCodeArea codeArea) {
+        // 括号高亮
         new BracketHighlighter(codeArea);
-        codeArea.getVisibleParagraphs().addModificationObserver
-                (
-                        new VisibleParagraphStyler<>(codeArea, codeArea::computeHighlighting)
-                );
-        final Pattern whiteSpace = Pattern.compile("^\\s+");
-        codeArea.addEventHandler(KeyEvent.KEY_PRESSED, KE ->
-        {
-            if (KE.getCode() == KeyCode.ENTER) {
-                int caretPosition = codeArea.getCaretPosition();
-                int currentParagraph = codeArea.getCurrentParagraph();
-                Matcher m0 = whiteSpace.matcher(codeArea.getParagraph(currentParagraph - 1).getSegments().get(0));
-                if (m0.find()) Platform.runLater(() -> codeArea.insertText(caretPosition, m0.group()));
+        // 行号
+        setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
+        // 代码高亮
+        executor = Executors.newSingleThreadExecutor();
+        codeArea.multiPlainChanges()
+                .successionEnds(Duration.ofMillis(500))
+                .retainLatestUntilLater(executor)
+                .supplyTask(codeArea::computeHighlightingAsync)
+                .awaitLatest(codeArea.multiPlainChanges())
+                .filterMap(t -> {
+                    if (t.isSuccess()) {
+                        return Optional.of(t.get());
+                    } else {
+                        t.getFailure().printStackTrace();
+                        return Optional.empty();
+                    }
+                })
+                .subscribe(codeArea::applyHighlighting);
+    }
+
+    private Task<StyleSpans<Collection<String>>> computeHighlightingAsync() {
+        String text = this.getText();
+        Task<StyleSpans<Collection<String>>> task = new Task<StyleSpans<Collection<String>>>() {
+            @Override
+            protected StyleSpans<Collection<String>> call() throws Exception {
+                return computeHighlighting(text);
             }
-        });
+        };
+        executor.execute(task);
+        return task;
+    }
+
+    private void applyHighlighting(StyleSpans<Collection<String>> highlighting) {
+        this.setStyleSpans(0, highlighting);
     }
 
     public void addTextInsertionListener(TextInsertionListener listener) {

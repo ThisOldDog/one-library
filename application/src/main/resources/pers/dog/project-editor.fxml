@@ -2,9 +2,14 @@
 
 <?import javafx.scene.layout.AnchorPane?>
 <?import pers.dog.infra.control.MarkdownCodeArea?>
+<?import org.fxmisc.flowless.VirtualizedScrollPane?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="pers.dog.api.controller.ProjectEditorController">
-    <MarkdownCodeArea fx:id="codeArea"
-                      AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"/>
+    <VirtualizedScrollPane
+            AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <content>
+            <MarkdownCodeArea fx:id="codeArea"/>
+        </content>
+    </VirtualizedScrollPane>
 </AnchorPane>

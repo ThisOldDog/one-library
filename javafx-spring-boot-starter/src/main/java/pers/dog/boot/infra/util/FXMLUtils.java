@@ -134,7 +134,7 @@ public class FXMLUtils {
             alert.setHeaderText("Error");
             alert.setTitle("An error occurred when the scene load!");
             alert.setContentText(ExceptionUtils.getMessage(e));
-            alert.showAndWait().ifPresent(response -> Platform.exit());
+            alert.showAndWait();
             return null;
         }
     }

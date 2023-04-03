@@ -79,7 +79,7 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
             @Override
             protected void updateItem(Project item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
+                if (empty || item == null) {
                     handleEmpty();
                 } else {
                     handleProject(item);
@@ -138,10 +138,10 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                         }
                         Parent projectEditor = FXMLUtils.loadFXML(PROJECT_EDITOR_FXML);
                         ProjectEditorController projectEditorController = FXMLUtils.getController(projectEditor);
-                        Tab tab = new Tab(item.getSimpleProjectName());
+                        projectEditorController.initialize(null, null);
+                        Tab tab = new Tab(item.getSimpleProjectName(), projectEditor);
                         tab.setUserData(projectEditorController);
                         tab.setId(String.valueOf(item.getProjectId()));
-                        tab.setContent(projectEditor);
                         projectEditorController.dirtyProperty().addListener((change, oldValue, newValue) -> {
                             if (newValue) {
                                 tab.setText("* " + item.getSimpleProjectName());
