@@ -11,6 +11,11 @@
     -rtfx-background-color: #00000033;
 }
 
+.project-tree-drag-over-file, .project-tree-drag-over-dir {
+    -fx-border-color: lightskyblue;
+}
+
+/* Markdown */
 .heading {
     -fx-fill: cadetblue;
     -fx-font-weight: bold;

@@ -38,6 +38,7 @@ public class OneLibraryController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        projectService.syncLocal();
         TreeItem<Project> projectTreeItem = projectService.tree();
         projectTree.setRoot(projectTreeItem);
         projectTree.requestFocus();

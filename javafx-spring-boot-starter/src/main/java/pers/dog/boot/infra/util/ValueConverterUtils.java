@@ -136,7 +136,8 @@ public class ValueConverterUtils {
             try {
                 return fastDateFormat.parse(String.valueOf(value));
             } catch (ParseException e) {
-                logger.error("[Converter] Date.class type parameter conversion error : format[{}] value[{}]", ZONE_DATE_TIME_FORMAT, value, e);
+                String exceptionMessage = String.format("[Converter] Date.class type parameter conversion error : format[%s] value[%s]", ZONE_DATE_TIME_FORMAT, value);
+                logger.error(exceptionMessage, e);
                 throw new IllegalArgumentException("Value parser failed.");
             }
         });
@@ -147,7 +148,8 @@ public class ValueConverterUtils {
             try {
                 return LocalDate.parse(String.valueOf(value), dateFormatter);
             } catch (DateTimeParseException e) {
-                logger.error("[Converter] LocalDate.class type parameter conversion error : format[{}] value[{}]", DATE_FORMAT, value, e);
+                String exceptionMessage = String.format("[Converter] LocalDate.class type parameter conversion error : format[%s] value[%s]", DATE_FORMAT, value);
+                logger.error(exceptionMessage, e);
                 throw new IllegalArgumentException("Value parser failed.");
             }
         });
@@ -158,7 +160,8 @@ public class ValueConverterUtils {
             try {
                 return LocalDateTime.parse(String.valueOf(value), dateTimeFormatter);
             } catch (DateTimeParseException e) {
-                logger.error("[Converter] LocalDateTime.class type parameter conversion error : format[{}] value[{}]", DATE_TIME_FORMAT, value, e);
+                String exceptionMessage = String.format("[Converter] LocalDateTime.class type parameter conversion error : format[%s] value[%s]", DATE_TIME_FORMAT, value);
+                logger.error(exceptionMessage, e);
                 throw new IllegalArgumentException("Value parser failed.");
             }
         });
@@ -169,7 +172,8 @@ public class ValueConverterUtils {
             try {
                 return ZonedDateTime.parse(String.valueOf(value), zoneDateTimeFormatter);
             } catch (DateTimeParseException e) {
-                logger.error("[Converter] ZonedDateTime.class type parameter conversion error : format[{}] value[{}]", ZONE_DATE_TIME_FORMAT, value, e);
+                String exceptionMessage = String.format("[Converter] ZonedDateTime.class type parameter conversion error : format[%s] value[%s]", ZONE_DATE_TIME_FORMAT, value);
+                logger.error(exceptionMessage, e);
                 throw new IllegalArgumentException("Value parser failed.");
             }
         });
@@ -228,7 +232,8 @@ public class ValueConverterUtils {
         try {
             return OBJECT_MAPPER.readValue(value, type);
         } catch (IOException e) {
-            logger.error("[Converter] JSON parameter conversion is an error : {}", value, e);
+            String exceptionMessage = String.format("[Converter] JSON parameter conversion is an error : %s", value);
+            logger.error(exceptionMessage, e);
             throw new IllegalArgumentException("Value parser failed.");
         }
     }
@@ -242,7 +247,8 @@ public class ValueConverterUtils {
         try {
             return OBJECT_MAPPER.readValue(value, type);
         } catch (IOException e) {
-            logger.error("[Converter] JSON parameter conversion is an error : {}", value, e);
+            String exceptionMessage = String.format("[Converter] JSON parameter conversion is an error : %s", value);
+            logger.error(exceptionMessage, e);
             throw new IllegalArgumentException("Value parser failed.");
         }
     }
@@ -284,7 +290,8 @@ public class ValueConverterUtils {
         try {
             return OBJECT_MAPPER.writeValueAsString(value);
         } catch (IOException e) {
-            logger.error("[Converter] An error occurred while converting the parameter to a JSON string : {} {}", parameterType, value, e);
+            String exceptionMessage = String.format("[Converter] An error occurred while converting the parameter to a JSON string : %s %s", parameterType, value);
+            logger.error(exceptionMessage, e);
             throw new IllegalArgumentException("Value parser failed.");
         }
     }

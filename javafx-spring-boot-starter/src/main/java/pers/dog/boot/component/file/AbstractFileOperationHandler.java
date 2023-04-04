@@ -2,10 +2,12 @@ package pers.dog.boot.component.file;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,7 +49,8 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
             logger.info("[File Operation] Write to file {}", target);
             Files.writeString(target, ValueConverterUtils.write(content), writeOption.toOpenOption());
         } catch (IOException e) {
-            logger.error("[File Operation] Unable to write setting to {}", target, e);
+            String exceptionMessage = String.format("[File Operation] Unable to write setting to %s", target);
+            logger.error(exceptionMessage, e);
             throw new FileOperationException("Unable to write file: " + target.toAbsolutePath());
         }
     }
@@ -59,7 +62,8 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
             try {
                 return Files.readAllLines(target);
             } catch (IOException e) {
-                logger.error("[File Operation] Unable to read all line from {}", target, e);
+                String exceptionMessage = String.format("[File Operation] Unable to read all line from %s", target);
+                logger.error(exceptionMessage, e);
                 throw new FileOperationException("Unable to read file: " + target.toAbsolutePath());
             }
         }
@@ -77,7 +81,8 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
             logger.info("[File Operation] Read from file {}", target);
             return ValueConverterUtils.read(Files.readString(target), type);
         } catch (IOException e) {
-            logger.error("[File Operation] Unable to read setting from {}", target, e);
+            String exceptionMessage = String.format("[File Operation] Unable to read setting from %s", target);
+            logger.error(exceptionMessage, e);
             throw new FileOperationException("Unable to read file: " + target.toAbsolutePath());
         }
     }
@@ -93,7 +98,8 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
             logger.info("[File Operation] Read from file {}", target);
             return ValueConverterUtils.read(Files.readString(target), type);
         } catch (IOException e) {
-            logger.error("[File Operation] Unable to read setting from {}", target, e);
+            String exceptionMessage = String.format("[File Operation] Unable to read setting from %s", target);
+            logger.error(exceptionMessage, e);
             throw new FileOperationException("Unable to read file: " + target.toAbsolutePath());
         }
     }
@@ -108,7 +114,8 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
             }
             Files.walkFileTree(target, fileVisitor);
         } catch (IOException e) {
-            logger.error("[File Operation] Unable to walk file tree {}", target, e);
+            String exceptionMessage = String.format("[File Operation] Unable to walk file tree %s", target);
+            logger.error(exceptionMessage, e);
             throw new FileOperationException("Unable to walk file tree: " + target.toAbsolutePath());
         }
     }
@@ -131,7 +138,8 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
             }
             Files.createDirectory(target);
         } catch (IOException e) {
-            logger.error("[File Operation] Unable to create directory {}", target, e);
+            String exceptionMessage = String.format("[File Operation] Unable to create directory %s", target);
+            logger.error(exceptionMessage, e);
             throw new FileOperationException("Unable to create directory: " + target.toAbsolutePath());
         }
     }
@@ -148,7 +156,8 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
             }
             Files.createFile(target);
         } catch (IOException e) {
-            logger.error("[File Operation] Unable to create file {}", target, e);
+            String exceptionMessage = String.format("[File Operation] Unable to create file %s", target);
+            logger.error(exceptionMessage, e);
             throw new FileOperationException("Unable to create file: " + target.toAbsolutePath());
         }
     }
@@ -159,7 +168,8 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
         try {
             delete(target.toFile());
         } catch (IOException e) {
-            logger.error("[File Operation] Unable to delete file {}", target, e);
+            String exceptionMessage = String.format("[File Operation] Unable to delete file %s", target);
+            logger.error(exceptionMessage, e);
             throw new FileOperationException("Unable to delete file: " + target.toAbsolutePath());
         }
     }
@@ -184,5 +194,18 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
             return oldFile.toFile().renameTo(newFile.toFile());
         }
         return false;
+    }
+
+    @Override
+    public void move(String name, String[] sourcePath, String[] targetPath) {
+        Path source = targetFile(name, sourcePath);
+        Path target = targetFile(name, targetPath);
+        try {
+            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+        } catch (IOException e) {
+            String exceptionMessage = String.format("[File Operation] Unable to move file from %s to %s", source, target);
+            logger.error(exceptionMessage, e);
+            throw new FileOperationException(exceptionMessage);
+        }
     }
 }

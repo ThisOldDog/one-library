@@ -3,23 +3,34 @@ package pers.dog.api.callback;
 import static org.controlsfx.control.action.ActionUtils.ACTION_SEPARATOR;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.image.WritableImage;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.Pane;
 import javafx.util.Callback;
 import org.apache.commons.lang3.BooleanUtils;
 import org.controlsfx.control.action.ActionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pers.dog.api.controller.OneLibraryController;
 import pers.dog.api.controller.ProjectEditorController;
@@ -41,9 +52,12 @@ import pers.dog.infra.constant.ProjectType;
  */
 @Component
 public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell<Project>> {
+    private static final Logger logger = LoggerFactory.getLogger(ProjectTreeCallback.class);
     private static final String PROJECT_ITEM_FXML = "project-item";
     private static final String PROJECT_ITEM_EDITING_FXML = "project-item-editing";
     private static final String PROJECT_EDITOR_FXML = "project-editor";
+    private static final String CELL_DRAG_OVER_STYLE_CLASS_FILE = "project-tree-drag-over-file";
+    private static final String CELL_DRAG_OVER_STYLE_CLASS_DIR = "project-tree-drag-over-dir";
     private final ContextMenu BLANK_CONTEXT_MENU;
     private final ContextMenu PROJECT_CONTEXT_MENU;
 
@@ -51,6 +65,8 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
     @FXMLControl(controller = OneLibraryController.class)
     private TabPane projectEditorWorkspace;
     private final ProjectService projectService;
+    private final static AtomicReference<TreeCell<Project>> dragged = new AtomicReference<>();
+    private final static AtomicReference<TreeCell<Project>> previousOver = new AtomicReference<>();
 
     public ProjectTreeCallback(ProjectService projectService,
                                // Action
@@ -76,6 +92,7 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
     public TreeCell<Project> call(TreeView<Project> projectTree) {
 
         return new TreeCell<>() {
+
             @Override
             protected void updateItem(Project item, boolean empty) {
                 super.updateItem(item, empty);
@@ -108,6 +125,7 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                 handleProject(getItem());
                 projectTree.setEditable(false);
             }
+
 
             private void handleEmpty() {
                 setText(null);
@@ -166,6 +184,65 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                         projectEditorController.show(item);
                         tabs.add(tab);
                         projectEditorWorkspace.getSelectionModel().select(tab);
+                    }
+                });
+
+                setOnDragDetected(event -> {
+                    Dragboard dragboard = this.startDragAndDrop(TransferMode.MOVE);
+                    dragged.set(this);
+                    Pane pane = (Pane) getGraphic();
+                    WritableImage writableImage = new WritableImage((int) pane.getWidth(), (int) pane.getHeight());
+                    parent.snapshot(new SnapshotParameters(), writableImage);
+                    getTreeItem().setExpanded(false);
+                    dragboard.setDragView(writableImage);
+                    dragboard.setContent(Collections.singletonMap(DataFormat.PLAIN_TEXT, item.getProjectName()));
+                });
+                setOnDragOver(event -> {
+                    event.acceptTransferModes(TransferMode.MOVE);
+                    if (previousOver.get() != null) {
+                        previousOver.get().getStyleClass().removeAll(CELL_DRAG_OVER_STYLE_CLASS_FILE, CELL_DRAG_OVER_STYLE_CLASS_DIR);
+                    }
+                    previousOver.set(this);
+                    if (ProjectType.DIRECTORY.equals(getItem().getProjectType())) {
+                        getStyleClass().add(CELL_DRAG_OVER_STYLE_CLASS_DIR);
+                    } else {
+                        getStyleClass().add(CELL_DRAG_OVER_STYLE_CLASS_FILE);
+                    }
+                });
+                setOnDragDropped(event -> {
+                    TreeCell<Project> source = dragged.get();
+                    TreeCell<Project> target = previousOver.get();
+                    dragged.set(null);
+                    if (target != null) {
+                        target.getStyleClass().removeAll(CELL_DRAG_OVER_STYLE_CLASS_FILE, CELL_DRAG_OVER_STYLE_CLASS_DIR);
+                        previousOver.set(null);
+                        if (source == target) {
+                            return;
+                        }
+                        // 先把 source 移除
+                        TreeItem<Project> sourceParent = source.getTreeItem().getParent();
+                        TreeItem<Project> targetParent;
+                        int targetIndex;
+                        if (ProjectType.DIRECTORY.equals(target.getItem().getProjectType())) {
+                            targetParent = target.getTreeItem();
+                        } else {
+                            targetParent = target.getTreeItem().getParent();
+                        }
+                        if (!projectService.move(source.getTreeItem(), targetParent)) {
+                            return;
+                        }
+                        sourceParent.getChildren().remove(source.getTreeItem());
+                        projectService.reordered(sourceParent.getChildren());
+                        targetIndex = Math.min(0, targetParent.getChildren().indexOf(target.getTreeItem()));
+                        if (targetIndex + 1 < targetParent.getChildren().size()) {
+                            targetParent.getChildren().add(targetIndex + 1, source.getTreeItem());
+                        } else {
+                            targetParent.getChildren().add(source.getTreeItem());
+                        }
+                        targetParent.setExpanded(true);
+                        sourceParent.setExpanded(true);
+                        source.getTreeItem().setExpanded(true);
+                        projectService.reordered(targetParent.getChildren());
                     }
                 });
             }

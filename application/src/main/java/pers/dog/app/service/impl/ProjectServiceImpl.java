@@ -1,19 +1,36 @@
 package pers.dog.app.service.impl;
 
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javafx.collections.ObservableList;
+import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import pers.dog.api.controller.OneLibraryController;
 import pers.dog.app.service.ProjectService;
 import pers.dog.boot.component.control.FXMLControl;
@@ -31,6 +48,7 @@ import pers.dog.infra.constant.ProjectType;
  */
 @Service
 public class ProjectServiceImpl implements ProjectService {
+    private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
     private static final TreeItem<Project> ROOT = new TreeItem<>(new Project().setProjectName("ROOT").setProjectType(ProjectType.DIRECTORY));
     private final ProjectRepository projectRepository;
     private final FileOperationHandler fileOperationHandler;
@@ -86,9 +104,149 @@ public class ProjectServiceImpl implements ProjectService {
         } else {
             Alert renameFiled = new Alert(Alert.AlertType.ERROR);
             renameFiled.setHeaderText(I18nMessageSource.getResource("error"));
-            renameFiled.setContentText(I18nMessageSource.getResource("error.project.rename.project"));
+            renameFiled.setContentText(I18nMessageSource.getResource("error.project.rename.name_duplicate"));
             renameFiled.showAndWait();
         }
+    }
+
+    @Override
+    public boolean move(TreeItem<Project> project, TreeItem<Project> parent) {
+        Project projectValue = project.getValue();
+        if (Objects.equals(projectValue.getParentProjectId(), parent.getValue().getProjectId())) {
+            return true;
+        }
+        if (fileOperationHandler.exists(projectValue.getProjectName(), getRelativePath(parent))) {
+            Alert renameFiled = new Alert(Alert.AlertType.ERROR);
+            renameFiled.setHeaderText(I18nMessageSource.getResource("error"));
+            renameFiled.setContentText(I18nMessageSource.getResource("error.project.move.name_duplicate"));
+            renameFiled.show();
+            return false;
+        } else {
+            fileOperationHandler.move(projectValue.getProjectName(), getRelativePath(project.getParent()), getRelativePath(parent));
+            projectValue.setParentProjectId(parent.getValue().getProjectId());
+            projectRepository.save(projectValue);
+            return true;
+        }
+    }
+
+    @Override
+    public void syncLocal() {
+        List<Project> projectList = projectRepository.findAll();
+        List<Project> matchedList = new ArrayList<>();
+        logger.info("[One Library] Start sync local file.");
+        AtomicReference<Project> parent = new AtomicReference<>();
+        AtomicBoolean root = new AtomicBoolean(false);
+        fileOperationHandler.walkFileTree(new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                if (!root.get()) {
+                    root.set(true);
+                } else {
+                    logger.info("[One Library] Visit directory: {}", dir);
+                    String dirName = dir.toFile().getName();
+                    Project current = null;
+                    for (Project project : projectList) {
+                        if (!ProjectType.DIRECTORY.equals(project.getProjectType())) {
+                            continue;
+                        }
+                        if ((project.getParentProjectId() == null && parent.get() == null)
+                                || (parent.get() != null && Objects.equals(project.getParentProjectId(), parent.get().getProjectId()))) {
+                            if (Objects.equals(project.getProjectName(), dirName)) {
+                                current = project;
+                                break;
+                            }
+                        }
+                    }
+                    if (current == null) {
+                        current = new Project()
+                                .setProjectName(dirName)
+                                .setProjectType(ProjectType.DIRECTORY)
+                                .setParentProjectId(parent.get() == null ? null : parent.get().getProjectId());
+                        current.setSortIndex(getSortIndex(projectList, parent));
+                        logger.warn("[One Library] The directory accessed has no records and a record is created: {}", dir);
+                        projectRepository.save(current);
+                    }
+                    matchedList.add(current);
+                    parent.set(current.setParent(parent.get()));
+                }
+                return super.preVisitDirectory(dir, attrs);
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                String dirName = file.toFile().getName();
+                Project current = null;
+                for (Project project : projectList) {
+                    if (!ProjectType.FILE.equals(project.getProjectType())) {
+                        continue;
+                    }
+                    if ((project.getParentProjectId() == null && parent.get() == null)
+                            || (parent.get() != null && Objects.equals(project.getParentProjectId(), parent.get().getProjectId()))) {
+                        if (Objects.equals(project.getProjectName(), dirName)) {
+                            current = project;
+                            break;
+                        }
+                    }
+                }
+                if (current == null) {
+                    current = new Project()
+                            .setProjectName(dirName)
+                            .setProjectType(ProjectType.FILE)
+                            .setFileType(FileType.identify(dirName))
+                            .setParentProjectId(parent.get() == null ? null : parent.get().getProjectId());
+                    current.setSortIndex(getSortIndex(projectList, parent));
+                    logger.warn("[One Library] The file accessed has no records and a record is created: {}", file);
+                    projectRepository.save(current);
+                }
+                matchedList.add(current);
+                logger.info("[One Library] Visit file: {}", file);
+                return super.visitFile(file, attrs);
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                if (parent.get() != null) {
+                    parent.set(parent.get().getParent());
+                }
+                return super.postVisitDirectory(dir, exc);
+            }
+        });
+        projectList.removeAll(matchedList);
+        Map<Long, Project> parentMap = matchedList.stream().collect(Collectors.toMap(Project::getProjectId, Function.identity()));
+        logger.warn("[One Library] If no file or directory is found for these records, the records will be deleted: {}",
+                StringUtils.collectionToCommaDelimitedString(projectList.stream().map(project -> getPath(parentMap, project)).collect(Collectors.toList())));
+        projectRepository.deleteAll(projectList);
+    }
+
+    private String getPath(Map<Long, Project> parentMap, Project project) {
+        String path = project.getProjectName();
+        Project parent = project;
+        while (parent != null) {
+            parent = parentMap.get(parent.getParentProjectId());
+            if (parent != null) {
+                path = parent.getProjectName() + "/" + path;
+            }
+        }
+        return path;
+    }
+
+    private static int getSortIndex(List<Project> projectList, AtomicReference<Project> parent) {
+        return projectList.stream().filter(project ->
+                        (project.getParentProjectId() == null && parent.get() == null)
+                                || (parent.get() != null && Objects.equals(project.getParentProjectId(), parent.get().getProjectId())))
+                .mapToInt(Project::getSortIndex).max().orElse(0) + 1;
+    }
+
+    @Override
+    public void reordered(List<TreeItem<Project>> children) {
+        if (CollectionUtils.isEmpty(children)) {
+            return;
+        }
+        List<Project> projectList = new ArrayList<>();
+        for (int i = 0; i < children.size(); i++) {
+            projectList.add(children.get(i).getValue().setSortIndex(i + 1));
+        }
+        projectRepository.saveAll(projectList);
     }
 
     @Override

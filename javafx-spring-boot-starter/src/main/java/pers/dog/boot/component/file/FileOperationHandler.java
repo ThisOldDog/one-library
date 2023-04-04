@@ -39,4 +39,6 @@ public interface FileOperationHandler {
     void delete(String name, String... relativePath);
 
     boolean rename(String name, String newName, String[] relativePath);
+
+    void move(String name, String[] sourcePath, String[] targetPath);
 }

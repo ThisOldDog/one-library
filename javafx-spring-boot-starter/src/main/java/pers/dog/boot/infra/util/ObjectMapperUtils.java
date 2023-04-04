@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 /**
  * @author 废柴 2021/6/21 20:25
  */
+@SuppressWarnings("DuplicatedCode")
 public class ObjectMapperUtils {
     private static final Logger logger = LoggerFactory.getLogger(ObjectMapperUtils.class);
     private static final ObjectMapper OBJECT_MAPPER;
@@ -35,7 +36,8 @@ public class ObjectMapperUtils {
         try {
             return OBJECT_MAPPER.writeValueAsString(value);
         } catch (JsonProcessingException e) {
-            logger.error("[Object Mapper] Unable to write {} as json string.", value, e);
+            String exceptionMessage = String.format("[Object Mapper] Unable to write %s as json string.", value);
+            logger.error(exceptionMessage, e);
             return null;
         }
     }
@@ -45,7 +47,8 @@ public class ObjectMapperUtils {
             try {
                 return OBJECT_MAPPER.readValue(json, type);
             } catch (JsonProcessingException e) {
-                logger.error("[Object Mapper] Unable to read json {} as type {}.", json, type, e);
+                String exceptionMessage = String.format("[Object Mapper] Unable to read json %s as type %s.", json, type);
+                logger.error(exceptionMessage, e);
                 return null;
             }
         }
@@ -57,7 +60,8 @@ public class ObjectMapperUtils {
             try {
                 return OBJECT_MAPPER.readValue(new TreeTraversingParser(jsonNode), type);
             } catch (IOException e) {
-                logger.error("[Object Mapper] Unable to read json {} as type {}.", jsonNode, type, e);
+                String exceptionMessage = String.format("[Object Mapper] Unable to read json %s as type %s.", jsonNode, type);
+                logger.error(exceptionMessage, e);
                 return null;
             }
         }
@@ -69,7 +73,8 @@ public class ObjectMapperUtils {
             try {
                 return OBJECT_MAPPER.readValue(json, typeReference);
             } catch (JsonProcessingException e) {
-                logger.error("[Object Mapper] Unable to read json {} as type {}.", json, typeReference, e);
+                String exceptionMessage = String.format("[Object Mapper] Unable to read json %s as type %s.", json, typeReference);
+                logger.error(exceptionMessage, e);
                 return null;
             }
         }
@@ -81,7 +86,8 @@ public class ObjectMapperUtils {
             try {
                 return OBJECT_MAPPER.readValue(new TreeTraversingParser(jsonNode), typeReference);
             } catch (IOException e) {
-                logger.error("[Object Mapper] Unable to read json {} as type {}.", jsonNode, typeReference, e);
+                String exceptionMessage = String.format("[Object Mapper] Unable to read json %s as type %s.", jsonNode, typeReference);
+                logger.error(exceptionMessage, e);
                 return null;
             }
         }

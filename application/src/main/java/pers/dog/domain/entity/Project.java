@@ -42,6 +42,8 @@ public class Project {
     private String simpleProjectName;
     @Transient
     private String newProjectName;
+    @Transient
+    private Project parent;
 
     /* Function */
     public String getSimpleProjectName() {
@@ -129,6 +131,15 @@ public class Project {
 
     public Project setNewProjectName(String newProjectName) {
         this.newProjectName = newProjectName;
+        return this;
+    }
+
+    public Project getParent() {
+        return parent;
+    }
+
+    public Project setParent(Project parent) {
+        this.parent = parent;
         return this;
     }
 }

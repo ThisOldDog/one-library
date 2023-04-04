@@ -20,3 +20,13 @@
 .code-area .paragraph-box .text {
     -fx-font-size: 14px;
 }
+
+.project-tree-drag-over-file {
+    -fx-border-width: 0 0 2 0;
+    -fx-border-style: SOLID;
+}
+
+.project-tree-drag-over-dir {
+    -fx-border-width: 2 2 2 2;
+    -fx-border-style: SOLID;
+}
