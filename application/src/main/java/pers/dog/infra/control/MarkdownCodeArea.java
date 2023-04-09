@@ -201,18 +201,18 @@ public class MarkdownCodeArea extends CodeArea {
         }
     }
 
-    private static final String HEADING_PATTERN = "^#{1,6}[ \\t]+[ \\S\\t]*$";
-    private static final String BOLD_ITALIC_PATTERN = "(\\*\\*\\*.+\\*\\*\\*)|(___.+___)";
-    private static final String BOLD_PATTERN = "(\\*\\*.+\\*\\*)|(__.+__)";
-    private static final String ITALIC_PATTERN = "(\\*.+\\*)|(_.+_)";
-    private static final String REFERENCE_PATTERN = "^>{1,2}[ \\t]+[ \\S\\t]*$";
-    private static final String ORDERED_LIST_PATTERN = "\\s*\\d+\\.[ \\t]+[ \\S\\t]*$";
-    private static final String UNORDERED_LIST_PATTERN = "\\s*((\\-)|(\\+)|(\\*))[ \\t]+[ \\S\\t]*$";
-    private static final String CODE_PATTERN = "`[^\\n`]+`";
-    private static final String FENCED_CODE_PATTERN = "^```\\w+\\n[\\s\\S]*\\n```\\n$";
+    private final String HEADING_PATTERN = "^#{1,6}[ \\t]+[ \\S\\t]*$";
+    private final String BOLD_ITALIC_PATTERN = "(\\*\\*\\*.+\\*\\*\\*)|(___.+___)";
+    private final String BOLD_PATTERN = "(\\*\\*.+\\*\\*)|(__.+__)";
+    private final String ITALIC_PATTERN = "(\\*.+\\*)|(_.+_)";
+    private final String REFERENCE_PATTERN = "^>{1,2}[ \\t]+[ \\S\\t]*$";
+    private final String ORDERED_LIST_PATTERN = "\\s*\\d+\\.[ \\t]+[ \\S\\t]*$";
+    private final String UNORDERED_LIST_PATTERN = "\\s*((\\-)|(\\+)|(\\*))[ \\t]+[ \\S\\t]*$";
+    private final String CODE_PATTERN = "`[^\\n`]+`";
+    private final String FENCED_CODE_PATTERN = "^```\\w+\\n[\\s\\S]*\\n```\\n$";
 
 
-    private static final Pattern PATTERN = Pattern.compile(
+    private final Pattern PATTERN = Pattern.compile(
             "(?<HEADING>" + HEADING_PATTERN + ")"
                     + "|(?<BOLD0ITALIC>" + BOLD_ITALIC_PATTERN + ")"
                     + "|(?<BOLD>" + BOLD_PATTERN + ")"

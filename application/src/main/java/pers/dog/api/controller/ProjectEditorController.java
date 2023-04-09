@@ -48,8 +48,10 @@ public class ProjectEditorController implements Initializable {
     public void show(Project project) {
         setProjectProperty(project);
         setFileOperationHandler(project);
-        setText(project);
-        setChangeListener();
+        Platform.runLater(() -> {
+            setText(project);
+            setChangeListener();
+        });
     }
 
     private void setChangeListener() {
@@ -67,8 +69,7 @@ public class ProjectEditorController implements Initializable {
     private void setText(Project project) {
         String text = fileOperationHandler.read(project.getProjectName(), String.class);
         if (text != null) {
-            // FIXME: codeAre style scrambled
-            codeArea.replaceText(0, 0, text);
+            codeArea.appendText(text);
             localText = codeArea.getText();
         }
     }
