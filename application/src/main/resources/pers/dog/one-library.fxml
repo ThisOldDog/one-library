@@ -1,27 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.control.TreeView?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.input.KeyCodeCombination?>
+<?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.textfield.CustomTextField?>
 <?import pers.dog.api.callback.ProjectTreeCallback?>
 <?import pers.dog.infra.action.ActionGroup?>
 <?import pers.dog.infra.action.application.ExitAction?>
+<?import pers.dog.infra.action.project.CreateDirectoryAction?>
+<?import pers.dog.infra.action.project.CreateMarkdownAction?>
+<?import pers.dog.infra.action.project.SaveAllProjectAction?>
 <?import pers.dog.infra.action.project.SaveProjectAction?>
 <?import pers.dog.infra.control.ActionMenuBar?>
+<?import pers.dog.infra.control.ActionSeparator?>
+<?import java.lang.Boolean?>
 <BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="pers.dog.api.controller.OneLibraryController">
     <top>
         <ActionMenuBar maxWidth="Infinity">
             <ActionGroup text="%info.action.file">
+                <ActionGroup text="%info.action.create">
+                    <CreateMarkdownAction/>
+                    <CreateDirectoryAction/>
+                </ActionGroup>
+                <ActionSeparator fx:factory="getInstance"/>
+                <SaveProjectAction>
+                    <accelerator>
+                        <KeyCodeCombination code="S" shift="UP" control="DOWN" alt="UP" meta="UP" shortcut="UP"/>
+                    </accelerator>
+                    <disabled>
+                        <Boolean fx:value="true"/>
+                    </disabled>
+                </SaveProjectAction>
+                <SaveAllProjectAction>
+                    <accelerator>
+                        <KeyCodeCombination code="S" shift="DOWN" control="DOWN" alt="UP" meta="UP" shortcut="UP"/>
+                    </accelerator>
+                    <disabled>
+                        <Boolean fx:value="true"/>
+                    </disabled>
+                </SaveAllProjectAction>
+                <ActionSeparator fx:factory="getInstance"/>
                 <ExitAction fx:factory="getInstance"/>
-                <SaveProjectAction/>
             </ActionGroup>
         </ActionMenuBar>
     </top>

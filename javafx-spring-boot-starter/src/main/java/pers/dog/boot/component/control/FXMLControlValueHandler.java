@@ -1,12 +1,7 @@
 package pers.dog.boot.component.control;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javafx.fxml.FXML;
 import javafx.util.Pair;
@@ -37,6 +32,16 @@ public class FXMLControlValueHandler implements BeanPostProcessor {
     }
 
     private static void produce(Object bean, Field field, FXMLControl fxmlControl) {
+        if (ControlProvider.class.equals(field.getType())) {
+            try {
+                Object o = FieldUtils.readField(field, bean, true);
+                if (o == null) {
+                    FieldUtils.writeField(field, bean, new ControlProvider<>(), true);
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(String.format("Unable to set control value: %s#%s", bean.getClass(), field.getType()), e);
+            }
+        }
         FXML_CONTROL_CACHE.computeIfAbsent(fxmlControl.controller(), key -> new HashMap<>())
                 .computeIfAbsent(ObjectUtils.isEmpty(fxmlControl.id()) ? field.getName() : fxmlControl.id(), key -> new ArrayList<>())
                 .add(new Pair<>(bean, field));
@@ -48,11 +53,7 @@ public class FXMLControlValueHandler implements BeanPostProcessor {
             Field[] fields = controller.getClass().getFields();
             for (Field field : fields) {
                 if (field.isAnnotationPresent(FXML.class) && field.getName().equals(target.getName())) {
-                    try {
-                        FieldUtils.writeField(target, bean, FieldUtils.readField(field, controller, true), true);
-                    } catch (IllegalAccessException e) {
-                        throw new IllegalStateException("[FXMLControl] Unable set control " + field.getName() + " to bean " + bean.getClass(), e);
-                    }
+                    consumer(bean, target, controller, field);
                 }
             }
         }
@@ -75,13 +76,26 @@ public class FXMLControlValueHandler implements BeanPostProcessor {
                     continue;
                 }
                 for (Pair<Object, Field> bean : beans) {
-                    try {
-                        FieldUtils.writeField(bean.getValue(), bean.getKey(), FieldUtils.readField(field, controller, true), true);
-                    } catch (IllegalAccessException e) {
-                        throw new IllegalStateException("[FXMLControl] Unable set control " + field.getName() + " to bean " + bean.getKey().getClass(), e);
-                    }
+                    consumer(bean.getKey(), bean.getValue(), controller, field);
                 }
             }
+        }
+    }
+
+    private static void consumer(Object bean, Field beanField, Object controller, Field controllerField) {
+        try {
+            Object control = FieldUtils.readField(controllerField, controller, true);
+            if (ControlProvider.class.equals(beanField.getType())) {
+                ControlProvider<?> controlProvider = (ControlProvider<?>) FieldUtils.readField(beanField, bean, true);
+                if (controlProvider == null) {
+                    controlProvider = new ControlProvider<>();
+                }
+                controlProvider.set(control);
+            } else {
+                FieldUtils.writeField(beanField, bean, control, true);
+            }
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException("[FXMLControl] Unable set control " + controllerField.getName() + " to bean " + bean.getClass(), e);
         }
     }
 }

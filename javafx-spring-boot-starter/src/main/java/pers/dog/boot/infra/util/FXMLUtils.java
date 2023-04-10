@@ -1,26 +1,19 @@
 package pers.dog.boot.infra.util;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.*;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.JavaFXBuilderFactory;
 import javafx.fxml.LoadException;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.util.Builder;
 import javafx.util.BuilderFactory;
 import javafx.util.Callback;
+import javafx.util.Pair;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +76,77 @@ public class FXMLUtils {
         }
     }
 
+    public static class SpringBootBeanBuilder<T> extends AbstractMap<String, Object> implements Builder<T> {
+
+        public static final String SET_PREFIX = "set";
+        public static final String GET_PREFIX = "set";
+        public static final String IS_PREFIX = "set";
+        private final T value;
+        private final Class<?> type;
+        private final List<Pair<String, Method>> setter = new ArrayList<>();
+        private final List<Pair<String, Method>> getter = new ArrayList<>();
+
+        public SpringBootBeanBuilder(T value) {
+            this.value = value;
+            if (this.value != null) {
+                this.type = value.getClass();
+                Method[] methods = this.type.getMethods();
+                for (Method method : methods) {
+                    int modifiers = method.getModifiers();
+                    if (Modifier.isPublic(modifiers) && !Modifier.isStatic(modifiers)) {
+                        String name = method.getName();
+                        if (name.startsWith(SET_PREFIX) && method.getParameters().length == 1) {
+                            setter.add(new Pair<>(getMethodKey(SET_PREFIX, method), method));
+                        } else if (name.startsWith(GET_PREFIX) && method.getParameters().length == 0) {
+                            getter.add(new Pair<>(getMethodKey(GET_PREFIX, method), method));
+                        } else if (name.startsWith(IS_PREFIX) && method.getParameters().length == 0) {
+                            getter.add(new Pair<>(getMethodKey(IS_PREFIX, method), method));
+                        }
+                    }
+                }
+            } else {
+                this.type = null;
+            }
+        }
+
+        @Override
+        public Object put(String key, Object value) {
+            for (Pair<String, Method> method : setter) {
+                if (method.getKey().equals(key)) {
+                    try {
+                        method.getValue().invoke(this.value, value);
+                        return value;
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new RuntimeException(String.format("Unable set %s to type %s", key, type), e);
+                    }
+                }
+            }
+            throw new UnsupportedOperationException(String.format("Unable set %s to type %s, because no setter method found.", key, type));
+        }
+
+
+        private String getMethodKey(String prefix, Method method) {
+            String methodName = method.getName();
+            return Character.toLowerCase(methodName.charAt(prefix.length())) + ((prefix.length() + 1) >= methodName.length() ? "" : methodName.substring(prefix.length() + 1));
+        }
+
+        @Override
+        public T build() {
+            return value;
+        }
+
+        @Override
+        public Set<Entry<String, Object>> entrySet() {
+            return getter.stream().map(item -> {
+                try {
+                    return new SimpleEntry<>(item.getKey(), item.getValue().invoke(value, value));
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(String.format("Unable get %s from type %s", item.getKey(), type), e);
+                }
+            }).collect(Collectors.toSet());
+        }
+    }
+
     public static class JavaFXSpringBootBuilderFactory implements BuilderFactory {
         @Override
         public Builder<?> getBuilder(Class<?> type) {
@@ -98,7 +162,8 @@ public class FXMLUtils {
                 logger.error("[FXMLLoader] Load into multiple beans of the same type: {}", type);
                 return null;
             }
-            return (Builder<Object>) () -> beanMap.values().iterator().next();
+
+            return new SpringBootBeanBuilder<>(beanMap.values().iterator().next());
         }
     }
 

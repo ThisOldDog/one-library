@@ -1,7 +1,5 @@
 package pers.dog.api.callback;
 
-import static org.controlsfx.control.action.ActionUtils.ACTION_SEPARATOR;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
@@ -11,20 +9,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.DataFormat;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
 import org.apache.commons.lang3.BooleanUtils;
@@ -83,7 +70,7 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                 createMarkdownAction,
                 createDirectoryAction,
                 deleteProjectAction,
-                ACTION_SEPARATOR,
+                ActionUtils.ACTION_SEPARATOR,
                 openRenameProjectAction
         ));
     }
