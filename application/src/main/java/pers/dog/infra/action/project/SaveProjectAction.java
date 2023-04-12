@@ -1,8 +1,6 @@
 package pers.dog.infra.action.project;
 
-import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
-import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import org.controlsfx.control.action.Action;
 import org.springframework.stereotype.Component;

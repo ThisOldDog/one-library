@@ -1,11 +1,189 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.VBox?>
-<?import org.fxmisc.flowless.VirtualizedScrollPane?>
-<?import pers.dog.infra.control.MarkdownCodeArea?>
-<VBox xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.fxmisc.flowless.*?>
+<?import pers.dog.infra.control.*?>
+
+<?import org.controlsfx.glyphfont.Glyph?>
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea"
+      xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="pers.dog.api.controller.ProjectEditorController">
+
+    <ToolBar prefHeight="40.0" prefWidth="200.0">
+        <Button onAction="#quash">
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.quash"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="ROTATE_LEFT"/>
+            </graphic>
+        </Button>
+        <Button onAction="#redo">
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.redo"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="ROTATE_RIGHT"/>
+            </graphic>
+        </Button>
+        <Button onAction="#save">
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.save"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="SAVE"/>
+            </graphic>
+        </Button>
+        <Separator/>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.bold"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="BOLD"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.italic"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="ITALIC"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.strikethrough"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="STRIKETHROUGH"/>
+            </graphic>
+        </Button>
+        <Separator/>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.header"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="HEADER"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.block_quote"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="QUOTE_LEFT"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.unordered_list"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="LIST_UL"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.ordered_list"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="LIST_OL"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.table"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="TH"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.dividing_line"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="ARROWS_H"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.link"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="LINK"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.reference_link"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="LOCATION_ARROW"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.image"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="IMAGE"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.code_inline"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="CODE"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.code_block"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="FILE_CODE_ALT"/>
+            </graphic>
+        </Button>
+        <Separator/>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.search"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="SEARCH"/>
+            </graphic>
+        </Button>
+        <Separator/>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.only_editor"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="EDIT"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.only_preview"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="EYE"/>
+            </graphic>
+        </Button>
+        <Button>
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.editor_and_preview"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="COLUMNS"/>
+            </graphic>
+        </Button>
+    </ToolBar>
     <VirtualizedScrollPane VBox.vgrow="ALWAYS">
         <content>
             <MarkdownCodeArea fx:id="codeArea"/>

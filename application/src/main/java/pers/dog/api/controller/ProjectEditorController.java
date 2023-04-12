@@ -13,6 +13,7 @@ import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import org.fxmisc.richtext.CodeArea;
@@ -93,12 +94,6 @@ public class ProjectEditorController implements Initializable {
         fileOperationHandler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix(pathPrefix.toString()));
     }
 
-    public void save() {
-        String localText = codeArea.getText();
-        fileOperationHandler.write(projectProperty.get().getProjectName(), localText);
-        dirtyProperty().set(false);
-    }
-
     public boolean getDirty() {
         return dirty.get();
     }
@@ -109,5 +104,20 @@ public class ProjectEditorController implements Initializable {
 
     public Project getProject() {
         return projectProperty.get();
+    }
+
+    // ToolBar
+    public void quash(ActionEvent actionEvent) {
+        codeArea.undo();
+    }
+
+    public void redo(ActionEvent actionEvent) {
+        codeArea.redo();
+    }
+
+    public void save() {
+        String localText = codeArea.getText();
+        fileOperationHandler.write(projectProperty.get().getProjectName(), localText);
+        dirtyProperty().set(false);
     }
 }
