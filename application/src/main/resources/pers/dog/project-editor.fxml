@@ -184,9 +184,12 @@
             </graphic>
         </Button>
     </ToolBar>
-    <VirtualizedScrollPane VBox.vgrow="ALWAYS">
-        <content>
-            <MarkdownCodeArea fx:id="codeArea"/>
-        </content>
-    </VirtualizedScrollPane>
+    <SplitPane VBox.vgrow="ALWAYS" dividerPositions="0.5">
+        <VirtualizedScrollPane>
+            <content>
+                <MarkdownCodeArea fx:id="codeArea"/>
+            </content>
+        </VirtualizedScrollPane>
+        <MarkdownPreviewArea fx:id="previewArea"/>
+    </SplitPane>
 </VBox>

@@ -2,7 +2,6 @@ package pers.dog.api.controller;
 
 import java.net.URL;
 import java.util.ArrayDeque;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -10,31 +9,33 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import org.fxmisc.richtext.CodeArea;
-import org.fxmisc.richtext.LineNumberFactory;
-import org.fxmisc.richtext.model.Paragraph;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
 import pers.dog.domain.entity.Project;
 import pers.dog.domain.repository.ProjectRepository;
 import pers.dog.infra.control.MarkdownCodeArea;
+import pers.dog.infra.control.MarkdownPreviewArea;
 
 /**
  * @author 废柴 2023/3/23 23:06
  */
 public class ProjectEditorController implements Initializable {
+
     private final ObjectProperty<Project> projectProperty = new SimpleObjectProperty<>();
     private final ProjectRepository projectRepository;
     private final ObjectProperty<Boolean> dirty = new SimpleObjectProperty<>(false);
+
     @FXML
     public MarkdownCodeArea codeArea;
+    @FXML
+    public MarkdownPreviewArea previewArea;
     private FileOperationHandler fileOperationHandler;
     private String localText;
 
@@ -50,9 +51,14 @@ public class ProjectEditorController implements Initializable {
         setProjectProperty(project);
         setFileOperationHandler(project);
         Platform.runLater(() -> {
+            bindPreview();
             setText(project);
             setChangeListener();
         });
+    }
+
+    private void bindPreview() {
+        Bindings.bindContent(codeArea.getParagraphs(), previewArea.getRowContent());
     }
 
     private void setChangeListener() {
