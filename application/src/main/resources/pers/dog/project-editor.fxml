@@ -6,6 +6,7 @@
 <?import pers.dog.infra.control.*?>
 
 <?import org.controlsfx.glyphfont.Glyph?>
+<?import javafx.scene.web.WebView?>
 <VBox xmlns="http://javafx.com/javafx/17.0.2-ea"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="pers.dog.api.controller.ProjectEditorController">
@@ -190,6 +191,6 @@
                 <MarkdownCodeArea fx:id="codeArea"/>
             </content>
         </VirtualizedScrollPane>
-        <MarkdownPreviewArea fx:id="previewArea"/>
+        <WebView fx:id="previewArea"/>
     </SplitPane>
 </VBox>

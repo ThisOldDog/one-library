@@ -5,23 +5,27 @@ import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.data.MutableDataSet;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
 import pers.dog.domain.entity.Project;
 import pers.dog.domain.repository.ProjectRepository;
 import pers.dog.infra.control.MarkdownCodeArea;
-import pers.dog.infra.control.MarkdownPreviewArea;
 
 /**
  * @author 废柴 2023/3/23 23:06
@@ -31,13 +35,19 @@ public class ProjectEditorController implements Initializable {
     private final ObjectProperty<Project> projectProperty = new SimpleObjectProperty<>();
     private final ProjectRepository projectRepository;
     private final ObjectProperty<Boolean> dirty = new SimpleObjectProperty<>(false);
+    private final AtomicBoolean loaded = new AtomicBoolean(false);
+    private final MutableDataSet markdownParserOptions = new MutableDataSet();
+    private final Parser parser = Parser.builder(markdownParserOptions).build();
+    private final HtmlRenderer renderer = HtmlRenderer.builder(markdownParserOptions).build();
 
     @FXML
     public MarkdownCodeArea codeArea;
     @FXML
-    public MarkdownPreviewArea previewArea;
+    public WebView previewArea;
+
     private FileOperationHandler fileOperationHandler;
     private String localText;
+    private WebEngine engine;
 
     public ProjectEditorController(ProjectRepository projectRepository) {
         this.projectRepository = projectRepository;
@@ -45,28 +55,30 @@ public class ProjectEditorController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        this.engine = previewArea.getEngine();
     }
 
     public void show(Project project) {
         setProjectProperty(project);
         setFileOperationHandler(project);
         Platform.runLater(() -> {
-            bindPreview();
-            setText(project);
             setChangeListener();
+            setText(project);
+            loaded.set(true);
         });
-    }
-
-    private void bindPreview() {
-        Bindings.bindContent(codeArea.getParagraphs(), previewArea.getRowContent());
     }
 
     private void setChangeListener() {
         codeArea.textProperty().addListener((change, oldValue, newValue) -> {
-            if (!dirty.get()) {
+            if (loaded.get() && !dirty.get()) {
                 dirty.setValue(!Objects.equals(newValue, localText));
             }
+            engine.loadContent(toHtml(newValue));
         });
+    }
+
+    private String toHtml(String markdownContent) {
+        return renderer.render(parser.parse(markdownContent));
     }
 
     private void setProjectProperty(Project project) {

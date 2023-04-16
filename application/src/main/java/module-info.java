@@ -1,7 +1,9 @@
 module pers.dog {
     requires java.sql;
+
     requires javafx.controls;
     requires javafx.fxml;
+    requires javafx.web;
 
     requires cglib;
     requires java.persistence;
@@ -25,6 +27,8 @@ module pers.dog {
     requires org.fxmisc.richtext;
     requires org.fxmisc.flowless;
     requires reactfx;
+    requires flexmark;
+    requires flexmark.util.data;
 
     // resource
     opens pers.dog;
