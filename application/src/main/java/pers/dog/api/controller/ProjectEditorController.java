@@ -1,10 +1,7 @@
 package pers.dog.api.controller;
 
 import java.net.URL;
-import java.util.ArrayDeque;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -15,14 +12,17 @@ import com.vladsch.flexmark.util.data.MutableDataSet;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.util.Duration;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
+import pers.dog.boot.infra.util.PlatformUtils;
 import pers.dog.domain.entity.Project;
 import pers.dog.domain.repository.ProjectRepository;
 import pers.dog.infra.control.MarkdownCodeArea;
@@ -73,8 +73,14 @@ public class ProjectEditorController implements Initializable {
             if (loaded.get() && !dirty.get()) {
                 dirty.setValue(!Objects.equals(newValue, localText));
             }
-            engine.loadContent(toHtml(newValue));
+            refreshPreview(newValue);
         });
+    }
+
+    private void refreshPreview(String newValue) {
+        PlatformUtils.runLater("RefreshPreview", Duration.seconds(1), () ->
+                engine.loadContent(toHtml(newValue))
+        );
     }
 
     private String toHtml(String markdownContent) {
