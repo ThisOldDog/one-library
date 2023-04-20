@@ -29,6 +29,8 @@ module pers.dog {
     requires reactfx;
     requires flexmark;
     requires flexmark.util.data;
+    requires flexmark.util.misc;
+    requires flexmark.profile.pegdown;
 
     // resource
     opens pers.dog;

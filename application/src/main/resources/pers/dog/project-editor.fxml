@@ -28,7 +28,7 @@
                 <Glyph fontFamily="FontAwesome" icon="ROTATE_RIGHT"/>
             </graphic>
         </Button>
-        <Button onAction="#save">
+        <Button fx:id="saveButton" onAction="#save">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.save"/>
             </tooltip>
@@ -37,7 +37,7 @@
             </graphic>
         </Button>
         <Separator/>
-        <Button>
+        <Button onAction="#bold">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.bold"/>
             </tooltip>
@@ -45,7 +45,7 @@
                 <Glyph fontFamily="FontAwesome" icon="BOLD"/>
             </graphic>
         </Button>
-        <Button>
+        <Button onAction="#italic">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.italic"/>
             </tooltip>
@@ -53,7 +53,7 @@
                 <Glyph fontFamily="FontAwesome" icon="ITALIC"/>
             </graphic>
         </Button>
-        <Button>
+        <Button onAction="#strikethrough">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.strikethrough"/>
             </tooltip>
@@ -62,7 +62,7 @@
             </graphic>
         </Button>
         <Separator/>
-        <Button>
+        <Button onAction="#header">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.header"/>
             </tooltip>
