@@ -16,6 +16,7 @@ module javafx.spring.boot.starter {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
     requires com.h2database;
+    requires org.controlsfx.controls;
 
     exports pers.dog.boot;
     exports pers.dog.boot.autoconfiguration;
@@ -26,6 +27,7 @@ module javafx.spring.boot.starter {
     exports pers.dog.boot.component.file;
     exports pers.dog.boot.context;
     exports pers.dog.boot.context.property;
+    exports pers.dog.boot.infra.dialog;
     exports pers.dog.boot.infra.constant;
     exports pers.dog.boot.infra.i18n;
     exports pers.dog.boot.infra.util;

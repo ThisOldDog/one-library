@@ -53,6 +53,11 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>org.controlsfx</groupId>
+            <artifactId>controlsfx</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>

@@ -28,10 +28,12 @@ import javafx.util.Duration;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
+import pers.dog.boot.infra.dialog.PropertySheetDialog;
 import pers.dog.boot.infra.util.PlatformUtils;
 import pers.dog.domain.entity.Project;
 import pers.dog.domain.repository.ProjectRepository;
 import pers.dog.infra.control.MarkdownCodeArea;
+import pers.dog.infra.property.HeaderProperty;
 
 /**
  * @author 废柴 2023/3/23 23:06
@@ -190,6 +192,10 @@ public class ProjectEditorController implements Initializable {
     }
 
     public void header(ActionEvent actionEvent) {
-
+        new PropertySheetDialog<>(new HeaderProperty())
+                .showAndWait()
+                .ifPresent(headerProperty -> {
+                    System.out.println(headerProperty.getLevel());
+                });
     }
 }
