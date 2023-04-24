@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Tooltip?>
+<?import org.controlsfx.glyphfont.Glyph?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pers.dog.api.controller.FileInternalSearchController"
+      prefHeight="400.0" prefWidth="600.0">
+    <HBox>
+        <TextArea fx:id="searchTextArea"  prefHeight="40.0" maxWidth="1200"/>
+        <ToolBar prefHeight="40.0" prefWidth="200.0">
+            <Button onAction="#search" focusTraversable="false">
+                <tooltip>
+                    <Tooltip text="%info.editor.toolbar.search"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="SEARCH"/>
+                </graphic>
+            </Button>
+            <Button onAction="#previousOccurrence" focusTraversable="false">
+                <tooltip>
+                    <Tooltip text="%info.editor.toolbar.previous_occurrence"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="ARROW_UP"/>
+                </graphic>
+            </Button>
+            <Button onAction="#nextOccurrence" focusTraversable="false">
+                <tooltip>
+                    <Tooltip text="%info.editor.toolbar.next_occurrence"/>
+                </tooltip>
+                <graphic>
+                    <Glyph fontFamily="FontAwesome" icon="ARROW_DOWN"/>
+                </graphic>
+            </Button>
+        </ToolBar>
+    </HBox>
+</VBox>

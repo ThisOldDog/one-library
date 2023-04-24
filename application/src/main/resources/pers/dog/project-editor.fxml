@@ -177,6 +177,7 @@
             </graphic>
         </Button>
     </ToolBar>
+    <VBox fx:id="searchWorkspace"/>
     <SplitPane fx:id="projectEditorWorkspace" VBox.vgrow="ALWAYS" dividerPositions="0.5">
         <VirtualizedScrollPane fx:id="codeAreaWorkspace">
             <content>

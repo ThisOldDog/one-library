@@ -11,7 +11,7 @@ public class HeaderProperty {
         H4(4),
         H5(5),
         H6(6);
-        private int level;
+        private final int level;
 
         Level(int level) {
             this.level = level;

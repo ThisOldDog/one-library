@@ -21,6 +21,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.IndexRange;
 import javafx.scene.control.SplitPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
@@ -43,6 +44,8 @@ import pers.dog.infra.property.TableProperty;
  * @author 废柴 2023/3/23 23:06
  */
 public class ProjectEditorController implements Initializable {
+    private static final String FILE_INTERNAL_SEARCH_FXML = "file-internal-search";
+    private static final String FILE_INTERNAL_REPLACE_FXML = "file-internal-replace";
     private static final String STYLE_CLASS_BUTTON_SAVE_DIRTY = "button-save-dirty";
     private final ObjectProperty<Project> projectProperty = new SimpleObjectProperty<>();
     private final ProjectRepository projectRepository;
@@ -54,6 +57,8 @@ public class ProjectEditorController implements Initializable {
 
     @FXML
     public SplitPane projectEditorWorkspace;
+    @FXML
+    public VBox searchWorkspace;
     @FXML
     public VirtualizedScrollPane<MarkdownCodeArea> codeAreaWorkspace;
     @FXML
