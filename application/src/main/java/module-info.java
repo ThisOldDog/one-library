@@ -46,6 +46,7 @@ module pers.dog {
     opens pers.dog.infra.action.project;
     opens pers.dog.infra.constant;
     opens pers.dog.infra.control;
+    opens pers.dog.infra.property;
     opens pers.dog.infra.listener;
     opens pers.dog.infra.resource;
     opens pers.dog.infra.status;

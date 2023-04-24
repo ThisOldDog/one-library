@@ -12,7 +12,7 @@
       fx:controller="pers.dog.api.controller.ProjectEditorController">
 
     <ToolBar prefHeight="40.0" prefWidth="200.0">
-        <Button onAction="#quash">
+        <Button onAction="#quash" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.quash"/>
             </tooltip>
@@ -20,7 +20,7 @@
                 <Glyph fontFamily="FontAwesome" icon="ROTATE_LEFT"/>
             </graphic>
         </Button>
-        <Button onAction="#redo">
+        <Button onAction="#redo" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.redo"/>
             </tooltip>
@@ -28,7 +28,7 @@
                 <Glyph fontFamily="FontAwesome" icon="ROTATE_RIGHT"/>
             </graphic>
         </Button>
-        <Button fx:id="saveButton" onAction="#save">
+        <Button fx:id="saveButton" onAction="#save" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.save"/>
             </tooltip>
@@ -37,7 +37,7 @@
             </graphic>
         </Button>
         <Separator/>
-        <Button onAction="#bold">
+        <Button onAction="#bold" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.bold"/>
             </tooltip>
@@ -45,7 +45,7 @@
                 <Glyph fontFamily="FontAwesome" icon="BOLD"/>
             </graphic>
         </Button>
-        <Button onAction="#italic">
+        <Button onAction="#italic" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.italic"/>
             </tooltip>
@@ -53,7 +53,7 @@
                 <Glyph fontFamily="FontAwesome" icon="ITALIC"/>
             </graphic>
         </Button>
-        <Button onAction="#strikethrough">
+        <Button onAction="#strikethrough" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.strikethrough"/>
             </tooltip>
@@ -62,7 +62,7 @@
             </graphic>
         </Button>
         <Separator/>
-        <Button onAction="#header">
+        <Button onAction="#header" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.header"/>
             </tooltip>
@@ -70,7 +70,7 @@
                 <Glyph fontFamily="FontAwesome" icon="HEADER"/>
             </graphic>
         </Button>
-        <Button>
+        <Button onAction="#blockQuote" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.block_quote"/>
             </tooltip>
@@ -78,7 +78,7 @@
                 <Glyph fontFamily="FontAwesome" icon="QUOTE_LEFT"/>
             </graphic>
         </Button>
-        <Button>
+        <Button onAction="#unorderedList" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.unordered_list"/>
             </tooltip>
@@ -86,7 +86,7 @@
                 <Glyph fontFamily="FontAwesome" icon="LIST_UL"/>
             </graphic>
         </Button>
-        <Button>
+        <Button onAction="#orderedList" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.ordered_list"/>
             </tooltip>
@@ -94,7 +94,7 @@
                 <Glyph fontFamily="FontAwesome" icon="LIST_OL"/>
             </graphic>
         </Button>
-        <Button>
+        <Button onAction="#table" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.table"/>
             </tooltip>
@@ -102,7 +102,7 @@
                 <Glyph fontFamily="FontAwesome" icon="TH"/>
             </graphic>
         </Button>
-        <Button>
+        <Button onAction="#dividingLine" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.dividing_line"/>
             </tooltip>
@@ -110,7 +110,7 @@
                 <Glyph fontFamily="FontAwesome" icon="ARROWS_H"/>
             </graphic>
         </Button>
-        <Button>
+        <Button onAction="#link" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.link"/>
             </tooltip>
@@ -118,15 +118,7 @@
                 <Glyph fontFamily="FontAwesome" icon="LINK"/>
             </graphic>
         </Button>
-        <Button>
-            <tooltip>
-                <Tooltip text="%info.editor.toolbar.reference_link"/>
-            </tooltip>
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="LOCATION_ARROW"/>
-            </graphic>
-        </Button>
-        <Button>
+        <Button onAction="#image" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.image"/>
             </tooltip>
@@ -134,7 +126,7 @@
                 <Glyph fontFamily="FontAwesome" icon="IMAGE"/>
             </graphic>
         </Button>
-        <Button>
+        <Button onAction="#codeInline" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.code_inline"/>
             </tooltip>
@@ -142,7 +134,7 @@
                 <Glyph fontFamily="FontAwesome" icon="CODE"/>
             </graphic>
         </Button>
-        <Button>
+        <Button onAction="#codeBlock" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.code_block"/>
             </tooltip>
@@ -151,7 +143,7 @@
             </graphic>
         </Button>
         <Separator/>
-        <Button>
+        <Button onAction="#search" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.search"/>
             </tooltip>
@@ -160,7 +152,7 @@
             </graphic>
         </Button>
         <Separator/>
-        <Button>
+        <Button fx:id="onlyEditorButton" onAction="#onlyEditor" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.only_editor"/>
             </tooltip>
@@ -168,7 +160,7 @@
                 <Glyph fontFamily="FontAwesome" icon="EDIT"/>
             </graphic>
         </Button>
-        <Button>
+        <Button fx:id="onlyPreviewButton" onAction="#onlyPreview" focusTraversable="false">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.only_preview"/>
             </tooltip>
@@ -176,7 +168,7 @@
                 <Glyph fontFamily="FontAwesome" icon="EYE"/>
             </graphic>
         </Button>
-        <Button>
+        <Button fx:id="editorAndPreviewButton" onAction="#editorAndPreview" focusTraversable="false" disable="true">
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.editor_and_preview"/>
             </tooltip>
@@ -185,8 +177,8 @@
             </graphic>
         </Button>
     </ToolBar>
-    <SplitPane VBox.vgrow="ALWAYS" dividerPositions="0.5">
-        <VirtualizedScrollPane>
+    <SplitPane fx:id="projectEditorWorkspace" VBox.vgrow="ALWAYS" dividerPositions="0.5">
+        <VirtualizedScrollPane fx:id="codeAreaWorkspace">
             <content>
                 <MarkdownCodeArea fx:id="codeArea"/>
             </content>

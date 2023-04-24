@@ -1,4 +1,6 @@
 module javafx.spring.boot.starter {
+    requires java.desktop;
+
     requires javafx.controls;
     requires javafx.fxml;
 
@@ -44,4 +46,5 @@ module javafx.spring.boot.starter {
     opens pers.dog.boot.infra.constant;
     opens pers.dog.boot.infra.i18n;
     opens pers.dog.boot.infra.util;
+    opens pers.dog.boot.infra.dialog;
 }
