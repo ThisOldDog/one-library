@@ -26,6 +26,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
 import org.apache.commons.lang3.BooleanUtils;
+import org.controlsfx.control.action.Action;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationHandler;
@@ -34,6 +35,7 @@ import pers.dog.boot.infra.dialog.PropertySheetDialog;
 import pers.dog.boot.infra.util.PlatformUtils;
 import pers.dog.domain.entity.Project;
 import pers.dog.domain.repository.ProjectRepository;
+import pers.dog.infra.control.FileInternalSearch;
 import pers.dog.infra.control.MarkdownCodeArea;
 import pers.dog.infra.property.HeaderProperty;
 import pers.dog.infra.property.ImageProperty;
@@ -44,8 +46,6 @@ import pers.dog.infra.property.TableProperty;
  * @author 废柴 2023/3/23 23:06
  */
 public class ProjectEditorController implements Initializable {
-    private static final String FILE_INTERNAL_SEARCH_FXML = "file-internal-search";
-    private static final String FILE_INTERNAL_REPLACE_FXML = "file-internal-replace";
     private static final String STYLE_CLASS_BUTTON_SAVE_DIRTY = "button-save-dirty";
     private final ObjectProperty<Project> projectProperty = new SimpleObjectProperty<>();
     private final ProjectRepository projectRepository;
@@ -77,6 +77,7 @@ public class ProjectEditorController implements Initializable {
     private FileOperationHandler fileOperationHandler;
     private String localText;
     private WebEngine engine;
+    private FileInternalSearch fileInternalSearch;
 
     public ProjectEditorController(ProjectRepository projectRepository) {
         this.projectRepository = projectRepository;
@@ -85,6 +86,16 @@ public class ProjectEditorController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         this.engine = previewArea.getEngine();
+        this.fileInternalSearch = new FileInternalSearch();
+        this.fileInternalSearch.setSearchAction(new Action(actionEvent -> {
+            codeArea.search(this.fileInternalSearch.getSearchText());
+        }));
+        this.fileInternalSearch.setPreviousOccurrenceAction(new Action(actionEvent -> {
+
+        }));
+        this.fileInternalSearch.setNextOccurrenceAction(new Action(actionEvent -> {
+
+        }));
     }
 
     public void show(Project project) {
@@ -346,6 +357,7 @@ public class ProjectEditorController implements Initializable {
     }
 
     public void search() {
+        ObservableList<Node> children = searchWorkspace.getChildren();
 
     }
 

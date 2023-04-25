@@ -13,7 +13,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javafx.application.Platform;
+import javafx.beans.value.ObservableListValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.scene.control.IndexRange;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.EditableStyledDocument;
@@ -211,6 +216,8 @@ public class MarkdownCodeArea extends CodeArea {
     private final String CODE_PATTERN = "`[^\\n`]+`";
     private final String FENCED_CODE_PATTERN = "^```\\w+\\n[\\s\\S]*\\n```\\n$";
 
+    private static final String RESULT_CANDIDATE_STYLE = "-rtfx-background-color: cyan;";
+    private final ObservableList<IndexRange> resultIndexRange = FXCollections.observableArrayList();
 
     private final Pattern PATTERN = Pattern.compile(
             "(?<HEADING>" + HEADING_PATTERN + ")"
@@ -249,6 +256,20 @@ public class MarkdownCodeArea extends CodeArea {
     }
 
     private void init(MarkdownCodeArea codeArea) {
+        resultIndexRange.addListener((ListChangeListener<? super IndexRange>) change -> {
+            while (change.next()) {
+                if (change.wasAdded()) {
+                    for (IndexRange indexRange : change.getAddedSubList()) {
+                        setStyle(indexRange.getStart(), indexRange.getEnd(), Collections.singleton(RESULT_CANDIDATE_STYLE));
+                    }
+                }
+                if (change.wasRemoved()) {
+                    for (IndexRange indexRange : change.getRemoved()) {
+                        clearStyle(indexRange.getStart(), indexRange.getEnd());
+                    }
+                }
+            }
+        });
         // 括号高亮
         new BracketHighlighter(codeArea);
         // 行号
@@ -273,7 +294,7 @@ public class MarkdownCodeArea extends CodeArea {
 
     private Task<StyleSpans<Collection<String>>> computeHighlightingAsync() {
         String text = this.getText();
-        Task<StyleSpans<Collection<String>>> task = new Task<StyleSpans<Collection<String>>>() {
+        Task<StyleSpans<Collection<String>>> task = new Task<>() {
             @Override
             protected StyleSpans<Collection<String>> call() throws Exception {
                 return computeHighlighting(text);
@@ -329,5 +350,31 @@ public class MarkdownCodeArea extends CodeArea {
         }
         spansBuilder.add(Collections.emptyList(), text.length() - lastKwEnd);
         return spansBuilder.create();
+    }
+
+    public void search(String searchText) {
+        Platform.runLater(() -> {
+            resultIndexRange.clear();
+            char[] textArray = getText().toCharArray();
+            char[] searchArray = searchText.toCharArray();
+            int start = -1;
+            int offset = 0;
+            for (int i = 0; i < textArray.length; i++) {
+                if (textArray[i] == searchArray[offset]) {
+                    if (start == -1) {
+                        start = i;
+                    }
+                    offset++;
+                } else {
+                    start = -1;
+                    offset = 0;
+                }
+                if (offset == searchArray.length) {
+                    resultIndexRange.add(new IndexRange(start, i));
+                    start = -1;
+                    offset = 0;
+                }
+            }
+        });
     }
 }
