@@ -26,4 +26,7 @@ public interface ProjectService {
     void openEditProject();
 
     void deleteProject();
+
+    void openFile();
+    void openFile(Project project);
 }

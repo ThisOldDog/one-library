@@ -1,53 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.control.ToolBar?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Tooltip?>
-<?import org.controlsfx.glyphfont.Glyph?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.HBox?>
+<?import org.controlsfx.glyphfont.Glyph?>
 <HBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="pers.dog.api.controller.FileInternalSearchController"
-      prefHeight="400.0" prefWidth="600.0">
-    <TextArea fx:id="searchTextArea"/>
-    <ToolBar prefHeight="40.0" prefWidth="200.0">
-        <Button onAction="#search" focusTraversable="false">
-            <tooltip>
-                <Tooltip text="%info.editor.toolbar.search"/>
-            </tooltip>
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="SEARCH"/>
-            </graphic>
-        </Button>
-        <Button onAction="#previousOccurrence" focusTraversable="false">
-            <tooltip>
-                <Tooltip text="%info.editor.toolbar.previous_occurrence"/>
-            </tooltip>
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="SEARCH"/>
-            </graphic>
-        </Button>
-        <Button onAction="#nextOccurrence" focusTraversable="false">
-            <tooltip>
-                <Tooltip text="%info.editor.toolbar.next_occurrence"/>
-            </tooltip>
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="SEARCH"/>
-            </graphic>
-        </Button>
+      minHeight="32" maxHeight="32" alignment="CENTER_LEFT">
+    <padding>
+        <Insets top="4" bottom="4" left="4" right="4"/>
+    </padding>
+    <TextField fx:id="searchTextField" minWidth="120" maxWidth="120"/>
+    <Button onAction="#search" focusTraversable="false">
+        <tooltip>
+            <Tooltip text="%info.editor.toolbar.search"/>
+        </tooltip>
+        <graphic>
+            <Glyph fontFamily="FontAwesome" icon="SEARCH"/>
+        </graphic>
+    </Button>
+    <Button onAction="#previousOccurrence" focusTraversable="false">
+        <tooltip>
+            <Tooltip text="%info.editor.toolbar.previous_occurrence"/>
+        </tooltip>
+        <graphic>
+            <Glyph fontFamily="FontAwesome" icon="SEARCH"/>
+        </graphic>
+    </Button>
+    <Button onAction="#nextOccurrence" focusTraversable="false">
+        <tooltip>
+            <Tooltip text="%info.editor.toolbar.next_occurrence"/>
+        </tooltip>
+        <graphic>
+            <Glyph fontFamily="FontAwesome" icon="SEARCH"/>
+        </graphic>
+    </Button>
 
-        <Separator>
-            <padding>
-                <Insets top="2" bottom="2" left="8" right="6"/>
-            </padding>
-        </Separator>
-        <TextField fx:id="currentIndex" disable="true"/>
-        <Label text="/"/>
-    </ToolBar>
-
+    <Separator orientation="VERTICAL">
+        <padding>
+            <Insets top="2" bottom="2" left="8" right="8"/>
+        </padding>
+    </Separator>
+    <TextField fx:id="currentIndex" minWidth="16" prefWidth="16" alignment="CENTER" disable="true"/>
+    <Label fx:id="sumText" text=" / "/>
 </HBox>

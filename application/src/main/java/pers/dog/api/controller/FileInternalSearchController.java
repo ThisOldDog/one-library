@@ -1,18 +1,27 @@
 package pers.dog.api.controller;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
+import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.TextArea;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.text.Text;
 import org.controlsfx.control.action.Action;
 
-public class FileInternalSearchController {
+public class FileInternalSearchController implements Initializable {
     @FXML
-    public TextArea searchTextArea;
+    public TextField searchTextField;
     @FXML
     public TextField currentIndex;
+    @FXML
+    public Label sumText;
     private final ObjectProperty<Action> searchAction;
     private final ObjectProperty<Action> previousOccurrenceAction;
     private final ObjectProperty<Action> nextOccurrenceAction;
@@ -23,6 +32,16 @@ public class FileInternalSearchController {
         this.nextOccurrenceAction = new SimpleObjectProperty<>();
     }
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        currentIndex.textProperty().addListener(change ->
+            Platform.runLater(() -> {
+                Text text = new Text(currentIndex.getText());
+                text.setWrappingWidth(0);
+                currentIndex.setPrefWidth(text.getBoundsInLocal().getWidth() + 16);
+            })
+        );
+    }
 
     public void search(ActionEvent actionEvent) {
         searchAction.get().handle(actionEvent);
@@ -36,12 +55,12 @@ public class FileInternalSearchController {
         nextOccurrenceAction.get().handle(actionEvent);
     }
 
-    public TextArea getSearchTextArea() {
-        return searchTextArea;
+    public TextField getSearchTextField() {
+        return searchTextField;
     }
 
-    public void setSearchTextArea(TextArea searchTextArea) {
-        this.searchTextArea = searchTextArea;
+    public void setSearchTextField(TextField searchTextField) {
+        this.searchTextField = searchTextField;
     }
 
     public ObjectProperty<Action> searchActionProperty() {

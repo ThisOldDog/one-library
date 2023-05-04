@@ -358,7 +358,9 @@ public class ProjectEditorController implements Initializable {
 
     public void search() {
         ObservableList<Node> children = searchWorkspace.getChildren();
-
+        if (children.isEmpty()) {
+            children.add(fileInternalSearch);
+        }
     }
 
     public void onlyEditor() {

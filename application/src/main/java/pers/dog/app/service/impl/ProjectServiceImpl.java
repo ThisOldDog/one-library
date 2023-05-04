@@ -18,11 +18,7 @@ import java.util.stream.Collectors;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
@@ -32,12 +28,14 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import pers.dog.api.controller.OneLibraryController;
+import pers.dog.api.controller.ProjectEditorController;
 import pers.dog.app.service.ProjectService;
 import pers.dog.boot.component.control.FXMLControl;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
+import pers.dog.boot.infra.util.FXMLUtils;
 import pers.dog.domain.entity.Project;
 import pers.dog.domain.repository.ProjectRepository;
 import pers.dog.infra.constant.FileType;
@@ -48,6 +46,7 @@ import pers.dog.infra.constant.ProjectType;
  */
 @Service
 public class ProjectServiceImpl implements ProjectService {
+    private static final String PROJECT_EDITOR_FXML = "project-editor";
     private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
     private static final TreeItem<Project> ROOT = new TreeItem<>(new Project().setProjectName("ROOT").setProjectType(ProjectType.DIRECTORY));
     private final ProjectRepository projectRepository;
@@ -55,6 +54,8 @@ public class ProjectServiceImpl implements ProjectService {
     @SuppressWarnings("unused")
     @FXMLControl(controller = OneLibraryController.class)
     private TreeView<Project> projectTree;
+    @FXMLControl(controller = OneLibraryController.class)
+    private TabPane projectEditorWorkspace;
 
     public ProjectServiceImpl(ProjectRepository projectRepository) {
         this.projectRepository = projectRepository;
@@ -282,6 +283,56 @@ public class ProjectServiceImpl implements ProjectService {
         });
     }
 
+    @Override
+    public void openFile() {
+        Project item = currentProject();
+        if (item == null) {
+            return;
+        }
+        openFile(item);
+    }
+
+    @Override
+    public void openFile(Project project) {
+        ObservableList<Tab> tabs = projectEditorWorkspace.getTabs();
+        for (Tab tab : tabs) {
+            if (Objects.equals(((ProjectEditorController) tab.getUserData()).getProject(), project)) {
+                projectEditorWorkspace.getSelectionModel().select(tab);
+                return;
+            }
+        }
+        Parent projectEditor = FXMLUtils.loadFXML(PROJECT_EDITOR_FXML);
+        ProjectEditorController projectEditorController = FXMLUtils.getController(projectEditor);
+        projectEditorController.initialize(null, null);
+        Tab tab = new Tab(project.getSimpleProjectName(), projectEditor);
+        tab.setUserData(projectEditorController);
+        tab.setId(String.valueOf(project.getProjectId()));
+        projectEditorController.dirtyProperty().addListener((change, oldValue, newValue) -> {
+            if (Boolean.TRUE.equals(newValue)) {
+                tab.setText("* " + project.getSimpleProjectName());
+            } else {
+                tab.setText(project.getSimpleProjectName());
+            }
+        });
+        tab.setOnCloseRequest(tabCloseEvent -> {
+            if (projectEditorController.getDirty()) {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle(I18nMessageSource.getResource("confirmation"));
+                alert.setHeaderText(I18nMessageSource.getResource("confirmation.project.close.dirty"));
+                alert.setContentText(I18nMessageSource.getResource("confirmation.project.close.prompt"));
+                alert.showAndWait()
+                        .ifPresent(buttonType -> {
+                            if (ButtonType.CANCEL.equals(buttonType)) {
+                                tabCloseEvent.consume();
+                            }
+                        });
+            }
+        });
+        projectEditorController.show(project);
+        tabs.add(tab);
+        projectEditorWorkspace.getSelectionModel().select(tab);
+    }
+
     private TreeItem<Project> currentParentDirectory() {
         TreeItem<Project> parentNode = projectTree.getSelectionModel().getSelectedItem();
         if (parentNode == null || parentNode.getValue() == null) {
@@ -293,6 +344,14 @@ public class ProjectServiceImpl implements ProjectService {
         } else {
             return parentNode.getParent();
         }
+    }
+
+    private Project currentProject() {
+        TreeItem<Project> selectedItem = projectTree.getSelectionModel().getSelectedItem();
+        if (selectedItem == null || selectedItem.getValue() == null) {
+            return null;
+        }
+        return selectedItem.getValue();
     }
 
     private TreeItem<Project> currentParent() {

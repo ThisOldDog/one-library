@@ -13,6 +13,7 @@ import pers.dog.boot.component.cache.status.StatusStore;
 public class StageStatusStore implements StatusStore<Stage, StageStatusStore.StageStatus> {
 
     public static class StageStatus {
+
         private boolean maximized;
         private double height;
         private double width;
@@ -65,6 +66,8 @@ public class StageStatusStore implements StatusStore<Stage, StageStatusStore.Sta
         }
     }
 
+
+
     @Override
     public StageStatus storeStatus(Stage stage) {
         StageStatus stageStatus = new StageStatus()
@@ -88,6 +91,8 @@ public class StageStatusStore implements StatusStore<Stage, StageStatusStore.Sta
         stage.setX(stageStatus.getX());
         stage.setY(stageStatus.getY());
     }
+
+
 
     @Override
     public int getOrder() {

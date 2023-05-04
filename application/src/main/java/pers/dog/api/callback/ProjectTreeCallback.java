@@ -42,7 +42,6 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
     private static final Logger logger = LoggerFactory.getLogger(ProjectTreeCallback.class);
     private static final String PROJECT_ITEM_FXML = "project-item";
     private static final String PROJECT_ITEM_EDITING_FXML = "project-item-editing";
-    private static final String PROJECT_EDITOR_FXML = "project-editor";
     private static final String CELL_DRAG_OVER_STYLE_CLASS_FILE = "project-tree-drag-over-file";
     private static final String CELL_DRAG_OVER_STYLE_CLASS_DIR = "project-tree-drag-over-dir";
     private final ContextMenu BLANK_CONTEXT_MENU;
@@ -134,43 +133,7 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                 setOnMouseClicked(event -> {
                     if (ProjectType.FILE.equals(item.getProjectType()) &&
                             MouseButton.PRIMARY.equals(event.getButton()) && event.getClickCount() == 2) {
-                        ObservableList<Tab> tabs = projectEditorWorkspace.getTabs();
-                        for (Tab tab : tabs) {
-                            if (Objects.equals(((ProjectEditorController) tab.getUserData()).getProject(), item)) {
-                                projectEditorWorkspace.getSelectionModel().select(tab);
-                                return;
-                            }
-                        }
-                        Parent projectEditor = FXMLUtils.loadFXML(PROJECT_EDITOR_FXML);
-                        ProjectEditorController projectEditorController = FXMLUtils.getController(projectEditor);
-                        projectEditorController.initialize(null, null);
-                        Tab tab = new Tab(item.getSimpleProjectName(), projectEditor);
-                        tab.setUserData(projectEditorController);
-                        tab.setId(String.valueOf(item.getProjectId()));
-                        projectEditorController.dirtyProperty().addListener((change, oldValue, newValue) -> {
-                            if (newValue) {
-                                tab.setText("* " + item.getSimpleProjectName());
-                            } else {
-                                tab.setText(item.getSimpleProjectName());
-                            }
-                        });
-                        tab.setOnCloseRequest(tabCloseEvent -> {
-                            if (projectEditorController.getDirty()) {
-                                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                                alert.setTitle(I18nMessageSource.getResource("confirmation"));
-                                alert.setHeaderText(I18nMessageSource.getResource("confirmation.project.close.dirty"));
-                                alert.setContentText(I18nMessageSource.getResource("confirmation.project.close.prompt"));
-                                alert.showAndWait()
-                                        .ifPresent(buttonType -> {
-                                            if (ButtonType.CANCEL.equals(buttonType)) {
-                                                tabCloseEvent.consume();
-                                            }
-                                        });
-                            }
-                        });
-                        projectEditorController.show(item);
-                        tabs.add(tab);
-                        projectEditorWorkspace.getSelectionModel().select(tab);
+                        projectService.openFile();
                     }
                 });
 

@@ -14,7 +14,7 @@ public class FileInternalSearchSkin extends SkinBase<FileInternalSearch> {
         super(view);
         Parent parent = FXMLUtils.loadFXML(FXML);
         controller = FXMLUtils.getController(parent);
-        Bindings.bindBidirectional(controller.getSearchTextArea().textProperty(), view.searchTextProperty());
+        Bindings.bindBidirectional(controller.getSearchTextField().textProperty(), view.searchTextProperty());
         controller.searchActionProperty().bindBidirectional(view.searchActionProperty());
         controller.previousOccurrenceActionProperty().bindBidirectional(view.previousOccurrenceActionProperty());
         controller.nextOccurrenceActionProperty().bindBidirectional(view.nextOccurrenceActionProperty());
