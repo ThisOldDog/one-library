@@ -11,7 +11,7 @@
     <padding>
         <Insets top="4" bottom="4" left="4" right="4"/>
     </padding>
-    <TextField fx:id="searchTextField" minWidth="120" maxWidth="120"/>
+    <TextField fx:id="searchTextField" minWidth="40" prefWidth="480" maxWidth="480"/>
     <Button onAction="#search" focusTraversable="false">
         <tooltip>
             <Tooltip text="%info.editor.toolbar.search"/>
@@ -25,7 +25,7 @@
             <Tooltip text="%info.editor.toolbar.previous_occurrence"/>
         </tooltip>
         <graphic>
-            <Glyph fontFamily="FontAwesome" icon="SEARCH"/>
+            <Glyph fontFamily="FontAwesome" icon="ARROW_UP"/>
         </graphic>
     </Button>
     <Button onAction="#nextOccurrence" focusTraversable="false">
@@ -33,7 +33,7 @@
             <Tooltip text="%info.editor.toolbar.next_occurrence"/>
         </tooltip>
         <graphic>
-            <Glyph fontFamily="FontAwesome" icon="SEARCH"/>
+            <Glyph fontFamily="FontAwesome" icon="ARROW_DOWN"/>
         </graphic>
     </Button>
 

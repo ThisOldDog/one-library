@@ -1,17 +1,12 @@
 package pers.dog.boot.component.cache.status;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationListener;
 import pers.dog.boot.component.event.ApplicationCloseEvent;
 import pers.dog.boot.component.file.FileOperationHandler;
-import pers.dog.boot.component.file.FileOperationHolder;
 import pers.dog.boot.component.file.WriteOption;
 
 /**
@@ -44,7 +39,14 @@ public class StatueSaveListener implements ApplicationListener<ApplicationCloseE
     private void save(StatusStore store, Map<String, Object> applicationStatusMap) {
         Pair<String, Object> target = store.getTarget();
         if (target != null && target.getRight() != null) {
-            applicationStatusMap.put(target.getLeft(), store.storeStatus(target.getRight()));
+            Object right = target.getRight();
+            if (right instanceof Collection) {
+                for (Object item : ((Collection<?>) right)) {
+                    applicationStatusMap.put(target.getLeft(), store.storeStatus(item));
+                }
+            } else {
+                applicationStatusMap.put(target.getLeft(), store.storeStatus(target.getRight()));
+            }
         }
     }
 

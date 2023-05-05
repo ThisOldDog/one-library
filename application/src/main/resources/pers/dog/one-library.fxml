@@ -15,7 +15,7 @@
 <?import pers.dog.infra.control.ActionMenuBar?>
 <?import pers.dog.infra.control.ActionSeparator?>
 <?import java.lang.Boolean?>
-<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane fx:id="oneLibraryWorkspace" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="pers.dog.api.controller.OneLibraryController">
     <top>
         <ActionMenuBar maxWidth="Infinity">
@@ -47,7 +47,7 @@
         </ActionMenuBar>
     </top>
     <center>
-        <SplitPane dividerPositions="0.2">
+        <SplitPane fx:id="projectSplitPane" dividerPositions="0.2">
             <!-- 左侧视图：文档树以及操作列表 -->
             <VBox fx:id="projectWorkspace" maxWidth="480" minWidth="160" prefWidth="360">
                 <HBox>

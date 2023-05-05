@@ -13,7 +13,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javafx.application.Platform;
-import javafx.beans.value.ObservableListValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -216,7 +215,7 @@ public class MarkdownCodeArea extends CodeArea {
     private final String CODE_PATTERN = "`[^\\n`]+`";
     private final String FENCED_CODE_PATTERN = "^```\\w+\\n[\\s\\S]*\\n```\\n$";
 
-    private static final String RESULT_CANDIDATE_STYLE = "-rtfx-background-color: cyan;";
+    private static final String RESULT_CANDIDATE_STYLE_CLASS = "file-internal-search-candidate";
     private final ObservableList<IndexRange> resultIndexRange = FXCollections.observableArrayList();
 
     private final Pattern PATTERN = Pattern.compile(
@@ -260,7 +259,7 @@ public class MarkdownCodeArea extends CodeArea {
             while (change.next()) {
                 if (change.wasAdded()) {
                     for (IndexRange indexRange : change.getAddedSubList()) {
-                        setStyle(indexRange.getStart(), indexRange.getEnd(), Collections.singleton(RESULT_CANDIDATE_STYLE));
+                        setStyleClass(indexRange.getStart(), indexRange.getEnd(), RESULT_CANDIDATE_STYLE_CLASS);
                     }
                 }
                 if (change.wasRemoved()) {
@@ -275,21 +274,21 @@ public class MarkdownCodeArea extends CodeArea {
         // 行号
         setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         // 代码高亮
-        executor = Executors.newSingleThreadExecutor();
-        codeArea.multiPlainChanges()
-                .successionEnds(Duration.ofMillis(500))
-                .retainLatestUntilLater(executor)
-                .supplyTask(codeArea::computeHighlightingAsync)
-                .awaitLatest(codeArea.multiPlainChanges())
-                .filterMap(t -> {
-                    if (t.isSuccess()) {
-                        return Optional.of(t.get());
-                    } else {
-                        t.getFailure().printStackTrace();
-                        return Optional.empty();
-                    }
-                })
-                .subscribe(codeArea::applyHighlighting);
+//        executor = Executors.newSingleThreadExecutor();
+//        codeArea.multiPlainChanges()
+//                .successionEnds(Duration.ofMillis(500))
+//                .retainLatestUntilLater(executor)
+//                .supplyTask(codeArea::computeHighlightingAsync)
+//                .awaitLatest(codeArea.multiPlainChanges())
+//                .filterMap(t -> {
+//                    if (t.isSuccess()) {
+//                        return Optional.of(t.get());
+//                    } else {
+//                        t.getFailure().printStackTrace();
+//                        return Optional.empty();
+//                    }
+//                })
+//                .subscribe(codeArea::applyHighlighting);
     }
 
     private Task<StyleSpans<Collection<String>>> computeHighlightingAsync() {
@@ -370,7 +369,7 @@ public class MarkdownCodeArea extends CodeArea {
                     offset = 0;
                 }
                 if (offset == searchArray.length) {
-                    resultIndexRange.add(new IndexRange(start, i));
+                    resultIndexRange.add(new IndexRange(start, i + 1));
                     start = -1;
                     offset = 0;
                 }

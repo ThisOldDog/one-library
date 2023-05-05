@@ -45,3 +45,7 @@
 .fenced-code {
     -fx-fill: grey;
 }
+
+.file-internal-search-candidate {
+    -fx-background-color: red;
+}

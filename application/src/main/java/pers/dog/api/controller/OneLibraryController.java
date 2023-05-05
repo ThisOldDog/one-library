@@ -6,10 +6,7 @@ import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import org.controlsfx.control.textfield.CustomTextField;
 import pers.dog.app.service.ProjectService;
@@ -17,6 +14,9 @@ import pers.dog.domain.entity.Project;
 
 public class OneLibraryController implements Initializable {
     private static final String PROJECT_EMPTY_SCENE = "project-empty";
+
+    @FXML
+    private SplitPane projectSplitPane;
     @FXML
     private CustomTextField projectSearch;
     @FXML
