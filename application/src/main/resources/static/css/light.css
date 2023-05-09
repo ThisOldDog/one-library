@@ -7,7 +7,7 @@
     -fx-background-image: url(../icon/collapse.png);
 }
 
-.code-area .paragraph-box .text.match {
+.code-area .paragraph-box .text.bracket-match {
     -rtfx-background-color: #00000033;
 }
 
@@ -47,5 +47,5 @@
 }
 
 .file-internal-search-candidate {
-    -fx-background-color: red;
+    -rtfx-background-color: red;
 }

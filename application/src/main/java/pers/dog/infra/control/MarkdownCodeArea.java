@@ -1,16 +1,10 @@
 package pers.dog.infra.control;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -67,7 +61,7 @@ public class MarkdownCodeArea extends CodeArea {
     static class BracketHighlighter {
         // constants
         private static final List<String> CLEAR_STYLE = Collections.emptyList();
-        private static final List<String> MATCH_STYLE = Collections.singletonList("match");
+        private static final List<String> MATCH_STYLE = Collections.singletonList("bracket-match");
         private static final String BRACKET_PAIRS = "<>()[]";
         // the code area
         private final MarkdownCodeArea codeArea;
@@ -204,31 +198,14 @@ public class MarkdownCodeArea extends CodeArea {
             }
         }
     }
+    static class Token {
+        int start;
+        int end;
+        String name;
+    }
 
-    private final String HEADING_PATTERN = "^#{1,6}[ \\t]+[ \\S\\t]*$";
-    private final String BOLD_ITALIC_PATTERN = "(\\*\\*\\*.+\\*\\*\\*)|(___.+___)";
-    private final String BOLD_PATTERN = "(\\*\\*.+\\*\\*)|(__.+__)";
-    private final String ITALIC_PATTERN = "(\\*.+\\*)|(_.+_)";
-    private final String REFERENCE_PATTERN = "^>{1,2}[ \\t]+[ \\S\\t]*$";
-    private final String ORDERED_LIST_PATTERN = "\\s*\\d+\\.[ \\t]+[ \\S\\t]*$";
-    private final String UNORDERED_LIST_PATTERN = "\\s*((\\-)|(\\+)|(\\*))[ \\t]+[ \\S\\t]*$";
-    private final String CODE_PATTERN = "`[^\\n`]+`";
-    private final String FENCED_CODE_PATTERN = "^```\\w+\\n[\\s\\S]*\\n```\\n$";
-
-    private static final String RESULT_CANDIDATE_STYLE_CLASS = "file-internal-search-candidate";
+    private static final Collection<String> RESULT_CANDIDATE_STYLE_CLASS = Collections.singletonList("file-internal-search-candidate");
     private final ObservableList<IndexRange> resultIndexRange = FXCollections.observableArrayList();
-
-    private final Pattern PATTERN = Pattern.compile(
-            "(?<HEADING>" + HEADING_PATTERN + ")"
-                    + "|(?<BOLD0ITALIC>" + BOLD_ITALIC_PATTERN + ")"
-                    + "|(?<BOLD>" + BOLD_PATTERN + ")"
-                    + "|(?<ITALIC>" + ITALIC_PATTERN + ")"
-                    + "|(?<REFERENCE>" + REFERENCE_PATTERN + ")"
-                    + "|(?<ORDERED0LIST>" + ORDERED_LIST_PATTERN + ")"
-                    + "|(?<UNORDERED0LIST>" + UNORDERED_LIST_PATTERN + ")"
-                    + "|(?<CODE>" + CODE_PATTERN + ")"
-                    + "|(?<FENCED0CODE>" + FENCED_CODE_PATTERN + ")"
-    );
 
     private final List<TextInsertionListener> insertionListeners;
     private ExecutorService executor;
@@ -255,47 +232,31 @@ public class MarkdownCodeArea extends CodeArea {
     }
 
     private void init(MarkdownCodeArea codeArea) {
-        resultIndexRange.addListener((ListChangeListener<? super IndexRange>) change -> {
-            while (change.next()) {
-                if (change.wasAdded()) {
-                    for (IndexRange indexRange : change.getAddedSubList()) {
-                        setStyleClass(indexRange.getStart(), indexRange.getEnd(), RESULT_CANDIDATE_STYLE_CLASS);
-                    }
-                }
-                if (change.wasRemoved()) {
-                    for (IndexRange indexRange : change.getRemoved()) {
-                        clearStyle(indexRange.getStart(), indexRange.getEnd());
-                    }
-                }
-            }
-        });
-        // 括号高亮
-        new BracketHighlighter(codeArea);
         // 行号
         setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         // 代码高亮
-//        executor = Executors.newSingleThreadExecutor();
-//        codeArea.multiPlainChanges()
-//                .successionEnds(Duration.ofMillis(500))
-//                .retainLatestUntilLater(executor)
-//                .supplyTask(codeArea::computeHighlightingAsync)
-//                .awaitLatest(codeArea.multiPlainChanges())
-//                .filterMap(t -> {
-//                    if (t.isSuccess()) {
-//                        return Optional.of(t.get());
-//                    } else {
-//                        t.getFailure().printStackTrace();
-//                        return Optional.empty();
-//                    }
-//                })
-//                .subscribe(codeArea::applyHighlighting);
+        executor = Executors.newSingleThreadExecutor();
+        codeArea.multiPlainChanges()
+                .successionEnds(Duration.ofMillis(500))
+                .retainLatestUntilLater(executor)
+                .supplyTask(codeArea::computeHighlightingAsync)
+                .awaitLatest(codeArea.multiPlainChanges())
+                .filterMap(t -> {
+                    if (t.isSuccess()) {
+                        return Optional.of(t.get());
+                    } else {
+                        t.getFailure().printStackTrace();
+                        return Optional.empty();
+                    }
+                })
+                .subscribe(codeArea::applyHighlighting);
     }
 
     private Task<StyleSpans<Collection<String>>> computeHighlightingAsync() {
         String text = this.getText();
         Task<StyleSpans<Collection<String>>> task = new Task<>() {
             @Override
-            protected StyleSpans<Collection<String>> call() throws Exception {
+            protected StyleSpans<Collection<String>> call() {
                 return computeHighlighting(text);
             }
         };
@@ -326,29 +287,74 @@ public class MarkdownCodeArea extends CodeArea {
     }
 
     private StyleSpans<Collection<String>> computeHighlighting(String text) {
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+        parserToken(text);
+
+
+        // 搜索高亮
+        for (IndexRange indexRange : resultIndexRange) {
+            spansBuilder.add(RESULT_CANDIDATE_STYLE_CLASS, matcher.end() - matcher.start())
+            setStyleClass(indexRange.getStart(), indexRange.getEnd(), );
+        }
+
+        resultIndexRange.addListener((ListChangeListener<? super IndexRange>) change -> {
+            while (change.next()) {
+                if (change.wasAdded()) {
+                    for (IndexRange indexRange : change.getAddedSubList()) {
+                        setStyleClass(indexRange.getStart(), indexRange.getEnd(), RESULT_CANDIDATE_STYLE_CLASS);
+                    }
+                }
+                if (change.wasRemoved()) {
+                    for (IndexRange indexRange : change.getRemoved()) {
+                        clearStyle(indexRange.getStart(), indexRange.getEnd());
+                    }
+                }
+            }
+        });
+        // 括号高亮
+        new BracketHighlighter(codeArea);
+
         Matcher matcher = PATTERN.matcher(text);
         int lastKwEnd = 0;
-        StyleSpansBuilder<Collection<String>> spansBuilder
-                = new StyleSpansBuilder<>();
-        while (matcher.find()) {
-            String styleClass =
-                    matcher.group("HEADING") != null ? "heading" :
-                            matcher.group("BOLD0ITALIC") != null ? "bold-italic" :
-                                    matcher.group("BOLD") != null ? "bold" :
-                                            matcher.group("ITALIC") != null ? "italic" :
-                                                    matcher.group("REFERENCE") != null ? "reference" :
-                                                            matcher.group("ORDERED0LIST") != null ? "ordered-list" :
-                                                                    matcher.group("UNORDERED0LIST") != null ? "unordered-list" :
-                                                                            matcher.group("CODE") != null ? "code" :
-                                                                                    matcher.group("FENCED0CODE") != null ? "fenced-code" :
-                                                                                            null; /* never happens */
-            assert styleClass != null;
-            spansBuilder.add(Collections.emptyList(), matcher.start() - lastKwEnd);
-            spansBuilder.add(Collections.singleton(styleClass), matcher.end() - matcher.start());
-            lastKwEnd = matcher.end();
-        }
-        spansBuilder.add(Collections.emptyList(), text.length() - lastKwEnd);
+        spansBuilder.add()
         return spansBuilder.create();
+    }
+
+    private List<Token> parserToken(String text) {
+        char[] charArray = text.toCharArray();
+        boolean lineStart = true;
+        List<Token> tokens = new ArrayList<>();
+        for (int i = 0; i < charArray.length; i++) {
+            char item = charArray[i];
+
+            // Header
+            if (item == '#'){
+                tokens.add(takeToken(charArray, i, "heading", '\r', '\n'));
+                continue;
+            }
+
+            if (item == '<') {
+
+            }
+
+        }
+        return tokens;
+    }
+
+    private Token takeToken(char[] charArray, int i, String name, char breakChar, char... breakChars) {
+        Token token = new Token();
+        token.name = name;
+        token.start = i;
+        i++;
+        while (i < charArray.length && !lineBreak(charArray[i + 1])) {
+            i++;
+        }
+        token.end = i;
+        return null;
+    }
+
+    private boolean lineBreak(char value) {
+        return '\r' == value || '\n' == value;
     }
 
     public void search(String searchText) {
