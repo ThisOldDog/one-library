@@ -18,6 +18,7 @@ import org.fxmisc.richtext.model.EditableStyledDocument;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.richtext.model.StyledDocument;
+import pers.dog.infra.grammar.Grammar;
 
 /**
  * @author 废柴 2023/3/30 20:12
@@ -198,12 +199,12 @@ public class MarkdownCodeArea extends CodeArea {
             }
         }
     }
+
     static class Token {
         int start;
         int end;
         String name;
     }
-
     private static final Collection<String> RESULT_CANDIDATE_STYLE_CLASS = Collections.singletonList("file-internal-search-candidate");
     private final ObservableList<IndexRange> resultIndexRange = FXCollections.observableArrayList();
 
@@ -320,42 +321,31 @@ public class MarkdownCodeArea extends CodeArea {
         return spansBuilder.create();
     }
 
-    private List<Token> parserToken(String text) {
-        char[] charArray = text.toCharArray();
-        boolean lineStart = true;
-        List<Token> tokens = new ArrayList<>();
-        for (int i = 0; i < charArray.length; i++) {
-            char item = charArray[i];
 
-            // Header
-            if (item == '#'){
-                tokens.add(takeToken(charArray, i, "heading", '\r', '\n'));
-                continue;
-            }
-
-            if (item == '<') {
-
-            }
-
-        }
-        return tokens;
-    }
-
-    private Token takeToken(char[] charArray, int i, String name, char breakChar, char... breakChars) {
+    private Token takeToken(char[] charArray, int i, String name, boolean containBreak, char breakChar, char... breakChars) {
         Token token = new Token();
         token.name = name;
         token.start = i;
         i++;
-        while (i < charArray.length && !lineBreak(charArray[i + 1])) {
+        while (i < charArray.length && charArray[i] != breakChar && notContain(breakChars, charArray[i])) {
             i++;
         }
-        token.end = i;
-        return null;
+        token.end = containBreak ? (Math.min(i + 1, charArray.length)) : i;
+        return token;
     }
 
-    private boolean lineBreak(char value) {
-        return '\r' == value || '\n' == value;
+    private boolean notContain(char[] source, char target) {
+        if (source == null) {
+            return true;
+        }
+        for (char item : source) {
+            if (item == target) {
+                return false;
+            }
+        }
+        return true;
     }
+
 
     public void search(String searchText) {
         Platform.runLater(() -> {
