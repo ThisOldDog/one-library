@@ -131,7 +131,7 @@ public class MarkdownCodeArea extends CodeArea {
         }
     }
 
-    private static final Map<String, String> BRACKET_PAIRS = Map.of(
+    private static final List<Character> BRACKET_PAIRS = Arrays.asList(
             "<", ">",
             "[", "]",
             "(", ")");
@@ -195,6 +195,10 @@ public class MarkdownCodeArea extends CodeArea {
         return task;
     }
 
+    private void applyHighlighting() {
+        applyHighlighting(computeHighlighting(getText()));
+    }
+
     private void applyHighlighting(StyleSpans<Collection<String>> highlighting) {
         this.setStyleSpans(0, highlighting);
     }
@@ -225,13 +229,22 @@ public class MarkdownCodeArea extends CodeArea {
         for (IndexRange indexRange : resultIndexRange) {
             treeStyleSpansBuilder.addChild(indexRange.getStart(), indexRange.getEnd(), RESULT_CANDIDATE_STYLE_CLASS);
         }
+        // 匹配括号
+        computeHighlightingBracketPair(treeStyleSpansBuilder, text);
         return treeStyleSpansBuilder.create();
     }
+
+    private void computeHighlightingBracketPair(TreeStyleSpansBuilder treeStyleSpansBuilder, String text) {
+        int caretPosition = getCaretPosition();
+        char bracket = text.charAt(caretPosition);
+    }
+
 
     public void search(String searchText) {
         Platform.runLater(() -> {
             resultIndexRange.clear();
-            char[] textArray = getText().toCharArray();
+            String text = getText();
+            char[] textArray = text.toCharArray();
             char[] searchArray = searchText.toCharArray();
             int start = -1;
             int offset = 0;
@@ -251,6 +264,7 @@ public class MarkdownCodeArea extends CodeArea {
                     offset = 0;
                 }
             }
+            applyHighlighting();
         });
     }
 }
