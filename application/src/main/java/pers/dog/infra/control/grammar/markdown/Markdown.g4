@@ -1,4 +1,4 @@
-grammar markdown;
+grammar Markdown;
 
 md                : paragraph+
                   ;

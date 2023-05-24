@@ -4,11 +4,9 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.IndexRange;
@@ -18,7 +16,6 @@ import org.fxmisc.richtext.model.EditableStyledDocument;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.richtext.model.StyledDocument;
-import pers.dog.infra.grammar.Grammar;
 
 /**
  * @author 废柴 2023/3/30 20:12
@@ -28,17 +25,53 @@ public class MarkdownCodeArea extends CodeArea {
         void codeInserted(int start, int end, String text);
     }
 
-    /**
-     * Class representing a pair of matching bracket indices
-     */
-    static class BracketPair {
+    public static class TreeStyleSpansBuilder {
+        private int start;
+        private int end;
+        private List<String> styles = new ArrayList<>();
+        private List<TreeStyleSpansBuilder> children = new LinkedList<>();
 
-        private final int start;
-        private final int end;
-
-        public BracketPair(int start, int end) {
+        @SafeVarargs
+        public TreeStyleSpansBuilder(int start, int end, Collection<String>... styles) {
             this.start = start;
             this.end = end;
+            if (styles != null) {
+                for (Collection<String> style : styles) {
+                    this.styles.addAll(style);
+                }
+            }
+        }
+
+        public void addChild(int start, int end, Collection<String> styles) {
+            if (children.isEmpty()) {
+                children.add(new TreeStyleSpansBuilder(Math.max(start, this.start), Math.min(end, this.end), styles));
+                return;
+            }
+            for (int i = 0; i < children.size(); i++) {
+                TreeStyleSpansBuilder child = children.get(i);
+                if (child.getStart() > start) {
+                    children.add(i, new TreeStyleSpansBuilder(start, Math.min(child.getStart(), end), styles));
+                    if (end > child.getStart()) {
+                        addChild(child.getStart(), end, styles);
+                    }
+                    return;
+                } else if (child.getEnd() > start) {
+                    int childEnd = child.getEnd();
+                    if (child.getStart() < start) {
+                        child.setEnd(start);
+                        children.add(++i, new TreeStyleSpansBuilder(start, Math.min(end, childEnd), child.getStyles(), styles));
+                    }
+                    if (end < childEnd) {
+                        children.add(i + 1, new TreeStyleSpansBuilder(end, childEnd, child.getStyles()));
+                    } else if (end > childEnd) {
+                        addChild(childEnd, end, styles);
+                    }
+                    return;
+                }
+            }
+            if (children.get(children.size() - 1).getEnd() <= start) {
+                children.add(new TreeStyleSpansBuilder(start, end, styles));
+            }
         }
 
         public int getStart() {
@@ -49,165 +82,62 @@ public class MarkdownCodeArea extends CodeArea {
             return end;
         }
 
-        @Override
-        public String toString() {
-            return "BracketPair{" +
-                    "start=" + start +
-                    ", end=" + end +
-                    '}';
+        public List<String> getStyles() {
+            return styles;
         }
 
-    }
-
-    static class BracketHighlighter {
-        // constants
-        private static final List<String> CLEAR_STYLE = Collections.emptyList();
-        private static final List<String> MATCH_STYLE = Collections.singletonList("bracket-match");
-        private static final String BRACKET_PAIRS = "<>()[]";
-        // the code area
-        private final MarkdownCodeArea codeArea;
-        // the list of highlighted bracket pairs
-        private final List<BracketPair> bracketPairs;
-
-        /**
-         * Parameterized constructor
-         *
-         * @param codeArea the code area
-         */
-        public BracketHighlighter(MarkdownCodeArea codeArea) {
-            this.codeArea = codeArea;
-
-            this.bracketPairs = new ArrayList<>();
-
-            // listen for changes in text or caret position
-            this.codeArea.addTextInsertionListener((start, end, text) -> clearBracket());
-            this.codeArea.caretPositionProperty().addListener((obs, oldVal, newVal) -> Platform.runLater(() -> highlightBracket(newVal)));
+        public List<TreeStyleSpansBuilder> getChildren() {
+            return children;
         }
 
-        /**
-         * Highlight the matching bracket at current caret position
-         */
-        public void highlightBracket() {
-            this.highlightBracket(codeArea.getCaretPosition());
+        public TreeStyleSpansBuilder setStart(int start) {
+            this.start = start;
+            return this;
         }
 
-        /**
-         * Highlight the matching bracket at new caret position
-         *
-         * @param newVal the new caret position
-         */
-        private void highlightBracket(int newVal) {
-            // first clear existing bracket highlights
-            this.clearBracket();
+        public TreeStyleSpansBuilder setEnd(int end) {
+            this.end = end;
+            return this;
+        }
 
-            // detect caret position both before and after bracket
-            String prevChar = (newVal > 0 && newVal <= codeArea.getLength()) ? codeArea.getText(newVal - 1, newVal) : "";
-            if (BRACKET_PAIRS.contains(prevChar)) newVal--;
+        public TreeStyleSpansBuilder setStyles(List<String> styles) {
+            this.styles = styles;
+            return this;
+        }
 
-            // get other half of matching bracket
-            Integer other = getMatchingBracket(newVal);
+        public TreeStyleSpansBuilder setChildren(List<TreeStyleSpansBuilder> children) {
+            this.children = children;
+            return this;
+        }
 
-            if (other != null) {
-                // other half exists
-                BracketPair pair = new BracketPair(newVal, other);
-
-                // highlight pair
-                styleBrackets(pair, MATCH_STYLE);
-
-                // add bracket pair to list
-                this.bracketPairs.add(pair);
+        public StyleSpans<Collection<String>> create() {
+            StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+            if (children.isEmpty()) {
+                spansBuilder.add(styles, end - start);
+                return spansBuilder.create();
             }
-        }
-
-        /**
-         * Find the matching bracket location
-         *
-         * @param index to start searching from
-         * @return null or position of matching bracket
-         */
-        private Integer getMatchingBracket(int index) {
-            if (index < 0 || index >= codeArea.getLength()) return null;
-
-            char initialBracket = codeArea.getText(index, index + 1).charAt(0);
-            int bracketTypePosition = BRACKET_PAIRS.indexOf(initialBracket); // "(){}[]<>"
-            if (bracketTypePosition < 0) return null;
-
-            // even numbered bracketTypePositions are opening brackets, and odd positions are closing
-            // if even (opening bracket) then step forwards, otherwise step backwards
-            int stepDirection = (bracketTypePosition % 2 == 0) ? +1 : -1;
-
-            // the matching bracket to look for, the opposite of initialBracket
-            char match = BRACKET_PAIRS.charAt(bracketTypePosition + stepDirection);
-
-            index += stepDirection;
-            int bracketCount = 1;
-
-            while (index > -1 && index < codeArea.getLength()) {
-                char code = codeArea.getText(index, index + 1).charAt(0);
-                if (code == initialBracket) bracketCount++;
-                else if (code == match) bracketCount--;
-                if (bracketCount == 0) return index;
-                else index += stepDirection;
-            }
-
-            return null;
-        }
-
-        /**
-         * Clear the existing highlighted bracket styles
-         */
-        public void clearBracket() {
-            // get iterator of bracket pairs
-            Iterator<BracketPair> iterator = this.bracketPairs.iterator();
-
-            // loop through bracket pairs and clear all
-            while (iterator.hasNext()) {
-                // get next bracket pair
-                BracketPair pair = iterator.next();
-
-                // clear pair
-                styleBrackets(pair, CLEAR_STYLE);
-
-                // remove bracket pair from list
-                iterator.remove();
-            }
-        }
-
-        /**
-         * Set a list of styles to a pair of brackets
-         *
-         * @param pair   pair of brackets
-         * @param styles the style list to set
-         */
-        private void styleBrackets(BracketPair pair, List<String> styles) {
-            styleBracket(pair.start, styles);
-            styleBracket(pair.end, styles);
-        }
-
-        /**
-         * Set a list of styles for a position
-         *
-         * @param pos    the position
-         * @param styles the style list to set
-         */
-        private void styleBracket(int pos, List<String> styles) {
-            if (pos < codeArea.getLength()) {
-                String text = codeArea.getText(pos, pos + 1);
-                if (BRACKET_PAIRS.contains(text)) {
-                    codeArea.setStyle(pos, pos + 1, styles);
+            int index = 0;
+            for (TreeStyleSpansBuilder child : children) {
+                if (index < child.getStart()) {
+                    spansBuilder.add(styles, child.getStart() - index);
                 }
+                spansBuilder.add(child.getStyles(), child.getEnd() - child.getStart());
+                index = child.getEnd();
             }
+            if (index < end) {
+                spansBuilder.add(styles, end - index);
+            }
+            return spansBuilder.create();
         }
     }
 
-    static class Token {
-        int start;
-        int end;
-        String name;
-    }
+    private static final Map<String, String> BRACKET_PAIRS = Map.of(
+            "<", ">",
+            "[", "]",
+            "(", ")");
+    private static final List<String> BRACKET_MATCH_STYLE = Collections.singletonList("bracket-match");
     private static final Collection<String> RESULT_CANDIDATE_STYLE_CLASS = Collections.singletonList("file-internal-search-candidate");
     private final ObservableList<IndexRange> resultIndexRange = FXCollections.observableArrayList();
-
     private final List<TextInsertionListener> insertionListeners;
     private ExecutorService executor;
 
@@ -287,65 +217,16 @@ public class MarkdownCodeArea extends CodeArea {
         super.replace(start, end, replacement);
     }
 
+
     private StyleSpans<Collection<String>> computeHighlighting(String text) {
-        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
-        parserToken(text);
-
-
+        // 默认样式
+        TreeStyleSpansBuilder treeStyleSpansBuilder = new TreeStyleSpansBuilder(0, text.length());
         // 搜索高亮
         for (IndexRange indexRange : resultIndexRange) {
-            spansBuilder.add(RESULT_CANDIDATE_STYLE_CLASS, matcher.end() - matcher.start())
-            setStyleClass(indexRange.getStart(), indexRange.getEnd(), );
+            treeStyleSpansBuilder.addChild(indexRange.getStart(), indexRange.getEnd(), RESULT_CANDIDATE_STYLE_CLASS);
         }
-
-        resultIndexRange.addListener((ListChangeListener<? super IndexRange>) change -> {
-            while (change.next()) {
-                if (change.wasAdded()) {
-                    for (IndexRange indexRange : change.getAddedSubList()) {
-                        setStyleClass(indexRange.getStart(), indexRange.getEnd(), RESULT_CANDIDATE_STYLE_CLASS);
-                    }
-                }
-                if (change.wasRemoved()) {
-                    for (IndexRange indexRange : change.getRemoved()) {
-                        clearStyle(indexRange.getStart(), indexRange.getEnd());
-                    }
-                }
-            }
-        });
-        // 括号高亮
-        new BracketHighlighter(codeArea);
-
-        Matcher matcher = PATTERN.matcher(text);
-        int lastKwEnd = 0;
-        spansBuilder.add()
-        return spansBuilder.create();
+        return treeStyleSpansBuilder.create();
     }
-
-
-    private Token takeToken(char[] charArray, int i, String name, boolean containBreak, char breakChar, char... breakChars) {
-        Token token = new Token();
-        token.name = name;
-        token.start = i;
-        i++;
-        while (i < charArray.length && charArray[i] != breakChar && notContain(breakChars, charArray[i])) {
-            i++;
-        }
-        token.end = containBreak ? (Math.min(i + 1, charArray.length)) : i;
-        return token;
-    }
-
-    private boolean notContain(char[] source, char target) {
-        if (source == null) {
-            return true;
-        }
-        for (char item : source) {
-            if (item == target) {
-                return false;
-            }
-        }
-        return true;
-    }
-
 
     public void search(String searchText) {
         Platform.runLater(() -> {

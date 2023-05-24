@@ -31,6 +31,8 @@ module pers.dog {
     requires flexmark.util.data;
     requires flexmark.util.misc;
     requires flexmark.profile.pegdown;
+    requires antlr;
+    requires org.antlr.antlr4.runtime;
 
     // resource
     opens pers.dog;
