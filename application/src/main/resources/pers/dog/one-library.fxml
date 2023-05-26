@@ -15,6 +15,22 @@
 <?import pers.dog.infra.control.ActionMenuBar?>
 <?import pers.dog.infra.control.ActionSeparator?>
 <?import java.lang.Boolean?>
+<?import pers.dog.infra.action.editor.QuashAction?>
+<?import pers.dog.infra.action.editor.RedoAction?>
+<?import pers.dog.infra.action.editor.BoldAction?>
+<?import pers.dog.infra.action.editor.ItalicAction?>
+<?import pers.dog.infra.action.editor.StrikethroughAction?>
+<?import pers.dog.infra.action.editor.HeaderAction?>
+<?import pers.dog.infra.action.editor.BlockQuoteAction?>
+<?import pers.dog.infra.action.editor.UnorderedListAction?>
+<?import pers.dog.infra.action.editor.OrderedListAction?>
+<?import pers.dog.infra.action.editor.TableAction?>
+<?import pers.dog.infra.action.editor.DividingLineAction?>
+<?import pers.dog.infra.action.editor.LinkAction?>
+<?import pers.dog.infra.action.editor.ImageAction?>
+<?import pers.dog.infra.action.editor.CodeInlineAction?>
+<?import pers.dog.infra.action.editor.CodeBlockAction?>
+<?import pers.dog.infra.action.editor.SearchAction?>
 <BorderPane fx:id="oneLibraryWorkspace" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="pers.dog.api.controller.OneLibraryController">
     <top>
@@ -27,7 +43,7 @@
                 <ActionSeparator fx:factory="getInstance"/>
                 <SaveProjectAction>
                     <accelerator>
-                        <KeyCodeCombination code="S" shift="UP" control="DOWN" alt="UP" meta="UP" shortcut="UP"/>
+                        <KeyCodeCombination code="S" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
                     </accelerator>
                     <disabled>
                         <Boolean fx:value="true"/>
@@ -35,7 +51,7 @@
                 </SaveProjectAction>
                 <SaveAllProjectAction>
                     <accelerator>
-                        <KeyCodeCombination code="S" shift="DOWN" control="DOWN" alt="UP" meta="UP" shortcut="UP"/>
+                        <KeyCodeCombination code="S" shift="DOWN" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
                     </accelerator>
                     <disabled>
                         <Boolean fx:value="true"/>
@@ -43,6 +59,123 @@
                 </SaveAllProjectAction>
                 <ActionSeparator fx:factory="getInstance"/>
                 <ExitAction fx:factory="getInstance"/>
+            </ActionGroup>
+            <ActionGroup text="%info.action.edit">
+                <QuashAction>
+                    <accelerator>
+                        <KeyCodeCombination code="Z" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                    </accelerator>
+                    <disabled>
+                        <Boolean fx:value="true"/>
+                    </disabled>
+                </QuashAction>
+                <RedoAction>
+                    <accelerator>
+                        <KeyCodeCombination code="Z" shift="DOWN" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                    </accelerator>
+                    <disabled>
+                        <Boolean fx:value="true"/>
+                    </disabled>
+                </RedoAction>
+                <ActionGroup text="%info.action.edit.insert">
+                    <BoldAction>
+                        <accelerator>
+                            <KeyCodeCombination code="B" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                        </accelerator>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </BoldAction>
+                    <ItalicAction>
+                        <accelerator>
+                            <KeyCodeCombination code="I" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                        </accelerator>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </ItalicAction>
+                    <StrikethroughAction>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </StrikethroughAction>
+                    <HeaderAction>
+                        <accelerator>
+                            <KeyCodeCombination code="H" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                        </accelerator>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </HeaderAction>
+                    <BlockQuoteAction>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </BlockQuoteAction>
+                    <UnorderedListAction>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </UnorderedListAction>
+                    <OrderedListAction>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </OrderedListAction>
+                    <TableAction>
+                        <accelerator>
+                            <KeyCodeCombination code="T" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                        </accelerator>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </TableAction>
+                    <DividingLineAction>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </DividingLineAction>
+                    <LinkAction>
+                        <accelerator>
+                            <KeyCodeCombination code="L" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                        </accelerator>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </LinkAction>
+                    <ImageAction>
+                        <accelerator>
+                            <KeyCodeCombination code="L" shift="DOWN" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                        </accelerator>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </ImageAction>
+                    <CodeInlineAction>
+                        <accelerator>
+                            <KeyCodeCombination code="D" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                        </accelerator>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </CodeInlineAction>
+                    <CodeBlockAction>
+                        <accelerator>
+                            <KeyCodeCombination code="D" shift="DOWN" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                        </accelerator>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </CodeBlockAction>
+                    <SearchAction>
+                        <accelerator>
+                            <KeyCodeCombination code="F" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                        </accelerator>
+                        <disabled>
+                            <Boolean fx:value="true"/>
+                        </disabled>
+                    </SearchAction>
+                </ActionGroup>
             </ActionGroup>
         </ActionMenuBar>
     </top>

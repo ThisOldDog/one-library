@@ -12,6 +12,7 @@ import com.vladsch.flexmark.parser.PegdownExtensions;
 import com.vladsch.flexmark.profile.pegdown.PegdownOptionsAdapter;
 import com.vladsch.flexmark.util.data.DataHolder;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
@@ -87,15 +88,14 @@ public class ProjectEditorController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         this.engine = previewArea.getEngine();
         this.fileInternalSearch = new FileInternalSearch();
-        this.fileInternalSearch.setSearchAction(new Action(actionEvent -> {
-            codeArea.search(this.fileInternalSearch.getSearchText());
-        }));
-        this.fileInternalSearch.setPreviousOccurrenceAction(new Action(actionEvent -> {
-
-        }));
-        this.fileInternalSearch.setNextOccurrenceAction(new Action(actionEvent -> {
-
-        }));
+        this.fileInternalSearch.setSearchAction(new Action(actionEvent -> codeArea.search(this.fileInternalSearch.getSearchText())));
+        this.fileInternalSearch.setNextOccurrenceAction(new Action(actionEvent -> codeArea.nextSearchCandidate()));
+        this.fileInternalSearch.setPreviousOccurrenceAction(new Action(actionEvent -> codeArea.previousSearchCandidate()));
+        this.fileInternalSearch.setMoveToAction(new Action(actionEvent ->
+            this.fileInternalSearch.setCurrentIndex(codeArea.moveToSearchCandidate(this.fileInternalSearch.getCurrentIndex()))
+        ));
+        codeArea.getSearchCandidateList().addListener((InvalidationListener) observable -> this.fileInternalSearch.searchCandidateCountProperty().set(codeArea.getSearchCandidateList().size()));
+        codeArea.searchCurrentIndexProperty().addListener(observable -> this.fileInternalSearch.setCurrentIndex(codeArea.getSearchCurrentIndex() + 1));
     }
 
     public void show(Project project) {
@@ -105,6 +105,9 @@ public class ProjectEditorController implements Initializable {
             setChangeListener();
             setText(project);
             loaded.set(true);
+            codeArea.getUndoManager().forgetHistory();
+            codeArea.requestFocus();
+            codeArea.displaceCaret(0);
         });
     }
 
@@ -357,10 +360,13 @@ public class ProjectEditorController implements Initializable {
     }
 
     public void search() {
-        ObservableList<Node> children = searchWorkspace.getChildren();
-        if (children.isEmpty()) {
-            children.add(fileInternalSearch);
-        }
+        Platform.runLater(() -> {
+            ObservableList<Node> children = searchWorkspace.getChildren();
+            if (children.isEmpty()) {
+                children.add(fileInternalSearch);
+            }
+            fileInternalSearch.requestFocus();
+        });
     }
 
     public void onlyEditor() {

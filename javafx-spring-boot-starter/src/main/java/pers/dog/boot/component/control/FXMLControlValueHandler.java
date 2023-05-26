@@ -22,11 +22,15 @@ public class FXMLControlValueHandler implements BeanPostProcessor {
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        Field[] fields = bean.getClass().getDeclaredFields();
-        for (Field field : fields) {
-            if (field.isAnnotationPresent(FXMLControl.class)) {
-                produce(bean, field, field.getAnnotation(FXMLControl.class));
+        Class<?> beanClass = bean.getClass();
+        while (beanClass != null && !Object.class.equals(beanClass)) {
+            Field[] fields = beanClass.getDeclaredFields();
+            for (Field field : fields) {
+                if (field.isAnnotationPresent(FXMLControl.class)) {
+                    produce(bean, field, field.getAnnotation(FXMLControl.class));
+                }
             }
+            beanClass = beanClass.getSuperclass();
         }
         return bean;
     }

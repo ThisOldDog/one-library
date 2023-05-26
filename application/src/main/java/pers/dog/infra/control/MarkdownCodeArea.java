@@ -6,10 +6,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.IndexRange;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.EditableStyledDocument;
@@ -21,6 +25,7 @@ import org.fxmisc.richtext.model.StyledDocument;
  * @author 废柴 2023/3/30 20:12
  */
 public class MarkdownCodeArea extends CodeArea {
+
     public interface TextInsertionListener {
         void codeInserted(int start, int end, String text);
     }
@@ -132,12 +137,14 @@ public class MarkdownCodeArea extends CodeArea {
     }
 
     private static final List<Character> BRACKET_PAIRS = Arrays.asList(
-            "<", ">",
-            "[", "]",
-            "(", ")");
+            '<', '>',
+            '[', ']',
+            '(', ')');
     private static final List<String> BRACKET_MATCH_STYLE = Collections.singletonList("bracket-match");
-    private static final Collection<String> RESULT_CANDIDATE_STYLE_CLASS = Collections.singletonList("file-internal-search-candidate");
-    private final ObservableList<IndexRange> resultIndexRange = FXCollections.observableArrayList();
+    private static final Collection<String> SEARCH_CANDIDATE_STYLE_CLASS = Collections.singletonList("file-internal-search-candidate");
+    private final ObservableList<IndexRange> searchCandidateList = FXCollections.observableArrayList();
+    private final ObjectProperty<Integer> searchCurrentIndex = new SimpleObjectProperty<>(-1);
+    private final ObjectProperty<Boolean> circulateFlag = new SimpleObjectProperty<>(false);
     private final List<TextInsertionListener> insertionListeners;
     private ExecutorService executor;
 
@@ -165,7 +172,7 @@ public class MarkdownCodeArea extends CodeArea {
     private void init(MarkdownCodeArea codeArea) {
         // 行号
         setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
-        // 代码高亮
+        // 高亮
         executor = Executors.newSingleThreadExecutor();
         codeArea.multiPlainChanges()
                 .successionEnds(Duration.ofMillis(500))
@@ -181,6 +188,23 @@ public class MarkdownCodeArea extends CodeArea {
                     }
                 })
                 .subscribe(codeArea::applyHighlighting);
+        codeArea.caretPositionProperty().addListener((obs, oldVal, newVal) -> Platform.runLater(this::applyHighlighting));
+        // 搜索自动滚动
+        searchCurrentIndex.addListener((observable, oldValue, newValue) -> {
+            if (newValue < 0) {
+                return;
+            }
+            if (newValue > searchCandidateList.size()) {
+                searchCurrentIndex.set(searchCandidateList.size());
+                return;
+            }
+            if (!Objects.equals(oldValue, newValue)) {
+                IndexRange indexRange = searchCandidateList.get(newValue);
+                codeArea.displaceCaret(indexRange.getEnd());
+                codeArea.requestFollowCaret();
+                codeArea.selectRange(indexRange.getStart(), indexRange.getEnd());
+            }
+        });
     }
 
     private Task<StyleSpans<Collection<String>>> computeHighlightingAsync() {
@@ -226,8 +250,8 @@ public class MarkdownCodeArea extends CodeArea {
         // 默认样式
         TreeStyleSpansBuilder treeStyleSpansBuilder = new TreeStyleSpansBuilder(0, text.length());
         // 搜索高亮
-        for (IndexRange indexRange : resultIndexRange) {
-            treeStyleSpansBuilder.addChild(indexRange.getStart(), indexRange.getEnd(), RESULT_CANDIDATE_STYLE_CLASS);
+        for (IndexRange indexRange : searchCandidateList) {
+            treeStyleSpansBuilder.addChild(indexRange.getStart(), indexRange.getEnd(), SEARCH_CANDIDATE_STYLE_CLASS);
         }
         // 匹配括号
         computeHighlightingBracketPair(treeStyleSpansBuilder, text);
@@ -235,14 +259,42 @@ public class MarkdownCodeArea extends CodeArea {
     }
 
     private void computeHighlightingBracketPair(TreeStyleSpansBuilder treeStyleSpansBuilder, String text) {
+        if (ObjectUtils.isEmpty(text)) {
+            return;
+        }
         int caretPosition = getCaretPosition();
-        char bracket = text.charAt(caretPosition);
+        char bracket = caretPosition < text.length() ? text.charAt(caretPosition) : '\n';
+        bracket = BRACKET_PAIRS.contains(bracket) ? bracket : text.charAt(Math.max(--caretPosition, 0));
+        if (!BRACKET_PAIRS.contains(bracket)) {
+            return;
+        }
+        int index = BRACKET_PAIRS.indexOf(bracket);
+        if ((index & 1) == 0) {
+            char matchBracket = BRACKET_PAIRS.get(index + 1);
+            for (int i = caretPosition + 1; i < text.length(); i++) {
+                if (matchBracket == text.charAt(i)) {
+                    treeStyleSpansBuilder.addChild(caretPosition, caretPosition + 1, BRACKET_MATCH_STYLE);
+                    treeStyleSpansBuilder.addChild(i, i + 1, BRACKET_MATCH_STYLE);
+                    return;
+                }
+            }
+        } else {
+            char matchBracket = BRACKET_PAIRS.get(index - 1);
+            for (int i = caretPosition - 1; i >= 0; i--) {
+                if (matchBracket == text.charAt(i)) {
+                    treeStyleSpansBuilder.addChild(caretPosition, caretPosition + 1, BRACKET_MATCH_STYLE);
+                    treeStyleSpansBuilder.addChild(i, i + 1, BRACKET_MATCH_STYLE);
+                    return;
+                }
+            }
+        }
     }
 
 
     public void search(String searchText) {
         Platform.runLater(() -> {
-            resultIndexRange.clear();
+            searchCandidateList.clear();
+            searchCurrentIndex.set(-1);
             String text = getText();
             char[] textArray = text.toCharArray();
             char[] searchArray = searchText.toCharArray();
@@ -259,12 +311,71 @@ public class MarkdownCodeArea extends CodeArea {
                     offset = 0;
                 }
                 if (offset == searchArray.length) {
-                    resultIndexRange.add(new IndexRange(start, i + 1));
+                    searchCandidateList.add(new IndexRange(start, i + 1));
                     start = -1;
                     offset = 0;
                 }
             }
+            if (!searchCandidateList.isEmpty()) {
+                searchCurrentIndex.setValue(0);
+            }
             applyHighlighting();
         });
+    }
+
+    public void nextSearchCandidate() {
+        if (searchCandidateList.isEmpty()) {
+            return;
+        }
+        if (Objects.equals(searchCurrentIndex.get(), searchCandidateList.size() - 1)) {
+            if (BooleanUtils.isTrue(circulateFlag.get())) {
+                searchCurrentIndex.set(0);
+                circulateFlag.set(false);
+            } else {
+                circulateFlag.set(true);
+            }
+        } else {
+            searchCurrentIndex.set(searchCurrentIndex.get() + 1);
+        }
+    }
+
+    public void previousSearchCandidate() {
+        if (searchCandidateList.isEmpty()) {
+            return;
+        }
+        if (Objects.equals(searchCurrentIndex.get(), 0)) {
+            if (BooleanUtils.isTrue(circulateFlag.get())) {
+                searchCurrentIndex.set(searchCandidateList.size() - 1);
+                circulateFlag.set(false);
+            } else {
+                circulateFlag.set(true);
+            }
+        } else {
+            searchCurrentIndex.set(searchCurrentIndex.get() - 1);
+        }
+    }
+
+    public Integer moveToSearchCandidate(Integer currentIndex) {
+        if (searchCandidateList.isEmpty()) {
+            return currentIndex;
+        }
+        if (currentIndex < 0) {
+            currentIndex = 0;
+        } else if (currentIndex >= searchCandidateList.size()) {
+            currentIndex = searchCandidateList.size() - 1;
+        }
+        searchCurrentIndex.set(currentIndex);
+        return currentIndex;
+    }
+    public ObservableList<IndexRange> getSearchCandidateList() {
+        return searchCandidateList;
+    }
+
+    public Integer getSearchCurrentIndex() {
+        return searchCurrentIndex.get();
+    }
+
+    public ObjectProperty<Integer> searchCurrentIndexProperty() {
+        return searchCurrentIndex;
     }
 }

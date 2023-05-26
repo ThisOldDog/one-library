@@ -1,34 +1,32 @@
-package pers.dog.infra.action.project;
+package pers.dog.infra.action.editor;
+
+import java.util.function.Consumer;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.TabPane;
 import org.controlsfx.control.action.Action;
-import org.springframework.stereotype.Component;
 import pers.dog.api.controller.OneLibraryController;
-import pers.dog.api.controller.ProjectEditorController;
 import pers.dog.boot.component.control.ControlProvider;
 import pers.dog.boot.component.control.FXMLControl;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 
-/**
- * @author 废柴 2022/6/2 22:40
- */
-@Component
-public class SaveProjectAction extends Action {
+public abstract class BaseEditorAction extends Action {
     @FXMLControl(controller = OneLibraryController.class)
     private final ControlProvider<TabPane> projectEditorWorkspace = new ControlProvider<>();
+    private final Consumer<ActionEvent> actionEventConsumer;
 
-    private SaveProjectAction() {
-        super(I18nMessageSource.getResource("info.project.save.project"));
-        super.setEventHandler(this::saveProject);
+    protected BaseEditorAction(String text, Consumer<ActionEvent> actionEventConsumer) {
+        super(I18nMessageSource.getResource(text));
+        super.setEventHandler(this::doAction);
+        this.actionEventConsumer = actionEventConsumer;
         projectEditorWorkspace.afterAssignment(tabPane -> Platform.runLater(() -> {
             tabPane.getSelectionModel().selectedItemProperty().addListener((change, oldValue, newValue) -> setDisabled(newValue == null));
             setDisabled(tabPane.getSelectionModel().isEmpty());
         }));
     }
 
-    public void saveProject(ActionEvent event) {
-        ((ProjectEditorController) projectEditorWorkspace.get().getSelectionModel().getSelectedItem().getUserData()).save();
+    private void doAction(ActionEvent actionEvent) {
+        actionEventConsumer.accept(actionEvent);
     }
 }

@@ -19,6 +19,7 @@
             <graphic>
                 <Glyph fontFamily="FontAwesome" icon="ROTATE_LEFT"/>
             </graphic>
+
         </Button>
         <Button onAction="#redo" focusTraversable="false">
             <tooltip>
@@ -37,7 +38,7 @@
             </graphic>
         </Button>
         <Separator/>
-        <Button onAction="#bold" focusTraversable="false">
+        <Button onAction="#bold" focusTraversable="false" >
             <tooltip>
                 <Tooltip text="%info.editor.toolbar.bold"/>
             </tooltip>

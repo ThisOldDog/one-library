@@ -27,6 +27,7 @@ module pers.dog {
     requires org.fxmisc.richtext;
     requires org.fxmisc.flowless;
     requires reactfx;
+    requires org.fxmisc.undo;
     requires flexmark;
     requires flexmark.util.data;
     requires flexmark.util.misc;
@@ -46,6 +47,7 @@ module pers.dog {
     opens pers.dog.infra.action;
     opens pers.dog.infra.action.application;
     opens pers.dog.infra.action.project;
+    opens pers.dog.infra.action.editor;
     opens pers.dog.infra.constant;
     opens pers.dog.infra.control;
     opens pers.dog.infra.property;

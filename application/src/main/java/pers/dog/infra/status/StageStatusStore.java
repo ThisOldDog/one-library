@@ -136,6 +136,7 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
             }
             return stageStatus.setX(stage.getX())
                     .setY(stage.getY())
+
                     .setDividers(projectSplitPane.getDividerPositions())
                     .setOpenProjectIds(projectEditorWorkspace.getTabs()
                             .stream()

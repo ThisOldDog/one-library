@@ -59,6 +59,10 @@ public class FileInternalSearchController implements Initializable {
         return searchTextField;
     }
 
+    public TextField getCurrentIndex() {
+        return currentIndex;
+    }
+
     public void setSearchTextField(TextField searchTextField) {
         this.searchTextField = searchTextField;
     }
