@@ -167,15 +167,17 @@
                             <Boolean fx:value="true"/>
                         </disabled>
                     </CodeBlockAction>
-                    <SearchAction>
-                        <accelerator>
-                            <KeyCodeCombination code="F" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
-                        </accelerator>
-                        <disabled>
-                            <Boolean fx:value="true"/>
-                        </disabled>
-                    </SearchAction>
                 </ActionGroup>
+            </ActionGroup>
+            <ActionGroup text="%info.action.edit.search">
+                <SearchAction>
+                    <accelerator>
+                        <KeyCodeCombination code="F" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                    </accelerator>
+                    <disabled>
+                        <Boolean fx:value="true"/>
+                    </disabled>
+                </SearchAction>
             </ActionGroup>
         </ActionMenuBar>
     </top>

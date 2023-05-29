@@ -15,6 +15,7 @@ public class FileInternalSearch extends Control {
     private final ObjectProperty<Action> previousOccurrenceAction;
     private final ObjectProperty<Action> nextOccurrenceAction;
     private final ObjectProperty<Action> moveToAction;
+    private final ObjectProperty<Action> closeAction;
     private final ObjectProperty<Boolean> requestForce;
     private final ObjectProperty<Integer> searchCandidateCount;
 
@@ -26,6 +27,7 @@ public class FileInternalSearch extends Control {
         this.previousOccurrenceAction = new SimpleObjectProperty<>();
         this.nextOccurrenceAction = new SimpleObjectProperty<>();
         this.moveToAction = new SimpleObjectProperty<>();
+        this.closeAction = new SimpleObjectProperty<>();
         this.requestForce = new SimpleObjectProperty<>(false);
         this.searchCandidateCount = new SimpleObjectProperty<>(0);
     }
@@ -95,8 +97,28 @@ public class FileInternalSearch extends Control {
         this.nextOccurrenceAction.set(nextOccurrenceAction);
     }
 
+    public Action getMoveToAction() {
+        return moveToAction.get();
+    }
+
+    public ObjectProperty<Action> moveToActionProperty() {
+        return moveToAction;
+    }
+
     public void setMoveToAction(Action action) {
         this.moveToAction.set(action);
+    }
+
+    public Action getCloseAction() {
+        return closeAction.get();
+    }
+
+    public ObjectProperty<Action> closeActionProperty() {
+        return closeAction;
+    }
+
+    public void setCloseAction(Action closeAction) {
+        this.closeAction.set(closeAction);
     }
 
     ObjectProperty<Boolean> requestForceProperty() {

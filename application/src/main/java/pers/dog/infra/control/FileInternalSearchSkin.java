@@ -24,6 +24,8 @@ public class FileInternalSearchSkin extends SkinBase<FileInternalSearch> {
         controller.searchActionProperty().bindBidirectional(view.searchActionProperty());
         controller.previousOccurrenceActionProperty().bindBidirectional(view.previousOccurrenceActionProperty());
         controller.nextOccurrenceActionProperty().bindBidirectional(view.nextOccurrenceActionProperty());
+        controller.moveToOccurrenceActionProperty().bindBidirectional(view.moveToActionProperty());
+        controller.closeActionProperty().bindBidirectional(view.closeActionProperty());
 
         controller.getCurrentIndex().textProperty().addListener((observable, oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue) && ObjectUtils.isNotEmpty(newValue)) {

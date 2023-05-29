@@ -323,6 +323,14 @@ public class MarkdownCodeArea extends CodeArea {
         });
     }
 
+    public void closeSearch() {
+        Platform.runLater(() -> {
+            searchCandidateList.clear();
+            searchCurrentIndex.set(-1);
+            applyHighlighting();
+        });
+    }
+
     public void nextSearchCandidate() {
         if (searchCandidateList.isEmpty()) {
             return;
@@ -359,6 +367,7 @@ public class MarkdownCodeArea extends CodeArea {
         if (searchCandidateList.isEmpty()) {
             return currentIndex;
         }
+        currentIndex--;
         if (currentIndex < 0) {
             currentIndex = 0;
         } else if (currentIndex >= searchCandidateList.size()) {

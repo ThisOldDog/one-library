@@ -94,6 +94,7 @@ public class ProjectEditorController implements Initializable {
         this.fileInternalSearch.setMoveToAction(new Action(actionEvent ->
             this.fileInternalSearch.setCurrentIndex(codeArea.moveToSearchCandidate(this.fileInternalSearch.getCurrentIndex()))
         ));
+        this.fileInternalSearch.setCloseAction(new Action(actionEvent -> closeSearch()));
         codeArea.getSearchCandidateList().addListener((InvalidationListener) observable -> this.fileInternalSearch.searchCandidateCountProperty().set(codeArea.getSearchCandidateList().size()));
         codeArea.searchCurrentIndexProperty().addListener(observable -> this.fileInternalSearch.setCurrentIndex(codeArea.getSearchCurrentIndex() + 1));
     }
@@ -181,10 +182,10 @@ public class ProjectEditorController implements Initializable {
     }
 
     // ToolBar
+
     public void quash() {
         codeArea.undo();
     }
-
     public void redo() {
         codeArea.redo();
     }
@@ -367,6 +368,11 @@ public class ProjectEditorController implements Initializable {
             }
             fileInternalSearch.requestFocus();
         });
+    }
+
+    private void closeSearch() {
+        Platform.runLater(() -> searchWorkspace.getChildren().clear());
+        codeArea.closeSearch();
     }
 
     public void onlyEditor() {

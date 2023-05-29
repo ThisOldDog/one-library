@@ -4,44 +4,65 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.HBox?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<HBox xmlns="http://javafx.com/javafx"
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="pers.dog.api.controller.FileInternalSearchController"
-      minHeight="32" maxHeight="32" alignment="CENTER_LEFT">
-    <padding>
-        <Insets top="4" bottom="4" left="4" right="4"/>
-    </padding>
-    <TextField fx:id="searchTextField" minWidth="40" prefWidth="480" maxWidth="480"/>
-    <Button onAction="#search" focusTraversable="false">
-        <tooltip>
-            <Tooltip text="%info.editor.toolbar.search"/>
-        </tooltip>
+      fx:controller="pers.dog.api.controller.FileInternalSearchController">
+    <TitledPane fx:id="searchBox" >
         <graphic>
-            <Glyph fontFamily="FontAwesome" icon="SEARCH"/>
-        </graphic>
-    </Button>
-    <Button onAction="#previousOccurrence" focusTraversable="false">
-        <tooltip>
-            <Tooltip text="%info.editor.toolbar.previous_occurrence"/>
-        </tooltip>
-        <graphic>
-            <Glyph fontFamily="FontAwesome" icon="ARROW_UP"/>
-        </graphic>
-    </Button>
-    <Button onAction="#nextOccurrence" focusTraversable="false">
-        <tooltip>
-            <Tooltip text="%info.editor.toolbar.next_occurrence"/>
-        </tooltip>
-        <graphic>
-            <Glyph fontFamily="FontAwesome" icon="ARROW_DOWN"/>
-        </graphic>
-    </Button>
+            <HBox minHeight="32" maxHeight="32">
+                <padding>
+                    <Insets top="4" bottom="4" left="4" right="4"/>
+                </padding>
+                <TextField fx:id="searchTextField" minWidth="40" prefWidth="480" maxWidth="480"/>
+                <Button onAction="#search" focusTraversable="false">
+                    <tooltip>
+                        <Tooltip text="%info.editor.toolbar.search"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="SEARCH"/>
+                    </graphic>
+                </Button>
+                <Button onAction="#previousOccurrence" focusTraversable="false">
+                    <tooltip>
+                        <Tooltip text="%info.editor.toolbar.previous_occurrence"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="ARROW_UP"/>
+                    </graphic>
+                </Button>
+                <Button onAction="#nextOccurrence" focusTraversable="false">
+                    <tooltip>
+                        <Tooltip text="%info.editor.toolbar.next_occurrence"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="ARROW_DOWN"/>
+                    </graphic>
+                </Button>
 
-    <Separator orientation="VERTICAL">
-        <padding>
-            <Insets top="2" bottom="2" left="8" right="8"/>
-        </padding>
-    </Separator>
-    <TextField fx:id="currentIndex" minWidth="16" prefWidth="16" alignment="CENTER" disable="true"/>
-    <Label fx:id="sumText" text=" / "/>
-</HBox>
+                <Separator orientation="VERTICAL">
+                    <padding>
+                        <Insets top="2" bottom="2" left="8" right="8"/>
+                    </padding>
+                </Separator>
+                <TextField fx:id="currentIndex" minWidth="16" prefWidth="16" alignment="CENTER" disable="true"/>
+                <Label fx:id="sumText" text=" / "/>
+                <HBox HBox.hgrow="ALWAYS" alignment="CENTER_RIGHT">
+                    <Button onAction="#close" focusTraversable="false">
+                        <tooltip>
+                            <Tooltip text="%info.editor.toolbar.close"/>
+                        </tooltip>
+                        <graphic>
+                            <Glyph fontFamily="FontAwesome" icon="CLOSE"/>
+                        </graphic>
+                    </Button>
+                </HBox>
+            </HBox>
+        </graphic>
+        <HBox alignment="CENTER_RIGHT">
+            <TextArea fx:id="replaceTextField" prefHeight="40.0" maxWidth="1200"/>
+            <Button onAction="#replace" focusTraversable="false" text="%info.editor.toolbar.replace"/>
+            <Button onAction="#replaceAll" focusTraversable="false" text="%info.editor.toolbar.replace_all"/>
+        </HBox>
+    </TitledPane>
+</VBox>
