@@ -122,6 +122,14 @@
                     <mainClass>pers.dog.OneLibraryApplication</mainClass>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>pers.dog.OneLibraryApplication</mainClass>
+                    <skip>false</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
