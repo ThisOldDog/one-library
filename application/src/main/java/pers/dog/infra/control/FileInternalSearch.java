@@ -1,13 +1,18 @@
 package pers.dog.infra.control;
 
+import java.util.Collection;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.event.ActionEvent;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import org.controlsfx.control.action.Action;
+import org.fxmisc.richtext.model.StyledDocument;
 
 public class FileInternalSearch extends Control {
     private final ObjectProperty<String> searchText;
+    private final ObjectProperty<String> replaceText;
     private final ObjectProperty<Integer> currentIndex;
 
 
@@ -19,8 +24,14 @@ public class FileInternalSearch extends Control {
     private final ObjectProperty<Boolean> requestForce;
     private final ObjectProperty<Integer> searchCandidateCount;
 
+    private final ObjectProperty<Boolean> showReplace;
+
+    private final ObjectProperty<Action> replaceAction;
+    private final ObjectProperty<Action> replaceAllAction;
+
     public FileInternalSearch() {
         this.searchText = new SimpleObjectProperty<>();
+        this.replaceText = new SimpleObjectProperty<>();
         this.currentIndex = new SimpleObjectProperty<>();
 
         this.searchAction = new SimpleObjectProperty<>();
@@ -30,6 +41,9 @@ public class FileInternalSearch extends Control {
         this.closeAction = new SimpleObjectProperty<>();
         this.requestForce = new SimpleObjectProperty<>(false);
         this.searchCandidateCount = new SimpleObjectProperty<>(0);
+        this.showReplace = new SimpleObjectProperty<>(false);
+        this.replaceAction = new SimpleObjectProperty<>();
+        this.replaceAllAction = new SimpleObjectProperty<>();
     }
 
     @Override
@@ -41,12 +55,24 @@ public class FileInternalSearch extends Control {
         return searchText.get();
     }
 
+    public String getReplaceText() {
+        return replaceText.get();
+    }
+
     public ObjectProperty<String> searchTextProperty() {
         return searchText;
     }
 
     public void setSearchText(String searchText) {
         this.searchText.set(searchText);
+    }
+
+    public ObjectProperty<String> replaceTextProperty() {
+        return replaceText;
+    }
+
+    public void setReplaceText(String replaceText) {
+        this.replaceText.set(replaceText);
     }
 
     public Integer getCurrentIndex() {
@@ -138,4 +164,35 @@ public class FileInternalSearch extends Control {
         requestForce.set(true);
     }
 
+    public void showReplace(boolean value) {
+        showReplace.set(value);
+    }
+
+    public ObjectProperty<Boolean> showReplaceProperty() {
+        return showReplace;
+    }
+
+    public Action getReplaceAction() {
+        return replaceAction.get();
+    }
+
+    public ObjectProperty<Action> replaceActionProperty() {
+        return replaceAction;
+    }
+
+    public void setReplaceAction(Action replaceAction) {
+        this.replaceAction.set(replaceAction);
+    }
+
+    public Action getReplaceAllAction() {
+        return replaceAllAction.get();
+    }
+
+    public ObjectProperty<Action> replaceAllActionProperty() {
+        return replaceAllAction;
+    }
+
+    public void setReplaceAllAction(Action replaceAllAction) {
+        this.replaceAllAction.set(replaceAllAction);
+    }
 }

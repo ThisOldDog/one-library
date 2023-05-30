@@ -31,6 +31,7 @@
 <?import pers.dog.infra.action.editor.CodeInlineAction?>
 <?import pers.dog.infra.action.editor.CodeBlockAction?>
 <?import pers.dog.infra.action.editor.SearchAction?>
+<?import pers.dog.infra.action.editor.ReplaceAction?>
 <BorderPane fx:id="oneLibraryWorkspace" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="pers.dog.api.controller.OneLibraryController">
     <top>
@@ -178,6 +179,14 @@
                         <Boolean fx:value="true"/>
                     </disabled>
                 </SearchAction>
+                <ReplaceAction>
+                    <accelerator>
+                        <KeyCodeCombination code="R" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                    </accelerator>
+                    <disabled>
+                        <Boolean fx:value="true"/>
+                    </disabled>
+                </ReplaceAction>
             </ActionGroup>
         </ActionMenuBar>
     </top>

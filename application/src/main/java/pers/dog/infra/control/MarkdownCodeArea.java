@@ -376,6 +376,42 @@ public class MarkdownCodeArea extends CodeArea {
         searchCurrentIndex.set(currentIndex);
         return currentIndex;
     }
+
+    public void replaceSearch(String replaceText) {
+        Platform.runLater(() -> {
+            if (searchCandidateList.isEmpty()
+                    || searchCurrentIndex.get() < 0
+                    || searchCurrentIndex.get() >= searchCandidateList.size()) {
+                return;
+            }
+            IndexRange indexRange = searchCandidateList.get(searchCurrentIndex.get());
+            String searchText = getText(indexRange);
+            int rowIndex = searchCurrentIndex.get();
+            replaceText(indexRange, Optional.ofNullable(replaceText).orElse(""));
+            search(searchText);
+
+            if (rowIndex >= searchCandidateList.size()) {
+                moveToSearchCandidate(1);
+            } else {
+                moveToSearchCandidate(rowIndex);
+            }
+        });
+    }
+
+    public void replaceSearchAll(String replaceText) {
+        Platform.runLater(() -> {
+            if (searchCandidateList.isEmpty()) {
+                return;
+            }
+            for (int i = searchCandidateList.size() - 1; i >= 0; i--) {
+                IndexRange indexRange = searchCandidateList.get(i);
+                replaceText(indexRange, Optional.ofNullable(replaceText).orElse(""));
+            }
+            searchCandidateList.clear();
+            searchCurrentIndex.set(-1);
+        });
+    }
+
     public ObservableList<IndexRange> getSearchCandidateList() {
         return searchCandidateList;
     }
@@ -387,4 +423,5 @@ public class MarkdownCodeArea extends CodeArea {
     public ObjectProperty<Integer> searchCurrentIndexProperty() {
         return searchCurrentIndex;
     }
+
 }

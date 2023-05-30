@@ -35,6 +35,8 @@ public interface ProjectEditorService {
 
     void search();
 
+    void replace();
+
     void onlyEditor();
 
     void onlyPreview();

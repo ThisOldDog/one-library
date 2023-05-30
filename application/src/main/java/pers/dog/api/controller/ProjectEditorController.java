@@ -16,6 +16,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -27,6 +28,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.controlsfx.control.action.Action;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
@@ -95,6 +97,8 @@ public class ProjectEditorController implements Initializable {
             this.fileInternalSearch.setCurrentIndex(codeArea.moveToSearchCandidate(this.fileInternalSearch.getCurrentIndex()))
         ));
         this.fileInternalSearch.setCloseAction(new Action(actionEvent -> closeSearch()));
+        this.fileInternalSearch.setReplaceAction(new Action(actionEvent -> codeArea.replaceSearch(this.fileInternalSearch.getReplaceText())));
+        this.fileInternalSearch.setReplaceAllAction(new Action(actionEvent -> codeArea.replaceSearchAll(this.fileInternalSearch.getReplaceText())));
         codeArea.getSearchCandidateList().addListener((InvalidationListener) observable -> this.fileInternalSearch.searchCandidateCountProperty().set(codeArea.getSearchCandidateList().size()));
         codeArea.searchCurrentIndexProperty().addListener(observable -> this.fileInternalSearch.setCurrentIndex(codeArea.getSearchCurrentIndex() + 1));
     }
@@ -185,9 +189,11 @@ public class ProjectEditorController implements Initializable {
 
     public void quash() {
         codeArea.undo();
+        fileInternalSearch.searchActionProperty().get().handle(new ActionEvent());
     }
     public void redo() {
         codeArea.redo();
+        fileInternalSearch.searchActionProperty().get().handle(new ActionEvent());
     }
 
     public void save() {
@@ -366,6 +372,18 @@ public class ProjectEditorController implements Initializable {
             if (children.isEmpty()) {
                 children.add(fileInternalSearch);
             }
+            fileInternalSearch.showReplace(false);
+            fileInternalSearch.requestFocus();
+        });
+    }
+
+    public void replace() {
+        Platform.runLater(() -> {
+            ObservableList<Node> children = searchWorkspace.getChildren();
+            if (children.isEmpty()) {
+                children.add(fileInternalSearch);
+            }
+            fileInternalSearch.showReplace(true);
             fileInternalSearch.requestFocus();
         });
     }

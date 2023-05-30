@@ -1,24 +1,28 @@
 package pers.dog.api.controller;
 
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.controlsfx.control.action.Action;
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.Glyph;
 
 public class FileInternalSearchController implements Initializable {
     /* *************************************************************
@@ -26,14 +30,18 @@ public class FileInternalSearchController implements Initializable {
      * Search
      *
      * *************************************************************/
+    public static final Glyph REPLACE_COLLAPSE = new Glyph("FontAwesome", FontAwesome.Glyph.CARET_RIGHT);
+    public static final Glyph REPLACE_EXPAND = new Glyph("FontAwesome", FontAwesome.Glyph.CARET_DOWN);
     @FXML
-    public TitledPane searchBox;
+    public VBox searchBox;
     @FXML
     public TextField searchTextField;
     @FXML
     public TextField currentIndex;
     @FXML
     public Label sumText;
+    @FXML
+    public Button replaceExpandButton;
 
     private final ObjectProperty<Action> searchAction;
     private final ObjectProperty<Action> previousOccurrenceAction;
@@ -50,7 +58,13 @@ public class FileInternalSearchController implements Initializable {
      * *************************************************************/
 
     @FXML
-    public TextArea replaceTextField;
+    public HBox replaceBox;
+    @FXML
+    public TextField replaceTextField;
+    @FXML
+    public Button replaceButton;
+    @FXML
+    public Button replaceAllButton;
     private final ObjectProperty<Action> replaceAction;
     private final ObjectProperty<Action> replaceAllAction;
 
@@ -67,11 +81,13 @@ public class FileInternalSearchController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         currentIndex.textProperty().addListener(change ->
-            Platform.runLater(() -> {
-                Text text = new Text(currentIndex.getText());
-                text.setWrappingWidth(0);
-                currentIndex.setPrefWidth(text.getBoundsInLocal().getWidth() + 16);
-            })
+                Platform.runLater(() -> {
+                    Text text = new Text(currentIndex.getText());
+                    text.setWrappingWidth(0);
+                    currentIndex.setPrefWidth(text.getBoundsInLocal().getWidth() + 16);
+                    replaceButton.setDisable(ObjectUtils.isEmpty(text.getText()) || "0".equals(text.getText()));
+                    replaceAllButton.setDisable(ObjectUtils.isEmpty(text.getText()) || "0".equals(text.getText()));
+                })
         );
         searchTextField.setOnKeyReleased(event -> {
             if (KeyCode.ENTER.equals(event.getCode())) {
@@ -90,11 +106,16 @@ public class FileInternalSearchController implements Initializable {
                 moveToOccurrence(new ActionEvent().copyFor(event.getSource(), event.getTarget()));
             }
         });
-        searchBox.widthProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                ((HBox)searchBox.getGraphic()).setPrefWidth(newValue.doubleValue());
-            }
-        });
+        searchBox.getChildren().addListener((InvalidationListener) observable ->
+                Platform.runLater(() -> {
+                    if (searchBox.getChildren().size() == 1) {
+                        replaceExpandButton.setGraphic(REPLACE_COLLAPSE);
+                    } else {
+                        replaceExpandButton.setGraphic(REPLACE_EXPAND);
+                    }
+                })
+        );
+        
     }
 
     /* *************************************************************
@@ -102,6 +123,12 @@ public class FileInternalSearchController implements Initializable {
      * Search
      *
      * *************************************************************/
+    public void showSearch() {
+        if (searchBox.getChildren().size() > 1) {
+            searchBox.getChildren().remove(1, searchBox.getChildren().size());
+        }
+    }
+
     public void search(ActionEvent actionEvent) {
         searchAction.get().handle(actionEvent);
         autoNextFlag.set(true);
@@ -118,6 +145,7 @@ public class FileInternalSearchController implements Initializable {
     public void moveToOccurrence(ActionEvent actionEvent) {
         moveToOccurrenceAction.get().handle(actionEvent);
     }
+
     public void close(ActionEvent actionEvent) {
         closeAction.get().handle(actionEvent);
         autoNextFlag.set(false);
@@ -160,6 +188,19 @@ public class FileInternalSearchController implements Initializable {
      * Replace
      *
      * *************************************************************/
+    public void showReplace() {
+        if (searchBox.getChildren().size() == 1) {
+            searchBox.getChildren().add(replaceBox);
+        }
+    }
+
+    public void switchShowReplace() {
+        if (searchBox.getChildren().size() == 1) {
+            showReplace();
+        } else {
+            showSearch();
+        }
+    }
 
     public void replace(ActionEvent event) {
         replaceAction.get().handle(event);
@@ -169,7 +210,7 @@ public class FileInternalSearchController implements Initializable {
         replaceAllAction.get().handle(event);
     }
 
-    public TextArea getReplaceTextField() {
+    public TextField getReplaceTextField() {
         return replaceTextField;
     }
 

@@ -176,6 +176,15 @@ public class ProjectEditorServiceImpl implements ProjectEditorService {
     }
 
     @Override
+    public void replace() {
+        ProjectEditorController editorController = editorController();
+        if (editorController == null) {
+            return;
+        }
+        editorController.replace();
+    }
+
+    @Override
     public void onlyEditor() {
         ProjectEditorController editorController = editorController();
         if (editorController == null) {
