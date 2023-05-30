@@ -2,11 +2,9 @@ package pers.dog.api.callback;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
@@ -20,12 +18,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pers.dog.api.controller.OneLibraryController;
-import pers.dog.api.controller.ProjectEditorController;
 import pers.dog.api.controller.ProjectItemController;
 import pers.dog.api.controller.ProjectItemEditingController;
 import pers.dog.app.service.ProjectService;
 import pers.dog.boot.component.control.FXMLControl;
-import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.FXMLUtils;
 import pers.dog.domain.entity.Project;
 import pers.dog.infra.action.project.CreateDirectoryAction;
@@ -44,15 +40,15 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
     private static final String PROJECT_ITEM_EDITING_FXML = "project-item-editing";
     private static final String CELL_DRAG_OVER_STYLE_CLASS_FILE = "project-tree-drag-over-file";
     private static final String CELL_DRAG_OVER_STYLE_CLASS_DIR = "project-tree-drag-over-dir";
-    private final ContextMenu BLANK_CONTEXT_MENU;
-    private final ContextMenu PROJECT_CONTEXT_MENU;
+    private final ContextMenu blankContextMenu;
+    private final ContextMenu projectContextMenu;
 
     @SuppressWarnings("unused")
     @FXMLControl(controller = OneLibraryController.class)
     private TabPane projectEditorWorkspace;
     private final ProjectService projectService;
-    private final static AtomicReference<TreeCell<Project>> dragged = new AtomicReference<>();
-    private final static AtomicReference<TreeCell<Project>> previousOver = new AtomicReference<>();
+    private static final AtomicReference<TreeCell<Project>> dragged = new AtomicReference<>();
+    private static final AtomicReference<TreeCell<Project>> previousOver = new AtomicReference<>();
 
     public ProjectTreeCallback(ProjectService projectService,
                                // Action
@@ -61,11 +57,11 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                                DeleteProjectAction deleteProjectAction,
                                OpenRenameProjectAction openRenameProjectAction) {
         this.projectService = projectService;
-        BLANK_CONTEXT_MENU = ActionUtils.createContextMenu(Arrays.asList(
+        blankContextMenu = ActionUtils.createContextMenu(Arrays.asList(
                 createMarkdownAction,
                 createDirectoryAction
         ));
-        PROJECT_CONTEXT_MENU = ActionUtils.createContextMenu(Arrays.asList(
+        projectContextMenu = ActionUtils.createContextMenu(Arrays.asList(
                 createMarkdownAction,
                 createDirectoryAction,
                 deleteProjectAction,
@@ -115,7 +111,7 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
 
             private void handleEmpty() {
                 setText(null);
-                setContextMenu(BLANK_CONTEXT_MENU);
+                setContextMenu(blankContextMenu);
                 setGraphic(null);
                 setOnContextMenuRequested(event -> {
                     projectTree.getSelectionModel().clearSelection();
@@ -126,7 +122,7 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                 Parent parent = FXMLUtils.loadFXML(PROJECT_ITEM_FXML);
                 ProjectItemController controller = FXMLUtils.getController(parent);
                 controller.showProject(item);
-                setContextMenu(PROJECT_CONTEXT_MENU);
+                setContextMenu(projectContextMenu);
                 setGraphic(parent);
                 setOnContextMenuRequested(event -> {
                 });
