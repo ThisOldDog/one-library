@@ -182,7 +182,7 @@
     <SplitPane fx:id="projectEditorWorkspace" VBox.vgrow="ALWAYS" dividerPositions="0.5">
         <VirtualizedScrollPane fx:id="codeAreaWorkspace">
             <content>
-                <MarkdownCodeArea fx:id="codeArea"/>
+                <MarkdownCodeArea fx:id="codeArea" wrapText="true"/>
             </content>
         </VirtualizedScrollPane>
         <WebView fx:id="previewArea"/>

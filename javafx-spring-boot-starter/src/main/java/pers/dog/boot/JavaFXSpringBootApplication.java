@@ -103,7 +103,11 @@ public abstract class JavaFXSpringBootApplication extends Application {
     @Override
     public void init() throws Exception {
         onCreate();
-        CompletableFuture.supplyAsync(() -> new SpringApplicationBuilder(this.getClass()).bannerMode(Banner.Mode.OFF).run(ApplicationContextHolder.getArgs()))
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        CompletableFuture.supplyAsync(() -> {
+                    Thread.currentThread().setContextClassLoader(classLoader);
+                    return new SpringApplicationBuilder(this.getClass()).bannerMode(Banner.Mode.OFF).run(ApplicationContextHolder.getArgs());
+                })
                 .whenComplete((context, throwable) -> {
                     if (throwable != null) {
                         logger.error("[Start] An error occurred when the application started.", throwable);
