@@ -43,6 +43,13 @@ public class OneLibraryController implements Initializable {
         projectTree.setRoot(projectTreeItem);
         projectTree.requestFocus();
         projectTree.setEditable(false);
+        projectEditorWorkspace.getSelectionModel().selectedItemProperty().addListener(observable -> {
+            Tab selectedItem = projectEditorWorkspace.getSelectionModel().getSelectedItem();
+            if (selectedItem != null) {
+                ProjectEditorController projectEditorController = (ProjectEditorController) selectedItem.getUserData();
+                projectEditorController.requestFocus();
+            }
+        });
     }
 
     public void expand(ActionEvent event) {

@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
@@ -294,10 +295,11 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void openFile(Project project) {
+
         ObservableList<Tab> tabs = projectEditorWorkspace.getTabs();
         for (Tab tab : tabs) {
             if (Objects.equals(((ProjectEditorController) tab.getUserData()).getProject(), project)) {
-                projectEditorWorkspace.getSelectionModel().select(tab);
+                Platform.runLater(() -> projectEditorWorkspace.getSelectionModel().select(tab));
                 return;
             }
         }
@@ -328,9 +330,11 @@ public class ProjectServiceImpl implements ProjectService {
                         });
             }
         });
-        projectEditorController.show(project);
-        tabs.add(tab);
-        projectEditorWorkspace.getSelectionModel().select(tab);
+        Platform.runLater(() -> {
+            tabs.add(tab);
+            projectEditorWorkspace.getSelectionModel().select(tab);
+            projectEditorController.show(project);
+        });
     }
 
     private TreeItem<Project> currentParentDirectory() {

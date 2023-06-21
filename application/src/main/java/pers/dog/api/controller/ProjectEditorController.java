@@ -94,7 +94,7 @@ public class ProjectEditorController implements Initializable {
         this.fileInternalSearch.setNextOccurrenceAction(new Action(actionEvent -> codeArea.nextSearchCandidate()));
         this.fileInternalSearch.setPreviousOccurrenceAction(new Action(actionEvent -> codeArea.previousSearchCandidate()));
         this.fileInternalSearch.setMoveToAction(new Action(actionEvent ->
-            this.fileInternalSearch.setCurrentIndex(codeArea.moveToSearchCandidate(this.fileInternalSearch.getCurrentIndex()))
+                this.fileInternalSearch.setCurrentIndex(codeArea.moveToSearchCandidate(this.fileInternalSearch.getCurrentIndex()))
         ));
         this.fileInternalSearch.setCloseAction(new Action(actionEvent -> closeSearch()));
         this.fileInternalSearch.setReplaceAction(new Action(actionEvent -> codeArea.replaceSearch(this.fileInternalSearch.getReplaceText())));
@@ -106,14 +106,10 @@ public class ProjectEditorController implements Initializable {
     public void show(Project project) {
         setProjectProperty(project);
         setFileOperationHandler(project);
-        Platform.runLater(() -> {
-            setChangeListener();
-            setText(project);
-            loaded.set(true);
-            codeArea.getUndoManager().forgetHistory();
-            codeArea.requestFocus();
-            codeArea.displaceCaret(0);
-        });
+        setChangeListener();
+        setText(project);
+        codeArea.getUndoManager().forgetHistory();
+        loaded.set(true);
     }
 
     private void setChangeListener() {
@@ -188,18 +184,25 @@ public class ProjectEditorController implements Initializable {
     // ToolBar
 
     public void quash() {
-        codeArea.undo();
-        fileInternalSearch.searchActionProperty().get().handle(new ActionEvent());
+        Platform.runLater(() -> {
+            codeArea.undo();
+            fileInternalSearch.searchActionProperty().get().handle(new ActionEvent());
+        });
     }
+
     public void redo() {
-        codeArea.redo();
-        fileInternalSearch.searchActionProperty().get().handle(new ActionEvent());
+        Platform.runLater(() -> {
+            codeArea.redo();
+            fileInternalSearch.searchActionProperty().get().handle(new ActionEvent());
+        });
     }
 
     public void save() {
-        String editorText = codeArea.getText();
-        fileOperationHandler.write(projectProperty.get().getProjectName(), editorText);
-        dirtyProperty().set(false);
+        Platform.runLater(() -> {
+            String editorText = codeArea.getText();
+            fileOperationHandler.write(projectProperty.get().getProjectName(), editorText);
+            dirtyProperty().set(false);
+        });
     }
 
     private void wrapSelection(String selectedText, IndexRange selection, String leftSymbol, String rightSymbol) {
@@ -389,34 +392,49 @@ public class ProjectEditorController implements Initializable {
     }
 
     private void closeSearch() {
-        Platform.runLater(() -> searchWorkspace.getChildren().clear());
-        codeArea.closeSearch();
+        Platform.runLater(() -> {
+            searchWorkspace.getChildren().clear();
+            codeArea.closeSearch();
+        });
+
     }
 
     public void onlyEditor() {
-        ObservableList<Node> items = projectEditorWorkspace.getItems();
-        items.clear();
-        items.add(codeAreaWorkspace);
-        onlyEditorButton.setDisable(true);
-        onlyPreviewButton.setDisable(false);
-        editorAndPreviewButton.setDisable(false);
+        Platform.runLater(() -> {
+            ObservableList<Node> items = projectEditorWorkspace.getItems();
+            items.clear();
+            items.add(codeAreaWorkspace);
+            onlyEditorButton.setDisable(true);
+            onlyPreviewButton.setDisable(false);
+            editorAndPreviewButton.setDisable(false);
+        });
     }
 
     public void onlyPreview() {
-        ObservableList<Node> items = projectEditorWorkspace.getItems();
-        items.clear();
-        items.add(previewArea);
-        onlyEditorButton.setDisable(false);
-        onlyPreviewButton.setDisable(true);
-        editorAndPreviewButton.setDisable(false);
+        Platform.runLater(() -> {
+            ObservableList<Node> items = projectEditorWorkspace.getItems();
+            items.clear();
+            items.add(previewArea);
+            onlyEditorButton.setDisable(false);
+            onlyPreviewButton.setDisable(true);
+            editorAndPreviewButton.setDisable(false);
+        });
     }
 
     public void editorAndPreview() {
-        ObservableList<Node> items = projectEditorWorkspace.getItems();
-        items.clear();
-        items.addAll(codeAreaWorkspace, previewArea);
-        onlyEditorButton.setDisable(false);
-        onlyPreviewButton.setDisable(false);
-        editorAndPreviewButton.setDisable(true);
+        Platform.runLater(() -> {
+            ObservableList<Node> items = projectEditorWorkspace.getItems();
+            items.clear();
+            items.addAll(codeAreaWorkspace, previewArea);
+            onlyEditorButton.setDisable(false);
+            onlyPreviewButton.setDisable(false);
+            editorAndPreviewButton.setDisable(true);
+        });
+    }
+
+    public void requestFocus() {
+        Platform.runLater(() -> {
+            codeArea.requestFocus();
+        });
     }
 }
