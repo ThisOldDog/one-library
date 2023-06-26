@@ -140,6 +140,7 @@ public abstract class JavaFXSpringBootApplication extends Application {
         if (context != null) {
             context.publishEvent(new ApplicationCloseEvent(this));
         }
+        System.exit(0);
     }
 
     private void loadBanner(Scene startScene) {
