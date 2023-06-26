@@ -19,6 +19,7 @@
 
 .code-area .paragraph-box .text {
     -fx-font-size: 14px;
+    -fx-font-family: Monospaced;
 }
 
 .project-tree-drag-over-file {
