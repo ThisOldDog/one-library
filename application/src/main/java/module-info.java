@@ -4,6 +4,7 @@ module pers.dog {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.web;
+    requires javafx.swing;
 
     requires cglib;
     requires java.persistence;

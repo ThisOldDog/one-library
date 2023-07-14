@@ -2,6 +2,7 @@ package pers.dog.boot.component.file;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.CopyOption;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -14,6 +15,7 @@ import java.util.List;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StreamUtils;
 import pers.dog.boot.infra.util.ValueConverterUtils;
 
 /**
@@ -47,7 +49,11 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
                 Files.createDirectories(directory);
             }
             logger.info("[File Operation] Write to file {}", target);
-            Files.writeString(target, ValueConverterUtils.write(content), writeOption.toOpenOption());
+            if (content instanceof InputStream) {
+                Files.write(target, StreamUtils.copyToByteArray((InputStream) content), writeOption.toOpenOption());
+            } else {
+                Files.writeString(target, ValueConverterUtils.write(content), writeOption.toOpenOption());
+            }
         } catch (IOException e) {
             String exceptionMessage = String.format("[File Operation] Unable to write setting to %s", target);
             logger.error(exceptionMessage, e);

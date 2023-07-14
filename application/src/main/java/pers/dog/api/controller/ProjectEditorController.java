@@ -1,10 +1,23 @@
 package pers.dog.api.controller;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.imageio.ImageIO;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
@@ -16,6 +29,8 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Worker;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -23,14 +38,19 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.IndexRange;
 import javafx.scene.control.SplitPane;
+import javafx.scene.image.Image;
+import javafx.scene.input.Clipboard;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.controlsfx.control.action.Action;
 import org.fxmisc.flowless.VirtualizedScrollPane;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
@@ -49,6 +69,7 @@ import pers.dog.infra.property.TableProperty;
  * @author 废柴 2023/3/23 23:06
  */
 public class ProjectEditorController implements Initializable {
+    private static final Logger logger = LoggerFactory.getLogger(ProjectEditorController.class);
     private static final String STYLE_CLASS_BUTTON_SAVE_DIRTY = "button-save-dirty";
     private final ObjectProperty<Project> projectProperty = new SimpleObjectProperty<>();
     private final ProjectRepository projectRepository;
@@ -88,7 +109,6 @@ public class ProjectEditorController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        this.engine = previewArea.getEngine();
         this.fileInternalSearch = new FileInternalSearch();
         this.fileInternalSearch.setSearchAction(new Action(actionEvent -> codeArea.search(this.fileInternalSearch.getSearchText())));
         this.fileInternalSearch.setNextOccurrenceAction(new Action(actionEvent -> codeArea.nextSearchCandidate()));
@@ -99,8 +119,54 @@ public class ProjectEditorController implements Initializable {
         this.fileInternalSearch.setCloseAction(new Action(actionEvent -> closeSearch()));
         this.fileInternalSearch.setReplaceAction(new Action(actionEvent -> codeArea.replaceSearch(this.fileInternalSearch.getReplaceText())));
         this.fileInternalSearch.setReplaceAllAction(new Action(actionEvent -> codeArea.replaceSearchAll(this.fileInternalSearch.getReplaceText())));
-        codeArea.getSearchCandidateList().addListener((InvalidationListener) observable -> this.fileInternalSearch.searchCandidateCountProperty().set(codeArea.getSearchCandidateList().size()));
-        codeArea.searchCurrentIndexProperty().addListener(observable -> this.fileInternalSearch.setCurrentIndex(codeArea.getSearchCurrentIndex() + 1));
+        this.engine = previewArea.getEngine();
+        this.engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == Worker.State.SUCCEEDED) {
+                Document document = this.engine.getDocument();
+                XPath xPath = XPathFactory.newInstance().newXPath();
+                try {
+                    Element base = (Element) xPath.evaluate("//*[local-name()='head']/*[local-name()='base']", document, XPathConstants.NODE);
+                    if (base == null) {
+                        Element head = (Element) xPath.evaluate("//*[local-name()='head']", document, XPathConstants.NODE);
+                        if (head == null) {
+                            head = document.createElement("head");
+                            Element html = (Element) xPath.evaluate("//*[local-name()='html']", document, XPathConstants.NODE);
+                            html.insertBefore(head, html.getFirstChild());
+                        }
+                        base = document.createElement("base");
+                        head.insertBefore(base, head.getFirstChild());
+                    }
+                    base.setAttribute("href", fileOperationHandler.directory().toAbsolutePath().toUri().toString());
+                } catch (XPathExpressionException e) {
+                    logger.error("Unable travel document.", e);
+                }
+            }
+        });
+        this.codeArea.getSearchCandidateList().addListener((InvalidationListener) observable -> this.fileInternalSearch.searchCandidateCountProperty().set(codeArea.getSearchCandidateList().size()));
+        this.codeArea.searchCurrentIndexProperty().addListener(observable -> this.fileInternalSearch.setCurrentIndex(codeArea.getSearchCurrentIndex() + 1));
+        this.codeArea.setOnPaste(event -> {
+            Clipboard clipboard = event.getClipboard();
+            if (clipboard.hasImage()) {
+                Platform.runLater(() -> {
+                    String fileName = projectProperty.get().getSimpleProjectName()
+                            + "-"
+                            + Optional.ofNullable(clipboard.getImage().getUrl()).map(path -> path.substring(path.lastIndexOf("/") + 1)).orElseGet(() -> ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddhhmmssSSS")))
+                            + ".png";
+                    try (ByteArrayOutputStream imageOutputStream = new ByteArrayOutputStream()) {
+                        ImageIO.write(SwingFXUtils.fromFXImage(clipboard.getImage(), null), "png", imageOutputStream);
+                        fileOperationHandler.write(fileName, new ByteArrayInputStream(imageOutputStream.toByteArray()));
+                    } catch (IOException e) {
+                        throw new RuntimeException("Unable read image from clipboard", e);
+                    }
+                    codeArea.replaceSelection(String.format("![%s](%s)", fileName, "./" + URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20")));
+                });
+            } else if (clipboard.hasString()) {
+                String text = clipboard.getString();
+                if (text != null) {
+                    codeArea.replaceSelection(text);
+                }
+            }
+        });
     }
 
     public void show(Project project) {

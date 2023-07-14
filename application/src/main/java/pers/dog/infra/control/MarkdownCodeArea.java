@@ -9,17 +9,19 @@ import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.event.EventHandler;
 import javafx.scene.control.IndexRange;
+import javafx.scene.input.Clipboard;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
-import org.fxmisc.richtext.model.EditableStyledDocument;
-import org.fxmisc.richtext.model.StyleSpans;
-import org.fxmisc.richtext.model.StyleSpansBuilder;
-import org.fxmisc.richtext.model.StyledDocument;
+import org.fxmisc.richtext.model.*;
+import org.springframework.util.CollectionUtils;
+import pers.dog.infra.control.event.PasteEvent;
 
 /**
  * @author 废柴 2023/3/30 20:12
@@ -147,6 +149,7 @@ public class MarkdownCodeArea extends CodeArea {
     private final ObjectProperty<Boolean> circulateFlag = new SimpleObjectProperty<>(false);
     private final List<TextInsertionListener> insertionListeners;
     private ExecutorService executor;
+    private EventHandler<PasteEvent> pasteEventConsumer;
 
     /**
      * Creates an area with no text.
@@ -205,6 +208,33 @@ public class MarkdownCodeArea extends CodeArea {
                 codeArea.selectRange(indexRange.getStart(), indexRange.getEnd());
             }
         });
+        // 新行自动不全空格
+        getParagraphs().addListener((ListChangeListener<? super Paragraph<Collection<String>, String, Collection<String>>>) change -> {
+            while (change.next()) {
+                if (change.wasAdded()) {
+                    List<?> addedSubList = change.getAddedSubList();
+                    if (CollectionUtils.isEmpty(addedSubList)) {
+                        return;
+                    }
+                    for (Paragraph<Collection<String>, String, Collection<String>> paragraph : change.getAddedSubList()) {
+                        int index = change.getList().indexOf(paragraph);
+                        if (index < 1) {
+                            return;
+                        }
+
+                    }
+                }
+            }
+        });
+    }
+
+    public void setOnPaste(EventHandler<PasteEvent> consumer) {
+        this.pasteEventConsumer = consumer;
+    }
+    @Override
+    public void paste() {
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        pasteEventConsumer.handle(new PasteEvent(clipboard, this));
     }
 
     private Task<StyleSpans<Collection<String>>> computeHighlightingAsync() {
