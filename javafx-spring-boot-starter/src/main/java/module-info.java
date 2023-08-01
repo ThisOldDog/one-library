@@ -9,7 +9,7 @@ module javafx.spring.boot.starter {
     requires spring.context;
     requires spring.boot;
     requires spring.boot.autoconfigure;
-    requires spring.boot.starter.data.jpa;
+    requires static spring.boot.starter.data.jpa;
 
     requires org.slf4j;
     requires org.apache.commons.lang3;
@@ -17,8 +17,8 @@ module javafx.spring.boot.starter {
     requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
-    requires com.h2database;
-    requires org.controlsfx.controls;
+    requires static com.h2database;
+    requires static org.controlsfx.controls;
 
     exports pers.dog.boot;
     exports pers.dog.boot.autoconfiguration;

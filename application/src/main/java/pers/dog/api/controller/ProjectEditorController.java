@@ -12,7 +12,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import javax.imageio.ImageIO;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -38,7 +37,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.IndexRange;
 import javafx.scene.control.SplitPane;
-import javafx.scene.image.Image;
 import javafx.scene.input.Clipboard;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
@@ -51,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
@@ -102,6 +101,7 @@ public class ProjectEditorController implements Initializable {
     private String localText;
     private WebEngine engine;
     private FileInternalSearch fileInternalSearch;
+    private String path;
 
     public ProjectEditorController(ProjectRepository projectRepository) {
         this.projectRepository = projectRepository;
@@ -125,18 +125,17 @@ public class ProjectEditorController implements Initializable {
                 Document document = this.engine.getDocument();
                 XPath xPath = XPathFactory.newInstance().newXPath();
                 try {
-                    Element base = (Element) xPath.evaluate("//*[local-name()='head']/*[local-name()='base']", document, XPathConstants.NODE);
-                    if (base == null) {
-                        Element head = (Element) xPath.evaluate("//*[local-name()='head']", document, XPathConstants.NODE);
-                        if (head == null) {
-                            head = document.createElement("head");
-                            Element html = (Element) xPath.evaluate("//*[local-name()='html']", document, XPathConstants.NODE);
-                            html.insertBefore(head, html.getFirstChild());
+                    NodeList imgList = (NodeList) xPath.evaluate("//*[local-name()='img']", document, XPathConstants.NODESET);
+                    if (imgList != null) {
+                        for (int i = 0; i < imgList.getLength(); i++) {
+                            Element img = (Element) imgList.item(i);
+                            String src = img.getAttribute("src");
+                            if (src.startsWith(path)) {
+                                continue;
+                            }
+                            img.setAttribute("src", path + src);
                         }
-                        base = document.createElement("base");
-                        head.insertBefore(base, head.getFirstChild());
                     }
-                    base.setAttribute("href", fileOperationHandler.directory().toAbsolutePath().toUri().toString());
                 } catch (XPathExpressionException e) {
                     logger.error("Unable travel document.", e);
                 }
@@ -233,6 +232,7 @@ public class ProjectEditorController implements Initializable {
             }
         }
         fileOperationHandler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix(pathPrefix.toString()));
+        this.path = fileOperationHandler.directory().toAbsolutePath().toUri().toString();
     }
 
     public boolean getDirty() {
