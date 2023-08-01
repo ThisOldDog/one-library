@@ -130,7 +130,7 @@ public class ProjectEditorController implements Initializable {
                         for (int i = 0; i < imgList.getLength(); i++) {
                             Element img = (Element) imgList.item(i);
                             String src = img.getAttribute("src");
-                            if (src.startsWith(path)) {
+                            if (src.startsWith(path) || src.startsWith("http")) {
                                 continue;
                             }
                             img.setAttribute("src", path + src);
