@@ -141,6 +141,7 @@ public class ProjectEditorController implements Initializable {
                 }
             }
         });
+        this.engine.setUserStyleSheetLocation("file:G:\\Project\\one-library\\application\\src\\main\\resources\\static\\css\\markdown\\lapis\\lapis.css");
         this.codeArea.getSearchCandidateList().addListener((InvalidationListener) observable -> this.fileInternalSearch.searchCandidateCountProperty().set(codeArea.getSearchCandidateList().size()));
         this.codeArea.searchCurrentIndexProperty().addListener(observable -> this.fileInternalSearch.setCurrentIndex(codeArea.getSearchCurrentIndex() + 1));
         this.codeArea.setOnPaste(event -> {
