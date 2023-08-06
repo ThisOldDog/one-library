@@ -1,23 +1,5 @@
 package pers.dog.api.controller;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.imageio.ImageIO;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.parser.PegdownExtensions;
@@ -63,6 +45,24 @@ import pers.dog.infra.property.HeaderProperty;
 import pers.dog.infra.property.ImageProperty;
 import pers.dog.infra.property.LinkProperty;
 import pers.dog.infra.property.TableProperty;
+
+import javax.imageio.ImageIO;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author 废柴 2023/3/23 23:06
@@ -165,6 +165,14 @@ public class ProjectEditorController implements Initializable {
                     codeArea.replaceSelection(text);
                 }
             }
+        });
+        this.codeAreaWorkspace.estimatedScrollYProperty().addListener(observable -> {
+            int firstLine = this.codeArea.firstVisibleParToAllParIndex();
+            int lastLine = this.codeArea.lastVisibleParToAllParIndex();
+            int totalLine = this.codeArea.getParagraphs().size();
+            double target = firstLine == 0 ? 0 : firstLine *1D / (totalLine - lastLine + firstLine);
+            this.engine.executeScript(String.format("window.scrollTo(0, document.body.scrollHeight * %s);",
+                    target));
         });
     }
 
