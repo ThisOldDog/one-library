@@ -32,7 +32,17 @@ module pers.dog {
     requires flexmark;
     requires flexmark.util.data;
     requires flexmark.util.misc;
+    requires flexmark.util.ast;
+    requires flexmark.util.html;
     requires flexmark.profile.pegdown;
+    requires flexmark.ext.attributes;
+    requires flexmark.ext.toc;
+    requires flexmark.ext.tables;
+    requires flexmark.ext.gfm.tasklist;
+    requires flexmark.ext.yaml.front.matter;
+    requires flexmark.ext.footnotes;
+    requires flexmark.ext.emoji;
+    requires flexmark.ext.superscript;
     requires antlr;
     requires org.antlr.antlr4.runtime;
 

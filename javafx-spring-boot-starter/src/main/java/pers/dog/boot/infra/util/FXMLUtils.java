@@ -49,7 +49,7 @@ public class FXMLUtils {
             if (constructors.length == 1) {
                 return createInstance(type, constructors[0]);
             }
-            return new LoadException("[FXMLoader] No matching constructor found: " + type);
+            throw new RuntimeException(new LoadException("[FXMLoader] No matching constructor found: " + type));
         }
 
         private Object createInstance(Class<?> type, Constructor<?> constructor) {
@@ -71,7 +71,7 @@ public class FXMLUtils {
                 }
                 return constructor.newInstance(parameterValues);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                return new LoadException("[FXMLoader] An error occurred while creating an instance of the class : " + type + "#" + constructor, e);
+                throw new RuntimeException(new LoadException("[FXMLoader] An error occurred while creating an instance of the class : " + type + "#" + constructor, e));
             }
         }
     }

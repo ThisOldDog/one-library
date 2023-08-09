@@ -1,10 +1,46 @@
 package pers.dog.api.controller;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.imageio.ImageIO;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
+import com.vladsch.flexmark.ast.*;
+import com.vladsch.flexmark.ext.emoji.Emoji;
+import com.vladsch.flexmark.ext.footnotes.FootnoteBlock;
+import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension;
+import com.vladsch.flexmark.ext.gfm.tasklist.TaskListItem;
+import com.vladsch.flexmark.ext.superscript.Superscript;
+import com.vladsch.flexmark.ext.toc.TocBlock;
+import com.vladsch.flexmark.ext.toc.TocExtension;
+import com.vladsch.flexmark.ext.yaml.front.matter.YamlFrontMatterBlock;
+import com.vladsch.flexmark.html.AttributeProvider;
 import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.html.IndependentAttributeProviderFactory;
+import com.vladsch.flexmark.html.renderer.AttributablePart;
+import com.vladsch.flexmark.html.renderer.LinkResolverContext;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.parser.PegdownExtensions;
 import com.vladsch.flexmark.profile.pegdown.PegdownOptionsAdapter;
 import com.vladsch.flexmark.util.data.DataHolder;
+import com.vladsch.flexmark.util.data.MutableDataHolder;
+import com.vladsch.flexmark.util.html.MutableAttributes;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
@@ -29,6 +65,7 @@ import org.controlsfx.control.action.Action;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -46,35 +83,101 @@ import pers.dog.infra.property.ImageProperty;
 import pers.dog.infra.property.LinkProperty;
 import pers.dog.infra.property.TableProperty;
 
-import javax.imageio.ImageIO;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 /**
  * @author 废柴 2023/3/23 23:06
  */
 public class ProjectEditorController implements Initializable {
+    private static class TyporaAttributeProviderFactory extends IndependentAttributeProviderFactory {
+
+        @Override
+        public @NonNull AttributeProvider apply(@NonNull LinkResolverContext linkResolverContext) {
+            return new TyporaAttributeProvider();
+        }
+    }
+
+    private static class TyporaAttributeProvider implements AttributeProvider {
+
+        @Override
+        public void setAttributes(@NonNull com.vladsch.flexmark.util.ast.Node node,
+                                  @NonNull AttributablePart attributablePart,
+                                  @NonNull MutableAttributes mutableAttributes) {
+            NodeAttributeHandler.handle(node, mutableAttributes);
+        }
+    }
+
+    private enum NodeAttributeHandler {
+        /*
+         * TODO:
+         * - list (task)	                            ul.task-list
+         * - fences (before codemirror is initialized)	pre.md-fences.mock-cm
+         * - diagrams	                                pre[lang=’sequence’], pre[lang=’flow’], pre[lang=’mermaid’]
+         * - def_link	                                .md-def-link
+         * - def_footnote	                            .md-def-footnote
+         * - math_block	                                [mdtype=”math_block”]
+         * - CodeMirror
+         * - plain, underline, escape, tag, del, inline_math, subscript, highlight, url, reflink, refimg
+         */
+
+        LINE(Paragraph.class.getName(), attributes -> attributes.replaceValue("class", "md-line")),
+        TASK_LIST_ITEM(TaskListItem.class.getName(), attributes -> attributes.replaceValue("class", "task-list-item")),
+        TOC(TocBlock.class.getName(), attributes -> attributes.replaceValue("class", "md-toc")),
+        FENCES(FencedCodeBlock.class.getName(), attributes -> attributes.replaceValue("class", "md-fences")),
+        YAML_FRONT_MATTER_BLOCK(YamlFrontMatterBlock.class.getName(), attributes -> attributes.replaceValue("class", "md-meta-block")),
+        STRONG(StrongEmphasis.class.getName(), attributes -> attributes.replaceValue("md-inline", "strong")),
+        EMPHASIS(Emphasis.class.getName(), attributes -> attributes.replaceValue("md-inline", "em")),
+        CODE(Code.class.getName(), attributes -> attributes.replaceValue("md-inline", "code")),
+        FOOTNOTE(FootnoteBlock.class.getName(), attributes -> attributes.replaceValue("md-inline", "sup")),
+        EMOJI(Emoji.class.getName(), attributes -> attributes.replaceValue("md-inline", "span")),
+        SUPERSCRIPT(Superscript.class.getName(), attributes -> attributes.replaceValue("md-inline", "sup")),
+        AUTO_LINK(AutoLink.class.getName(), attributes -> attributes.replaceValue("md-inline", "a")),
+        LINK(Link.class.getName(), attributes -> attributes.replaceValue("md-inline", "a")),
+        IMAGE(Image.class.getName(), attributes -> attributes.replaceValue("md-inline", "img"));
+
+        private final String nodeType;
+        private final Consumer<MutableAttributes> attributeProcessor;
+
+        NodeAttributeHandler(String nodeType, Consumer<MutableAttributes> attributeProcessor) {
+            this.nodeType = nodeType;
+            this.attributeProcessor = attributeProcessor;
+        }
+
+        public static void handle(com.vladsch.flexmark.util.ast.Node node, MutableAttributes mutableAttributes) {
+            if (node == null) {
+                return;
+            }
+            for (NodeAttributeHandler nodeAttributeHandler : values()) {
+                if (nodeAttributeHandler.nodeType.equals(node.getClass().getName())) {
+                    nodeAttributeHandler.attributeProcessor.accept(mutableAttributes);
+                    break;
+                }
+            }
+        }
+    }
+
+    private static class TyporaAttributeRenderExtension implements HtmlRenderer.HtmlRendererExtension {
+
+        @Override
+        public void rendererOptions(@NonNull MutableDataHolder mutableDataHolder) {
+
+        }
+
+        @Override
+        public void extend(@NonNull HtmlRenderer.Builder builder, @NonNull String s) {
+            builder.attributeProviderFactory(new TyporaAttributeProviderFactory());
+        }
+
+        public static TyporaAttributeRenderExtension create() {
+            return new TyporaAttributeRenderExtension();
+        }
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(ProjectEditorController.class);
     private static final String STYLE_CLASS_BUTTON_SAVE_DIRTY = "button-save-dirty";
     private final ObjectProperty<Project> projectProperty = new SimpleObjectProperty<>();
     private final ProjectRepository projectRepository;
     private final ObjectProperty<Boolean> dirty = new SimpleObjectProperty<>(false);
     private final AtomicBoolean loaded = new AtomicBoolean(false);
-    private final DataHolder markdownParserOptions = PegdownOptionsAdapter.flexmarkOptions(PegdownExtensions.ALL);
+    private final DataHolder markdownParserOptions = PegdownOptionsAdapter.flexmarkOptions(PegdownExtensions.ALL, TocExtension.create(), TaskListExtension.create(), TyporaAttributeRenderExtension.create());
     private final Parser parser = Parser.builder(markdownParserOptions).build();
     private final HtmlRenderer renderer = HtmlRenderer.builder(markdownParserOptions).build();
 
@@ -102,6 +205,8 @@ public class ProjectEditorController implements Initializable {
     private WebEngine engine;
     private FileInternalSearch fileInternalSearch;
     private String path;
+    private String htmlWrapper;
+    private String html;
 
     public ProjectEditorController(ProjectRepository projectRepository) {
         this.projectRepository = projectRepository;
@@ -141,7 +246,6 @@ public class ProjectEditorController implements Initializable {
                 }
             }
         });
-        this.engine.setUserStyleSheetLocation("file:G:\\Project\\one-library\\application\\src\\main\\resources\\static\\css\\markdown\\lapis\\lapis.css");
         this.codeArea.getSearchCandidateList().addListener((InvalidationListener) observable -> this.fileInternalSearch.searchCandidateCountProperty().set(codeArea.getSearchCandidateList().size()));
         this.codeArea.searchCurrentIndexProperty().addListener(observable -> this.fileInternalSearch.setCurrentIndex(codeArea.getSearchCurrentIndex() + 1));
         this.codeArea.setOnPaste(event -> {
@@ -171,10 +275,15 @@ public class ProjectEditorController implements Initializable {
             int firstLine = this.codeArea.firstVisibleParToAllParIndex();
             int lastLine = this.codeArea.lastVisibleParToAllParIndex();
             int totalLine = this.codeArea.getParagraphs().size();
-            double target = firstLine == 0 ? 0 : firstLine *1D / (totalLine - lastLine + firstLine);
+            double target = firstLine == 0 ? 0 : firstLine * 1D / (totalLine - lastLine + firstLine);
             this.engine.executeScript(String.format("window.scrollTo(0, document.body.scrollHeight * %s);",
                     target));
         });
+        try {
+            this.htmlWrapper = Files.readString(Path.of(getClass().getClassLoader().getResource("static/markdown-template.html").toURI()), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage());
+        }
     }
 
     public void show(Project project) {
@@ -204,12 +313,12 @@ public class ProjectEditorController implements Initializable {
 
     private void refreshPreview(String newValue) {
         PlatformUtils.runLater("RefreshPreview", Duration.seconds(1), () ->
-                engine.loadContent(toHtml(newValue))
+                engine.loadContent(html = toHtml(newValue))
         );
     }
 
     private String toHtml(String markdownContent) {
-        return renderer.render(parser.parse(markdownContent));
+        return String.format(htmlWrapper, renderer.render(parser.parse(markdownContent)));
     }
 
     private void setProjectProperty(Project project) {
