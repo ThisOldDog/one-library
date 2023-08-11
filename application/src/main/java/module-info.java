@@ -34,6 +34,7 @@ module pers.dog {
     requires flexmark.util.misc;
     requires flexmark.util.ast;
     requires flexmark.util.html;
+    requires flexmark.util.sequence;
     requires flexmark.profile.pegdown;
     requires flexmark.ext.attributes;
     requires flexmark.ext.toc;

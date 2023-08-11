@@ -1,5 +1,7 @@
 package pers.dog.infra.status;
 
+import java.util.Optional;
+
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TreeItem;
@@ -36,6 +38,8 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
 
         private double[] dividers;
         private long[] openProjectIds;
+
+        private String latestExportDirectory;
 
 
         public boolean isMaximized() {
@@ -100,6 +104,15 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
             this.openProjectIds = openProjectIds;
             return this;
         }
+
+        public String getLatestExportDirectory() {
+            return latestExportDirectory;
+        }
+
+        public StageStatus setLatestExportDirectory(String latestExportDirectory) {
+            this.latestExportDirectory = latestExportDirectory;
+            return this;
+        }
     }
 
     @FXMLControl(controller = OneLibraryController.class)
@@ -110,6 +123,7 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
     private TabPane projectEditorWorkspace;
 
     private final ProjectService projectService;
+    private StageStatus stageStatus;
     @Autowired
     public StageStatusStore(ProjectService projectService) {
         this.projectService = projectService;
@@ -125,7 +139,8 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
         Window window = oneLibraryWorkspace.getScene().getWindow();
         if (window instanceof Stage) {
             Stage stage = (Stage) window;
-            StageStatus stageStatus = new StageStatus()
+            StageStatus stageStatus = Optional.ofNullable(this.stageStatus)
+                    .orElseGet(StageStatus::new)
                     .setMaximized(stage.isMaximized());
             if (stage.getScene() != null) {
                 stageStatus.setHeight(stage.getScene().getHeight())
@@ -151,6 +166,7 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
         if (stageStatus == null) {
             return;
         }
+        this.stageStatus = stageStatus;
         Window window = oneLibraryWorkspace.getScene().getWindow();
         if (window instanceof Stage) {
             Stage stage = (Stage) window;
@@ -184,6 +200,15 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
                 }
             }
         }
+    }
+
+    public StageStatus getStageStatus() {
+        return stageStatus;
+    }
+
+    public StageStatusStore setStageStatus(StageStatus stageStatus) {
+        this.stageStatus = stageStatus;
+        return this;
     }
 
     @Override

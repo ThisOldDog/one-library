@@ -2,17 +2,18 @@ package pers.dog.api.controller;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
@@ -21,15 +22,9 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import com.vladsch.flexmark.ast.*;
-import com.vladsch.flexmark.ext.emoji.Emoji;
-import com.vladsch.flexmark.ext.footnotes.FootnoteBlock;
+import com.vladsch.flexmark.ast.FencedCodeBlock;
 import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension;
-import com.vladsch.flexmark.ext.gfm.tasklist.TaskListItem;
-import com.vladsch.flexmark.ext.superscript.Superscript;
-import com.vladsch.flexmark.ext.toc.TocBlock;
 import com.vladsch.flexmark.ext.toc.TocExtension;
-import com.vladsch.flexmark.ext.yaml.front.matter.YamlFrontMatterBlock;
 import com.vladsch.flexmark.html.AttributeProvider;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.html.IndependentAttributeProviderFactory;
@@ -59,6 +54,7 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.FileChooser;
 import javafx.util.Duration;
 import org.apache.commons.lang3.BooleanUtils;
 import org.controlsfx.control.action.Action;
@@ -66,13 +62,18 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
+import pers.dog.boot.component.file.FileOperationException;
 import pers.dog.boot.component.file.FileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
+import pers.dog.boot.context.ApplicationContextHolder;
 import pers.dog.boot.infra.dialog.PropertySheetDialog;
+import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.PlatformUtils;
 import pers.dog.domain.entity.Project;
 import pers.dog.domain.repository.ProjectRepository;
@@ -82,79 +83,51 @@ import pers.dog.infra.property.HeaderProperty;
 import pers.dog.infra.property.ImageProperty;
 import pers.dog.infra.property.LinkProperty;
 import pers.dog.infra.property.TableProperty;
+import pers.dog.infra.status.StageStatusStore;
+import pers.dog.infra.util.FieldNameUtils;
 
 /**
  * @author 废柴 2023/3/23 23:06
  */
 public class ProjectEditorController implements Initializable {
-    private static class TyporaAttributeProviderFactory extends IndependentAttributeProviderFactory {
+
+
+    private static class ClassAttributeProviderFactory extends IndependentAttributeProviderFactory {
 
         @Override
         public @NonNull AttributeProvider apply(@NonNull LinkResolverContext linkResolverContext) {
-            return new TyporaAttributeProvider();
+            return new ClassAttributeProvider();
         }
     }
 
-    private static class TyporaAttributeProvider implements AttributeProvider {
+    private static class ClassAttributeProvider implements AttributeProvider {
+        private static final String CLASS_ATTRIBUTE = "class";
 
         @Override
         public void setAttributes(@NonNull com.vladsch.flexmark.util.ast.Node node,
                                   @NonNull AttributablePart attributablePart,
                                   @NonNull MutableAttributes mutableAttributes) {
-            NodeAttributeHandler.handle(node, mutableAttributes);
-        }
-    }
-
-    private enum NodeAttributeHandler {
-        /*
-         * TODO:
-         * - list (task)	                            ul.task-list
-         * - fences (before codemirror is initialized)	pre.md-fences.mock-cm
-         * - diagrams	                                pre[lang=’sequence’], pre[lang=’flow’], pre[lang=’mermaid’]
-         * - def_link	                                .md-def-link
-         * - def_footnote	                            .md-def-footnote
-         * - math_block	                                [mdtype=”math_block”]
-         * - CodeMirror
-         * - plain, underline, escape, tag, del, inline_math, subscript, highlight, url, reflink, refimg
-         */
-
-        LINE(Paragraph.class.getName(), attributes -> attributes.replaceValue("class", "md-line")),
-        TASK_LIST_ITEM(TaskListItem.class.getName(), attributes -> attributes.replaceValue("class", "task-list-item")),
-        TOC(TocBlock.class.getName(), attributes -> attributes.replaceValue("class", "md-toc")),
-        FENCES(FencedCodeBlock.class.getName(), attributes -> attributes.replaceValue("class", "md-fences")),
-        YAML_FRONT_MATTER_BLOCK(YamlFrontMatterBlock.class.getName(), attributes -> attributes.replaceValue("class", "md-meta-block")),
-        STRONG(StrongEmphasis.class.getName(), attributes -> attributes.replaceValue("md-inline", "strong")),
-        EMPHASIS(Emphasis.class.getName(), attributes -> attributes.replaceValue("md-inline", "em")),
-        CODE(Code.class.getName(), attributes -> attributes.replaceValue("md-inline", "code")),
-        FOOTNOTE(FootnoteBlock.class.getName(), attributes -> attributes.replaceValue("md-inline", "sup")),
-        EMOJI(Emoji.class.getName(), attributes -> attributes.replaceValue("md-inline", "span")),
-        SUPERSCRIPT(Superscript.class.getName(), attributes -> attributes.replaceValue("md-inline", "sup")),
-        AUTO_LINK(AutoLink.class.getName(), attributes -> attributes.replaceValue("md-inline", "a")),
-        LINK(Link.class.getName(), attributes -> attributes.replaceValue("md-inline", "a")),
-        IMAGE(Image.class.getName(), attributes -> attributes.replaceValue("md-inline", "img"));
-
-        private final String nodeType;
-        private final Consumer<MutableAttributes> attributeProcessor;
-
-        NodeAttributeHandler(String nodeType, Consumer<MutableAttributes> attributeProcessor) {
-            this.nodeType = nodeType;
-            this.attributeProcessor = attributeProcessor;
-        }
-
-        public static void handle(com.vladsch.flexmark.util.ast.Node node, MutableAttributes mutableAttributes) {
-            if (node == null) {
+            String nodeType = node.getNodeName();
+            if (StringUtils.endsWithIgnoreCase(nodeType, "Block")) {
+                nodeType = nodeType.substring(0, nodeType.length() - 5);
+            }
+            if (ObjectUtils.isEmpty(nodeType)) {
                 return;
             }
-            for (NodeAttributeHandler nodeAttributeHandler : values()) {
-                if (nodeAttributeHandler.nodeType.equals(node.getClass().getName())) {
-                    nodeAttributeHandler.attributeProcessor.accept(mutableAttributes);
-                    break;
-                }
+            String styleClass = "md-" + FieldNameUtils.toLowerKebabCase(nodeType);
+            String value = mutableAttributes.getValue(CLASS_ATTRIBUTE);
+            if (ObjectUtils.isEmpty(value)) {
+                mutableAttributes.replaceValue(CLASS_ATTRIBUTE, styleClass);
+            } else {
+                mutableAttributes.replaceValue(CLASS_ATTRIBUTE, value + " " + styleClass);
+            }
+            if (node instanceof FencedCodeBlock fencedCodeBlock) {
+                mutableAttributes.replaceValue("language", fencedCodeBlock.getInfo().toStringOrNull());
             }
         }
     }
 
-    private static class TyporaAttributeRenderExtension implements HtmlRenderer.HtmlRendererExtension {
+    private static class ClassAttributeRenderExtension implements HtmlRenderer.HtmlRendererExtension {
 
         @Override
         public void rendererOptions(@NonNull MutableDataHolder mutableDataHolder) {
@@ -163,11 +136,11 @@ public class ProjectEditorController implements Initializable {
 
         @Override
         public void extend(@NonNull HtmlRenderer.Builder builder, @NonNull String s) {
-            builder.attributeProviderFactory(new TyporaAttributeProviderFactory());
+            builder.attributeProviderFactory(new ClassAttributeProviderFactory());
         }
 
-        public static TyporaAttributeRenderExtension create() {
-            return new TyporaAttributeRenderExtension();
+        public static ClassAttributeRenderExtension create() {
+            return new ClassAttributeRenderExtension();
         }
     }
 
@@ -175,9 +148,10 @@ public class ProjectEditorController implements Initializable {
     private static final String STYLE_CLASS_BUTTON_SAVE_DIRTY = "button-save-dirty";
     private final ObjectProperty<Project> projectProperty = new SimpleObjectProperty<>();
     private final ProjectRepository projectRepository;
+    private final StageStatusStore stageStatusStore;
     private final ObjectProperty<Boolean> dirty = new SimpleObjectProperty<>(false);
     private final AtomicBoolean loaded = new AtomicBoolean(false);
-    private final DataHolder markdownParserOptions = PegdownOptionsAdapter.flexmarkOptions(PegdownExtensions.ALL, TocExtension.create(), TaskListExtension.create(), TyporaAttributeRenderExtension.create());
+    private final DataHolder markdownParserOptions = PegdownOptionsAdapter.flexmarkOptions(PegdownExtensions.ALL, TocExtension.create(), TaskListExtension.create(), ClassAttributeRenderExtension.create());
     private final Parser parser = Parser.builder(markdownParserOptions).build();
     private final HtmlRenderer renderer = HtmlRenderer.builder(markdownParserOptions).build();
 
@@ -206,10 +180,11 @@ public class ProjectEditorController implements Initializable {
     private FileInternalSearch fileInternalSearch;
     private String path;
     private String htmlWrapper;
-    private String html;
+    private String body;
 
-    public ProjectEditorController(ProjectRepository projectRepository) {
+    public ProjectEditorController(ProjectRepository projectRepository, StageStatusStore stageStatusStore) {
         this.projectRepository = projectRepository;
+        this.stageStatusStore = stageStatusStore;
     }
 
     @Override
@@ -313,12 +288,13 @@ public class ProjectEditorController implements Initializable {
 
     private void refreshPreview(String newValue) {
         PlatformUtils.runLater("RefreshPreview", Duration.seconds(1), () ->
-                engine.loadContent(html = toHtml(newValue))
+                engine.loadContent(toHtml(newValue))
         );
     }
 
     private String toHtml(String markdownContent) {
-        return String.format(htmlWrapper, renderer.render(parser.parse(markdownContent)));
+        body = String.format(htmlWrapper, renderer.render(parser.parse(markdownContent)));
+        return body;
     }
 
     private void setProjectProperty(Project project) {
@@ -386,6 +362,37 @@ public class ProjectEditorController implements Initializable {
             String editorText = codeArea.getText();
             fileOperationHandler.write(projectProperty.get().getProjectName(), editorText);
             dirtyProperty().set(false);
+        });
+    }
+
+    public void exportToHtml() {
+        Platform.runLater(() -> {
+
+        });
+    }
+
+    public void exportToHtmlWithoutStyle() {
+        Platform.runLater(() -> {
+            String editorText = body;
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle(I18nMessageSource.getResource("%info.project.save.project"));
+            fileChooser.setInitialFileName(getProject().getSimpleProjectName());
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("HTML", "*.html"));
+            if (!ObjectUtils.isEmpty(stageStatusStore.getStageStatus().getLatestExportDirectory())) {
+                File file = new File(stageStatusStore.getStageStatus().getLatestExportDirectory());
+                if (file.exists()) {
+                    fileChooser.setInitialDirectory(file);
+                }
+            }
+            File file = fileChooser.showSaveDialog(ApplicationContextHolder.getStage().getOwner());
+            if (file != null) {
+                try {
+                    stageStatusStore.getStageStatus().setLatestExportDirectory(file.getParent());
+                    Files.writeString(file.toPath(), editorText, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                } catch (IOException e) {
+                    throw new FileOperationException(I18nMessageSource.getResource("error.project.export"), e);
+                }
+            }
         });
     }
 
@@ -617,8 +624,7 @@ public class ProjectEditorController implements Initializable {
     }
 
     public void requestFocus() {
-        Platform.runLater(() -> {
-            codeArea.requestFocus();
-        });
+        Platform.runLater(() -> codeArea.requestFocus());
     }
+
 }

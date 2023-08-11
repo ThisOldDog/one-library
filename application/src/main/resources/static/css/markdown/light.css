@@ -56,7 +56,7 @@
  * Basic Style
  */
 
-#write {
+body {
     max-width: 950px;
     font-size: 1.1rem;
     color: var(--text-color);
@@ -73,56 +73,44 @@
 
 /* Strong */
 
-#write strong {
+body strong {
     color: var(--primary-color);
 }
 
 /* Link */
 
-#write a {
+body a {
     color: var(--primary-color);
 }
 
-#write .md-p a,
-#write .md-heading a {
+body .md-paragraph a,
+body .md-heading a {
     text-decoration: none;
     word-wrap: break-word;
     border-bottom: 1px solid var(--primary-color);
     margin: 2px;
 }
 
-#write h2.md-heading a {
+body h2.md-heading a {
     text-decoration: underline;
     border-bottom: 0;
     text-decoration-thickness: 1.2px;
     text-underline-offset: 2px;
 }
 
-[md-inline=url],
-[md-inline=link]>.md-content,
-[md-inline=image]>.md-meta {
-    word-break: break-all;
-    font-weight: normal;
-    font-family: 'JetBrainsMono';
-    padding-left: 0.15rem;
-    padding-right: 0rem;
-    color: var(--marker-color);
-}
-
-
 /* 
  * TOC
  */
 
-.md-toc-content {
+.md-toc {
     font-family: 'SourceHanSerifCN';
 }
 
-.md-toc-content:empty:before {
+.md-toc:empty:before {
     color: var(--primary-color);
 }
 
-#write div.md-toc-tooltip {
+body div.md-toc {
     font-family: 'SourceHanSerifCN';
     color: var(--primary-color);
     position: static;
@@ -136,13 +124,13 @@
     border-radius: .5rem;
 }
 
-.md-toc:focus .md-toc-content {
+.md-toc:focus .md-toc {
     border-color: var(--bg-color);
     margin: 9px -1px;
     margin-top: 9px;
 }
 
-.md-toc .md-toc-content {
+.md-toc {
     border-color: var(--bg-color);
     margin: 10px 0px;
     margin-top: 10px;
@@ -162,8 +150,8 @@ mark {
  * Paragraph
  */
 
-#write+p,
-#write blockquote p {
+body+p,
+body blockquote p {
     font-size: 1.1rem;
     padding-top: .2rem;
     padding-bottom: .2rem;
@@ -176,22 +164,22 @@ mark {
  * Header
  */
 
-#write h1,
-#write h2,
-#write h3,
-#write h4,
-#write h5,
-#write h6 {
+body h1,
+body h2,
+body h3,
+body h4,
+body h5,
+body h6 {
     font-family: 'SourceHanSerifCN';
     padding: 0px;
     color: var(--primary-color);
 }
 
-#write h1 {
+body h1 {
     text-align: center;
 }
 
-#write h2 {
+body h2 {
     background-color: var(--header-span-color);
     color: var(--bg-color);
     padding: 1px 12.5px;
@@ -199,16 +187,16 @@ mark {
     display: inline-block;
 }
 
-#write h2 a {
+body h2 a {
     color: var(--bg-color);
     border-bottom-color: var(--bg-color) !important;
 }
 
-#write h2 strong {
+body h2 strong {
     color: var(--bg-color);
 }
 
-#write h2 code {
+body h2 code {
     color: var(--bg-color);
     background-color: var(--header-span-color);
 }
@@ -219,52 +207,52 @@ mark {
     }
 }
 
-#write h1 {
+body h1 {
     font-size: 2rem;
 }
 
-#write h2 {
+body h2 {
     font-size: 1.5rem;
 }
 
-#write h3 {
+body h3 {
     font-size: 1.4rem;
 }
 
-#write h4 {
+body h4 {
     font-size: 1.2rem;
 }
 
-#write h5 {
+body h5 {
     font-size: 1.1rem;
 }
 
-#write h6 {
+body h6 {
     font-size: 1.1rem;
 }
 
-#write h1 {
+body h1 {
     padding-top: 0.9rem;
     margin-bottom: 2.3rem;
 }
 
-#write h2 {
+body h2 {
     margin: .3em 0;
 }
 
-#write h3 {
+body h3 {
     margin: 1em 0 1em;
 }
 
-#write h4 {
+body h4 {
     margin: 0.8em 0 0.8em;
 }
 
-#write h5 {
+body h5 {
     margin: 0.6em 0 0.6em;
 }
 
-#write h6 {
+body h6 {
     margin: 0.4em 0 0.4em;
 }
 
@@ -277,34 +265,35 @@ mark {
     color: var(--marker-color);
 }
 
-li.md-list-item {
+li.md-bullet-list-item,
+li.md-ordered-list-item {
     margin: 0.4rem 0;
 }
 
-#write ul,
-#write ol {
+body ul,
+body ol {
     margin-top: 8px;
     margin-bottom: 8px;
     padding-left: 20px;
 }
 
-#write ul {
+body ul {
     list-style-type: disc;
 }
 
-#write em {
+body em {
     padding: 0 3px 0 0;
 }
 
-#write ul ul {
+body ul ul {
     list-style-type: square;
 }
 
-#write ol {
+body ol {
     list-style-type: decimal;
 }
 
-#write li section {
+body li section {
     margin-top: 5px;
     margin-bottom: 5px;
     line-height: 1.7rem;
@@ -316,7 +305,7 @@ li.md-list-item {
 /*
  * Quote
  */
-#write blockquote {
+body blockquote {
     display: block;
     font-size: .9em;
     overflow: auto;
@@ -331,7 +320,7 @@ li.md-list-item {
  * Inline code
  */
 
-#write code {
+body code {
     color: var(--primary-color);
     font-size: 94%;
     font-weight: normal;
@@ -347,13 +336,13 @@ li.md-list-item {
 /*
  * Img
  */
-#write img {
+body img {
     margin: 0 auto;
     max-width: 100%;
 }
 
-#write p>.md-image:only-child:not(.md-img-error) img,
-#write p>img:only-child {
+body p>.md-image:only-child:not(.md-img-error) img,
+body p>img:only-child {
     filter: drop-shadow(#d2dff4 0px 0px 8px);
     border-radius: 3rem;
     display: block;
@@ -364,7 +353,7 @@ li.md-list-item {
 /*
  * Table
  */
-#write table.md-table {
+body table.md-table {
     display: table;
     text-align: justify;
     overflow-x: auto;
@@ -375,24 +364,24 @@ li.md-list-item {
     width: 100%;
 }
 
-#write tbody {
+body tbody {
     border: 0;
 }
 
-#write table.md-table tr {
+body table.md-table tr {
     border: 0;
     border-top: 1px solid #ccc;
 }
 
-#write table.md-table tr th,
-#write table.md-table tr td {
+body table.md-table tr th,
+body table.md-table tr td {
     font-size: 1rem;
     border: 1px solid #d9dfe4;
     padding: 5px 10px;
     text-align: justify;
 }
 
-#write table.md-table tr th {
+body table.md-table tr th {
     font-family: SourceHanSerifCN;
     text-align: center;
     min-width: 10rem;
@@ -400,8 +389,8 @@ li.md-list-item {
     color: var(--primary-color);
 }
 
-#write table tr td:hover,
-#write table tr th:hover {
+body table tr td:hover,
+body table tr th:hover {
     background-color: var(--block-bg-color);
 }
 
@@ -413,10 +402,6 @@ table.md-table td {
 
 sup.md-footnote {
     background-color: var(--block-bg-color);
-    color: var(--primary-color);
-}
-
-.md-def-name {
     color: var(--primary-color);
 }
 
@@ -469,7 +454,7 @@ hr {
 
 /* Checkbox */
 
-#write input[type=checkbox] {
+body input[type=checkbox] {
     width: 0;
 }
 
@@ -517,11 +502,11 @@ blockquote .task-list-item input::before {
     margin-top: .5rem;
 }
 
-.html-for-mac #write input[type=checkbox] {
+.html-for-mac body input[type=checkbox] {
     margin-top: 0.65rem;
 }
 
-.html-for-mac #write .task-list-item input::before {
+.html-for-mac body .task-list-item input::before {
     margin-top: -.85rem;
 }
 

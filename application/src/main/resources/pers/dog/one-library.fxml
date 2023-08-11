@@ -32,6 +32,8 @@
 <?import pers.dog.infra.action.editor.CodeBlockAction?>
 <?import pers.dog.infra.action.editor.SearchAction?>
 <?import pers.dog.infra.action.editor.ReplaceAction?>
+<?import pers.dog.infra.action.project.ExportProjectToHtmlAction?>
+<?import pers.dog.infra.action.project.ExportProjectToHtmlWithoutStyleAction?>
 <BorderPane fx:id="oneLibraryWorkspace" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="pers.dog.api.controller.OneLibraryController">
     <top>
@@ -58,6 +60,11 @@
                         <Boolean fx:value="true"/>
                     </disabled>
                 </SaveAllProjectAction>
+                <ActionSeparator fx:factory="getInstance"/>
+                <ActionGroup text="%info.action.edit.export">
+                    <ExportProjectToHtmlAction/>
+                    <ExportProjectToHtmlWithoutStyleAction/>
+                </ActionGroup>
                 <ActionSeparator fx:factory="getInstance"/>
                 <ExitAction fx:factory="getInstance"/>
             </ActionGroup>
