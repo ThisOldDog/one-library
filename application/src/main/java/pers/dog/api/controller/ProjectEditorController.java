@@ -4,12 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -17,12 +17,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import com.vladsch.flexmark.ast.FencedCodeBlock;
+import com.vladsch.flexmark.ast.Image;
 import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension;
 import com.vladsch.flexmark.ext.toc.TocExtension;
 import com.vladsch.flexmark.html.AttributeProvider;
@@ -35,13 +32,13 @@ import com.vladsch.flexmark.parser.PegdownExtensions;
 import com.vladsch.flexmark.profile.pegdown.PegdownOptionsAdapter;
 import com.vladsch.flexmark.util.data.DataHolder;
 import com.vladsch.flexmark.util.data.MutableDataHolder;
+import com.vladsch.flexmark.util.html.Attribute;
 import com.vladsch.flexmark.util.html.MutableAttributes;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Worker;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -64,9 +61,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationException;
 import pers.dog.boot.component.file.FileOperationHandler;
@@ -90,23 +84,27 @@ import pers.dog.infra.util.FieldNameUtils;
  * @author 废柴 2023/3/23 23:06
  */
 public class ProjectEditorController implements Initializable {
-
-
     private static class ClassAttributeProviderFactory extends IndependentAttributeProviderFactory {
+        private final ProjectEditorController controller;
+
+        private ClassAttributeProviderFactory(ProjectEditorController controller) {
+            this.controller = controller;
+        }
 
         @Override
         public @NonNull AttributeProvider apply(@NonNull LinkResolverContext linkResolverContext) {
-            return new ClassAttributeProvider();
+            return new ClassAttributeProvider(controller);
         }
     }
 
-    private static class ClassAttributeProvider implements AttributeProvider {
+    private record ClassAttributeProvider(ProjectEditorController controller) implements AttributeProvider {
         private static final String CLASS_ATTRIBUTE = "class";
 
         @Override
         public void setAttributes(@NonNull com.vladsch.flexmark.util.ast.Node node,
                                   @NonNull AttributablePart attributablePart,
                                   @NonNull MutableAttributes mutableAttributes) {
+            // Set class
             String nodeType = node.getNodeName();
             if (StringUtils.endsWithIgnoreCase(nodeType, "Block")) {
                 nodeType = nodeType.substring(0, nodeType.length() - 5);
@@ -124,10 +122,19 @@ public class ProjectEditorController implements Initializable {
             if (node instanceof FencedCodeBlock fencedCodeBlock) {
                 mutableAttributes.replaceValue("language", fencedCodeBlock.getInfo().toStringOrNull());
             }
+            // Set src to absolute path
+            if (Image.class.isAssignableFrom(node.getClass())) {
+                Attribute src = mutableAttributes.get("src");
+                String srcValue = src.getValue();
+                if (srcValue != null && srcValue.startsWith("one-library://")) {
+                    mutableAttributes.replaceValue("src", controller.path + srcValue.substring(14));
+                }
+            }
         }
     }
 
-    private static class ClassAttributeRenderExtension implements HtmlRenderer.HtmlRendererExtension {
+    private record ClassAttributeRenderExtension(
+            ProjectEditorController controller) implements HtmlRenderer.HtmlRendererExtension {
 
         @Override
         public void rendererOptions(@NonNull MutableDataHolder mutableDataHolder) {
@@ -136,11 +143,11 @@ public class ProjectEditorController implements Initializable {
 
         @Override
         public void extend(@NonNull HtmlRenderer.Builder builder, @NonNull String s) {
-            builder.attributeProviderFactory(new ClassAttributeProviderFactory());
+            builder.attributeProviderFactory(new ClassAttributeProviderFactory(controller));
         }
 
-        public static ClassAttributeRenderExtension create() {
-            return new ClassAttributeRenderExtension();
+        public static ClassAttributeRenderExtension create(ProjectEditorController controller) {
+            return new ClassAttributeRenderExtension(controller);
         }
     }
 
@@ -151,7 +158,7 @@ public class ProjectEditorController implements Initializable {
     private final StageStatusStore stageStatusStore;
     private final ObjectProperty<Boolean> dirty = new SimpleObjectProperty<>(false);
     private final AtomicBoolean loaded = new AtomicBoolean(false);
-    private final DataHolder markdownParserOptions = PegdownOptionsAdapter.flexmarkOptions(PegdownExtensions.ALL, TocExtension.create(), TaskListExtension.create(), ClassAttributeRenderExtension.create());
+    private final DataHolder markdownParserOptions = PegdownOptionsAdapter.flexmarkOptions(PegdownExtensions.ALL, TocExtension.create(), TaskListExtension.create(), ClassAttributeRenderExtension.create(this));
     private final Parser parser = Parser.builder(markdownParserOptions).build();
     private final HtmlRenderer renderer = HtmlRenderer.builder(markdownParserOptions).build();
 
@@ -174,13 +181,36 @@ public class ProjectEditorController implements Initializable {
     @FXML
     public Button editorAndPreviewButton;
 
+    private static String htmlWrapper;
     private FileOperationHandler fileOperationHandler;
     private String localText;
     private WebEngine engine;
     private FileInternalSearch fileInternalSearch;
     private String path;
-    private String htmlWrapper;
     private String body;
+
+    static {
+        try {
+            String template = Files.readString(Path.of(ProjectEditorController.class.getClassLoader().getResource("static/markdown-template.html").toURI()), StandardCharsets.UTF_8);
+            // 添加 CodeMirror
+            StringBuilder codeMirrorHeaderBuilder = new StringBuilder();
+            URI codeMirrorUri = ProjectEditorController.class.getClassLoader().getResource("static/lib/codemirror").toURI();
+            Files.walkFileTree(Path.of(codeMirrorUri), new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    if (file.toString().endsWith(".js")) {
+                        codeMirrorHeaderBuilder.append("    <script src=\"file:///").append(file.toAbsolutePath()).append("\"></script>\n");
+                    } else if (file.toString().endsWith(".css")) {
+                        codeMirrorHeaderBuilder.append("    <link rel=\"stylesheet\" type=\"text/css\" href=\"file:///").append(file.toAbsolutePath()).append("\">\n");
+                    }
+                    return super.visitFile(file, attrs);
+                }
+            });
+            htmlWrapper = template.replace("{{header}}", codeMirrorHeaderBuilder.toString());
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage());
+        }
+    }
 
     public ProjectEditorController(ProjectRepository projectRepository, StageStatusStore stageStatusStore) {
         this.projectRepository = projectRepository;
@@ -200,27 +230,6 @@ public class ProjectEditorController implements Initializable {
         this.fileInternalSearch.setReplaceAction(new Action(actionEvent -> codeArea.replaceSearch(this.fileInternalSearch.getReplaceText())));
         this.fileInternalSearch.setReplaceAllAction(new Action(actionEvent -> codeArea.replaceSearchAll(this.fileInternalSearch.getReplaceText())));
         this.engine = previewArea.getEngine();
-        this.engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue == Worker.State.SUCCEEDED) {
-                Document document = this.engine.getDocument();
-                XPath xPath = XPathFactory.newInstance().newXPath();
-                try {
-                    NodeList imgList = (NodeList) xPath.evaluate("//*[local-name()='img']", document, XPathConstants.NODESET);
-                    if (imgList != null) {
-                        for (int i = 0; i < imgList.getLength(); i++) {
-                            Element img = (Element) imgList.item(i);
-                            String src = img.getAttribute("src");
-                            if (src.startsWith(path) || src.startsWith("http")) {
-                                continue;
-                            }
-                            img.setAttribute("src", path + src);
-                        }
-                    }
-                } catch (XPathExpressionException e) {
-                    logger.error("Unable travel document.", e);
-                }
-            }
-        });
         this.codeArea.getSearchCandidateList().addListener((InvalidationListener) observable -> this.fileInternalSearch.searchCandidateCountProperty().set(codeArea.getSearchCandidateList().size()));
         this.codeArea.searchCurrentIndexProperty().addListener(observable -> this.fileInternalSearch.setCurrentIndex(codeArea.getSearchCurrentIndex() + 1));
         this.codeArea.setOnPaste(event -> {
@@ -229,15 +238,15 @@ public class ProjectEditorController implements Initializable {
                 Platform.runLater(() -> {
                     String fileName = projectProperty.get().getSimpleProjectName()
                             + "-"
-                            + Optional.ofNullable(clipboard.getImage().getUrl()).map(path -> path.substring(path.lastIndexOf("/") + 1)).orElseGet(() -> ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddhhmmssSSS")))
+                            + Optional.ofNullable(clipboard.getImage().getUrl()).map(imgPath -> imgPath.substring(imgPath.lastIndexOf("/") + 1)).orElseGet(() -> ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddhhmmssSSS")))
                             + ".png";
                     try (ByteArrayOutputStream imageOutputStream = new ByteArrayOutputStream()) {
                         ImageIO.write(SwingFXUtils.fromFXImage(clipboard.getImage(), null), "png", imageOutputStream);
                         fileOperationHandler.write(fileName, new ByteArrayInputStream(imageOutputStream.toByteArray()));
                     } catch (IOException e) {
-                        throw new RuntimeException("Unable read image from clipboard", e);
+                        throw new IllegalStateException("Unable read image from clipboard", e);
                     }
-                    codeArea.replaceSelection(String.format("![%s](%s)", fileName, "./" + URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20")));
+                    codeArea.replaceSelection(String.format("![%s](%s)", fileName, "one-library://" + URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20")));
                 });
             } else if (clipboard.hasString()) {
                 String text = clipboard.getString();
@@ -254,11 +263,6 @@ public class ProjectEditorController implements Initializable {
             this.engine.executeScript(String.format("window.scrollTo(0, document.body.scrollHeight * %s);",
                     target));
         });
-        try {
-            this.htmlWrapper = Files.readString(Path.of(getClass().getClassLoader().getResource("static/markdown-template.html").toURI()), StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage());
-        }
     }
 
     public void show(Project project) {

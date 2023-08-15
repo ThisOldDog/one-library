@@ -1,5 +1,7 @@
 package pers.dog;
 
+import java.io.IOException;
+
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import pers.dog.boot.JavaFXSpringBootApplication;
 
@@ -9,7 +11,7 @@ import pers.dog.boot.JavaFXSpringBootApplication;
 @SpringBootApplication
 public class OneLibraryApplication extends JavaFXSpringBootApplication {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         run(OneLibraryApplication.class, args);
     }
 }

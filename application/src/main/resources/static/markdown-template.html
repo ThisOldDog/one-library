@@ -2,9 +2,42 @@
 <html lang="zh_CN">
 <head>
     <meta charset="UTF-8">
+{{header}}
     <link rel="stylesheet" type="text/css" href="file:///C:/Users/废柴/Documents/Persion/JavaFX/one-library/application/src/main/resources/static/css/markdown/light.css">
 </head>
 <body class="markdown-body">
 %s
 </body>
+<script type="text/javascript">
+    for (const preElement of document.getElementsByTagName('pre')) {
+        if (preElement.parentElement != null && preElement.className === 'md-fenced-code' && preElement.childElementCount === 1) {
+            let child = preElement.firstElementChild
+            let language
+            if (child.tagName === 'CODE') {
+                for (const childClass of child.classList) {
+                    if (childClass.startsWith('language-')) {
+                        language = childClass.substring(9)
+                    }
+                }
+            }
+            let textarea = document.createElement('textarea')
+            textarea.innerHTML = preElement.innerHTML
+            console.log(textarea)
+            preElement.parentElement.replaceChild(textarea, preElement)
+            let mime
+            if (language) {
+                for (const languageInfo of CodeMirror.modeInfo) {
+                    if (language.toUpperCase() === languageInfo.name.toUpperCase()) {
+                        mime = languageInfo.mime ? languageInfo.mime : languageInfo.mimes[0]
+                    }
+                }
+            }
+            CodeMirror.fromTextArea(textarea, {
+                mode: mime ? mime : "text/x-textile", //实现Java代码高亮
+                lineNumbers: true,
+                readOnly: true
+            });
+        }
+    }
+</script>
 </html>

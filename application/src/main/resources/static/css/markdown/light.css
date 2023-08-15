@@ -33,22 +33,22 @@
 
 @font-face {
     font-family: "Cantarell";
-    src: url('lapis/Cantarell-VF-fixed.otf');
+    src: url('default/Cantarell-VF-fixed.otf');
 }
 
 @font-face {
     font-family: "JetBrainsMono";
-    src: url('lapis/JetBrainsMono-Regular.ttf');
+    src: url('default/JetBrainsMono-Regular.ttf');
 }
 
 @font-face {
     font-family: "SourceHanSerifCN";
-    src: url('lapis/SourceHanSerifCN-Medium.otf');
+    src: url('default/SourceHanSerifCN-Medium.otf');
 }
 
 @font-face {
     font-family: "SourceHanSerifCN";
-    src: url('lapis/SourceHanSerifCN-Bold.otf');
+    src: url('default/SourceHanSerifCN-Bold.otf');
     font-weight: bold;
 }
 
@@ -61,8 +61,8 @@ body {
     font-size: 1.1rem;
     color: var(--text-color);
     line-height: 1.6;
-    word-spacing: 0px;
-    letter-spacing: 0px;
+    word-spacing: 0;
+    letter-spacing: 0;
     word-break: break-word;
     word-wrap: break-word;
     text-align: justify;
@@ -455,7 +455,7 @@ hr {
 /* Checkbox */
 
 body input[type=checkbox] {
-    width: 0;
+    width: 13px;
 }
 
 .task-list-item input::before {
@@ -470,7 +470,7 @@ body input[type=checkbox] {
     background-color: #fdfdfd;
     margin-left: -0.1rem;
     margin-right: 0.1rem;
-    margin-top: -.6rem;
+    margin-top: -.25rem;
 }
 
 .task-list-item input:checked::before {
@@ -481,6 +481,7 @@ body input[type=checkbox] {
     background-color: var(--bg-color);
     font-size: 0.75rem;
     line-height: 0.8rem;
+    margin-top: -0.25rem;
 }
 
 blockquote .task-list-item input::before {
@@ -503,7 +504,7 @@ blockquote .task-list-item input::before {
 }
 
 .html-for-mac body input[type=checkbox] {
-    margin-top: 0.65rem;
+    /*margin-top: 0.65rem;*/
 }
 
 .html-for-mac body .task-list-item input::before {

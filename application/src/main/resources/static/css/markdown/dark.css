@@ -3,7 +3,7 @@
  *   https://github.com/YiNNx/typora-theme-lapis
  */
 
-@import "lapis.css";
+@import "light.css";
 
 :root {
     --text-color: #e4e4e4e3;
