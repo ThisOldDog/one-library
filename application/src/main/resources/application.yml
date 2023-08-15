@@ -9,3 +9,5 @@ spring:
       ddl-auto: update
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+logging:
+  config: classpath:logback-spring.xml

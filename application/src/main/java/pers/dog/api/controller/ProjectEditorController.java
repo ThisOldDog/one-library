@@ -182,15 +182,18 @@ public class ProjectEditorController implements Initializable {
     public Button editorAndPreviewButton;
 
     private static String htmlWrapper;
+    private static String htmlWrapperWithoutStyle;
     private FileOperationHandler fileOperationHandler;
     private String localText;
     private WebEngine engine;
     private FileInternalSearch fileInternalSearch;
     private String path;
     private String body;
+    private String bodyWithoutStyle;
 
     static {
         try {
+            htmlWrapperWithoutStyle = Files.readString(Path.of(ProjectEditorController.class.getClassLoader().getResource("static/markdown-template-without-style.html").toURI()), StandardCharsets.UTF_8);
             String template = Files.readString(Path.of(ProjectEditorController.class.getClassLoader().getResource("static/markdown-template.html").toURI()), StandardCharsets.UTF_8);
             // 添加 CodeMirror
             StringBuilder codeMirrorHeaderBuilder = new StringBuilder();
@@ -297,7 +300,8 @@ public class ProjectEditorController implements Initializable {
     }
 
     private String toHtml(String markdownContent) {
-        body = String.format(htmlWrapper, renderer.render(parser.parse(markdownContent)));
+        body = htmlWrapper.replace("{{body}}", renderer.render(parser.parse(markdownContent)));
+        bodyWithoutStyle = htmlWrapperWithoutStyle.replace("{{body}}", renderer.render(parser.parse(markdownContent)));
         return body;
     }
 
@@ -377,7 +381,7 @@ public class ProjectEditorController implements Initializable {
 
     public void exportToHtmlWithoutStyle() {
         Platform.runLater(() -> {
-            String editorText = body;
+            String export = bodyWithoutStyle;
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle(I18nMessageSource.getResource("%info.project.save.project"));
             fileChooser.setInitialFileName(getProject().getSimpleProjectName());
@@ -392,7 +396,7 @@ public class ProjectEditorController implements Initializable {
             if (file != null) {
                 try {
                     stageStatusStore.getStageStatus().setLatestExportDirectory(file.getParent());
-                    Files.writeString(file.toPath(), editorText, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                    Files.writeString(file.toPath(), export, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                 } catch (IOException e) {
                     throw new FileOperationException(I18nMessageSource.getResource("error.project.export"), e);
                 }
