@@ -2,9 +2,16 @@
 
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.Label?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="160.0"
-            xmlns="http://javafx.com/javafx/11.0.1">
+            xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="pers.dog.boot.controller.StartingController">
+    <Label fx:id="staringStep" maxHeight="16.0" maxWidth="Infinity" minHeight="16.0" minWidth="-Infinity"
+           prefHeight="16.0"
+           AnchorPane.bottomAnchor="16.0"  AnchorPane.rightAnchor="0.0"
+           text="Starting ..."/>
     <ProgressBar maxHeight="16.0" maxWidth="Infinity" minHeight="16.0" minWidth="-Infinity"
-                 prefWidth="16.0"
+                 prefHeight="16.0"
                  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
 </AnchorPane>

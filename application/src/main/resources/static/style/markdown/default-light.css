@@ -33,22 +33,22 @@
 
 @font-face {
     font-family: "Cantarell";
-    src: url('default/Cantarell-VF-fixed.otf');
+    src: url('Cantarell-VF-fixed.otf');
 }
 
 @font-face {
     font-family: "JetBrainsMono";
-    src: url('default/JetBrainsMono-Regular.ttf');
+    src: url('JetBrainsMono-Regular.ttf');
 }
 
 @font-face {
     font-family: "SourceHanSerifCN";
-    src: url('default/SourceHanSerifCN-Medium.otf');
+    src: url('SourceHanSerifCN-Medium.otf');
 }
 
 @font-face {
     font-family: "SourceHanSerifCN";
-    src: url('default/SourceHanSerifCN-Bold.otf');
+    src: url('SourceHanSerifCN-Bold.otf');
     font-weight: bold;
 }
 

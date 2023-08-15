@@ -6,6 +6,9 @@ import java.util.concurrent.CompletableFuture;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -26,6 +29,7 @@ import pers.dog.boot.component.event.ApplicationRunEvent;
 import pers.dog.boot.component.event.SceneLoadedEvent;
 import pers.dog.boot.context.ApplicationContextHolder;
 import pers.dog.boot.context.property.ApplicationProperties;
+import pers.dog.boot.controller.StartingController;
 import pers.dog.boot.infra.util.FXMLUtils;
 import pers.dog.boot.infra.util.ImageUtils;
 import pers.dog.boot.infra.util.WordUtils;
@@ -55,11 +59,13 @@ import pers.dog.boot.infra.util.WordUtils;
 
 public abstract class JavaFXSpringBootApplication extends Application {
     private static final Logger logger = LoggerFactory.getLogger(JavaFXSpringBootApplication.class);
-    private static final String STRING_SCENE = "starting";
+    private static final String STARTING_SCENE = "starting";
     private static final String BANNER_NAME = "banner";
     private static final String FAVICON_NAME = "favicon";
 
     private final CompletableFuture<Runnable> javafxApplicationLaunch = new CompletableFuture<>();
+
+    protected StringProperty startingStepProperty = new SimpleStringProperty();
 
     public static void run(Class<? extends JavaFXSpringBootApplication> applicationClass, String... args) {
         ApplicationContextHolder.setApplicationClass(applicationClass);
@@ -72,11 +78,14 @@ public abstract class JavaFXSpringBootApplication extends Application {
 
     protected Runnable onStart(Stage stage) throws IOException {
         Stage startStage = new Stage(StageStyle.UNDECORATED);
-        Scene startScene = new Scene(FXMLUtils.loadFXML(STRING_SCENE, JavaFXSpringBootApplication.class));
+        Scene startScene = new Scene(FXMLUtils.loadFXML(STARTING_SCENE, JavaFXSpringBootApplication.class));
+        StartingController controller = FXMLUtils.getController(startScene.getRoot());
+        Bindings.bindBidirectional(controller.getStaringStep().textProperty(), startingStepProperty);
         loadFavicon(startStage);
         loadBanner(startScene);
         startStage.setScene(startScene);
         startStage.show();
+        startingStepProperty.setValue("Starting ...");
         return startStage::close;
     }
 
@@ -153,7 +162,7 @@ public abstract class JavaFXSpringBootApplication extends Application {
             Parent root = startScene.getRoot();
             if (root instanceof AnchorPane) {
                 AnchorPane anchorPane = (AnchorPane) root;
-                anchorPane.getChildren().add(imageView);
+                anchorPane.getChildren().add(0, imageView);
                 AnchorPane.setTopAnchor(imageView, 0D);
                 AnchorPane.setLeftAnchor(imageView, 0D);
                 AnchorPane.setRightAnchor(imageView, 0D);

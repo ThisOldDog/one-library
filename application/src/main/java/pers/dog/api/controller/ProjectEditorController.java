@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -39,6 +38,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Worker;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -101,9 +101,7 @@ public class ProjectEditorController implements Initializable {
         private static final String CLASS_ATTRIBUTE = "class";
 
         @Override
-        public void setAttributes(@NonNull com.vladsch.flexmark.util.ast.Node node,
-                                  @NonNull AttributablePart attributablePart,
-                                  @NonNull MutableAttributes mutableAttributes) {
+        public void setAttributes(@NonNull com.vladsch.flexmark.util.ast.Node node, @NonNull AttributablePart attributablePart, @NonNull MutableAttributes mutableAttributes) {
             // Set class
             String nodeType = node.getNodeName();
             if (StringUtils.endsWithIgnoreCase(nodeType, "Block")) {
@@ -181,15 +179,16 @@ public class ProjectEditorController implements Initializable {
     @FXML
     public Button editorAndPreviewButton;
 
-    private static String htmlWrapper;
-    private static String htmlWrapperWithoutStyle;
     private FileOperationHandler fileOperationHandler;
     private String localText;
     private WebEngine engine;
     private FileInternalSearch fileInternalSearch;
     private String path;
+
+    private static String htmlWrapper;
+    private static String htmlWrapperWithoutStyle;
+    private String html;
     private String body;
-    private String bodyWithoutStyle;
 
     static {
         try {
@@ -197,8 +196,7 @@ public class ProjectEditorController implements Initializable {
             String template = Files.readString(Path.of(ProjectEditorController.class.getClassLoader().getResource("static/markdown-template.html").toURI()), StandardCharsets.UTF_8);
             // 添加 CodeMirror
             StringBuilder codeMirrorHeaderBuilder = new StringBuilder();
-            URI codeMirrorUri = ProjectEditorController.class.getClassLoader().getResource("static/lib/codemirror").toURI();
-            Files.walkFileTree(Path.of(codeMirrorUri), new SimpleFileVisitor<>() {
+            Files.walkFileTree(Path.of(".data/lib"), new SimpleFileVisitor<>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     if (file.toString().endsWith(".js")) {
@@ -211,7 +209,7 @@ public class ProjectEditorController implements Initializable {
             });
             htmlWrapper = template.replace("{{header}}", codeMirrorHeaderBuilder.toString());
         } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage());
+            logger.error("[ProjectEditor] Unable loading resource.", e);
         }
     }
 
@@ -226,23 +224,23 @@ public class ProjectEditorController implements Initializable {
         this.fileInternalSearch.setSearchAction(new Action(actionEvent -> codeArea.search(this.fileInternalSearch.getSearchText())));
         this.fileInternalSearch.setNextOccurrenceAction(new Action(actionEvent -> codeArea.nextSearchCandidate()));
         this.fileInternalSearch.setPreviousOccurrenceAction(new Action(actionEvent -> codeArea.previousSearchCandidate()));
-        this.fileInternalSearch.setMoveToAction(new Action(actionEvent ->
-                this.fileInternalSearch.setCurrentIndex(codeArea.moveToSearchCandidate(this.fileInternalSearch.getCurrentIndex()))
-        ));
+        this.fileInternalSearch.setMoveToAction(new Action(actionEvent -> this.fileInternalSearch.setCurrentIndex(codeArea.moveToSearchCandidate(this.fileInternalSearch.getCurrentIndex()))));
         this.fileInternalSearch.setCloseAction(new Action(actionEvent -> closeSearch()));
         this.fileInternalSearch.setReplaceAction(new Action(actionEvent -> codeArea.replaceSearch(this.fileInternalSearch.getReplaceText())));
         this.fileInternalSearch.setReplaceAllAction(new Action(actionEvent -> codeArea.replaceSearchAll(this.fileInternalSearch.getReplaceText())));
         this.engine = previewArea.getEngine();
+        this.engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == Worker.State.SUCCEEDED) { {
+                scrollEngine();
+            }}
+        });
         this.codeArea.getSearchCandidateList().addListener((InvalidationListener) observable -> this.fileInternalSearch.searchCandidateCountProperty().set(codeArea.getSearchCandidateList().size()));
         this.codeArea.searchCurrentIndexProperty().addListener(observable -> this.fileInternalSearch.setCurrentIndex(codeArea.getSearchCurrentIndex() + 1));
         this.codeArea.setOnPaste(event -> {
             Clipboard clipboard = event.getClipboard();
             if (clipboard.hasImage()) {
                 Platform.runLater(() -> {
-                    String fileName = projectProperty.get().getSimpleProjectName()
-                            + "-"
-                            + Optional.ofNullable(clipboard.getImage().getUrl()).map(imgPath -> imgPath.substring(imgPath.lastIndexOf("/") + 1)).orElseGet(() -> ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddhhmmssSSS")))
-                            + ".png";
+                    String fileName = projectProperty.get().getSimpleProjectName() + "-" + Optional.ofNullable(clipboard.getImage().getUrl()).map(imgPath -> imgPath.substring(imgPath.lastIndexOf("/") + 1)).orElseGet(() -> ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddhhmmssSSS"))) + ".png";
                     try (ByteArrayOutputStream imageOutputStream = new ByteArrayOutputStream()) {
                         ImageIO.write(SwingFXUtils.fromFXImage(clipboard.getImage(), null), "png", imageOutputStream);
                         fileOperationHandler.write(fileName, new ByteArrayInputStream(imageOutputStream.toByteArray()));
@@ -258,14 +256,15 @@ public class ProjectEditorController implements Initializable {
                 }
             }
         });
-        this.codeAreaWorkspace.estimatedScrollYProperty().addListener(observable -> {
-            int firstLine = this.codeArea.firstVisibleParToAllParIndex();
-            int lastLine = this.codeArea.lastVisibleParToAllParIndex();
-            int totalLine = this.codeArea.getParagraphs().size();
-            double target = firstLine == 0 ? 0 : firstLine * 1D / (totalLine - lastLine + firstLine);
-            this.engine.executeScript(String.format("window.scrollTo(0, document.body.scrollHeight * %s);",
-                    target));
-        });
+        this.codeAreaWorkspace.estimatedScrollYProperty().addListener(observable -> scrollEngine());
+    }
+
+    private void scrollEngine() {
+        int firstLine = this.codeArea.firstVisibleParToAllParIndex();
+        int lastLine = this.codeArea.lastVisibleParToAllParIndex();
+        int totalLine = this.codeArea.getParagraphs().size();
+        double target = firstLine == 0 ? 0 : firstLine * 1D / (totalLine - lastLine + firstLine);
+        this.engine.executeScript(String.format("window.scrollTo(0, document.body.scrollHeight * %s);", target));
     }
 
     public void show(Project project) {
@@ -300,8 +299,7 @@ public class ProjectEditorController implements Initializable {
     }
 
     private String toHtml(String markdownContent) {
-        body = htmlWrapper.replace("{{body}}", renderer.render(parser.parse(markdownContent)));
-        bodyWithoutStyle = htmlWrapperWithoutStyle.replace("{{body}}", renderer.render(parser.parse(markdownContent)));
+        html = htmlWrapper.replace("{{body}}", body = renderer.render(parser.parse(markdownContent)));
         return body;
     }
 
@@ -318,9 +316,7 @@ public class ProjectEditorController implements Initializable {
     }
 
     private void setFileOperationHandler(Project project) {
-        Map<Long, Project> projectMap = projectRepository.findAll()
-                .stream()
-                .collect(Collectors.toMap(Project::getProjectId, Function.identity()));
+        Map<Long, Project> projectMap = projectRepository.findAll().stream().collect(Collectors.toMap(Project::getProjectId, Function.identity()));
         StringBuilder pathPrefix = new StringBuilder(".data/document");
         Project parent = projectMap.get(project.getParentProjectId());
         ArrayDeque<String> path = new ArrayDeque<>();
@@ -375,33 +371,38 @@ public class ProjectEditorController implements Initializable {
 
     public void exportToHtml() {
         Platform.runLater(() -> {
-
+            String export = html;
+            exportToHtmlFile(export);
         });
     }
 
     public void exportToHtmlWithoutStyle() {
         Platform.runLater(() -> {
-            String export = bodyWithoutStyle;
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle(I18nMessageSource.getResource("%info.project.save.project"));
-            fileChooser.setInitialFileName(getProject().getSimpleProjectName());
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("HTML", "*.html"));
-            if (!ObjectUtils.isEmpty(stageStatusStore.getStageStatus().getLatestExportDirectory())) {
-                File file = new File(stageStatusStore.getStageStatus().getLatestExportDirectory());
-                if (file.exists()) {
-                    fileChooser.setInitialDirectory(file);
-                }
-            }
-            File file = fileChooser.showSaveDialog(ApplicationContextHolder.getStage().getOwner());
-            if (file != null) {
-                try {
-                    stageStatusStore.getStageStatus().setLatestExportDirectory(file.getParent());
-                    Files.writeString(file.toPath(), export, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-                } catch (IOException e) {
-                    throw new FileOperationException(I18nMessageSource.getResource("error.project.export"), e);
-                }
-            }
+            String export = htmlWrapperWithoutStyle.replace("{{body}}", body);
+            exportToHtmlFile(export);
         });
+    }
+
+    private void exportToHtmlFile(String export) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(I18nMessageSource.getResource("%info.project.save.project"));
+        fileChooser.setInitialFileName(getProject().getSimpleProjectName());
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("HTML", "*.html"));
+        if (!ObjectUtils.isEmpty(stageStatusStore.getStageStatus().getLatestExportDirectory())) {
+            File file = new File(stageStatusStore.getStageStatus().getLatestExportDirectory());
+            if (file.exists()) {
+                fileChooser.setInitialDirectory(file);
+            }
+        }
+        File file = fileChooser.showSaveDialog(ApplicationContextHolder.getStage().getOwner());
+        if (file != null) {
+            try {
+                stageStatusStore.getStageStatus().setLatestExportDirectory(file.getParent());
+                Files.writeString(file.toPath(), export, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            } catch (IOException e) {
+                throw new FileOperationException(I18nMessageSource.getResource("error.project.export"), e);
+            }
+        }
     }
 
     private void wrapSelection(String selectedText, IndexRange selection, String leftSymbol, String rightSymbol) {
@@ -501,9 +502,7 @@ public class ProjectEditorController implements Initializable {
 
     public void header() {
         int currentParagraph = codeArea.getCurrentParagraph();
-        new PropertySheetDialog<>(new HeaderProperty())
-                .showAndWait()
-                .ifPresent(headerProperty -> startWith(currentParagraph, repeat('#', headerProperty.getLevel().getLevel()) + " ", Set.of('#', ' ')));
+        new PropertySheetDialog<>(new HeaderProperty()).showAndWait().ifPresent(headerProperty -> startWith(currentParagraph, repeat('#', headerProperty.getLevel().getLevel()) + " ", Set.of('#', ' ')));
     }
 
     public void blockQuote() {
@@ -534,9 +533,7 @@ public class ProjectEditorController implements Initializable {
 
     public void table() {
         int currentParagraph = codeArea.getCurrentParagraph();
-        new PropertySheetDialog<>(new TableProperty())
-                .showAndWait()
-                .ifPresent(property -> appendNewLine(currentParagraph, buildMarkdownTable(property)));
+        new PropertySheetDialog<>(new TableProperty()).showAndWait().ifPresent(property -> appendNewLine(currentParagraph, buildMarkdownTable(property)));
     }
 
     public void dividingLine() {
@@ -545,19 +542,13 @@ public class ProjectEditorController implements Initializable {
 
     public void link() {
         IndexRange selection = codeArea.getSelection();
-        new PropertySheetDialog<>(new LinkProperty())
-                .showAndWait()
-                .ifPresent(property -> wrapSelection(null, new IndexRange(selection.getEnd(), selection.getEnd()),
-                        String.format("[%s](%s)", property.getTitle(), property.getUrl()), ""));
+        new PropertySheetDialog<>(new LinkProperty()).showAndWait().ifPresent(property -> wrapSelection(null, new IndexRange(selection.getEnd(), selection.getEnd()), String.format("[%s](%s)", property.getTitle(), property.getUrl()), ""));
     }
 
 
     public void image() {
         IndexRange selection = codeArea.getSelection();
-        new PropertySheetDialog<>(new ImageProperty())
-                .showAndWait()
-                .ifPresent(property -> wrapSelection(null, new IndexRange(selection.getEnd(), selection.getEnd()),
-                        String.format("![%s](%s \"%s\")", property.getName(), property.getUrl(), property.getTitle()), ""));
+        new PropertySheetDialog<>(new ImageProperty()).showAndWait().ifPresent(property -> wrapSelection(null, new IndexRange(selection.getEnd(), selection.getEnd()), String.format("![%s](%s \"%s\")", property.getName(), property.getUrl(), property.getTitle()), ""));
     }
 
     public void codeInline() {

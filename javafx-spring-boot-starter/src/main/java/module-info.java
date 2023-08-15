@@ -41,6 +41,7 @@ module javafx.spring.boot.starter {
     opens pers.dog.boot.component.control;
     opens pers.dog.boot.component.event;
     opens pers.dog.boot.component.file;
+    opens pers.dog.boot.controller;
     opens pers.dog.boot.context;
     opens pers.dog.boot.context.property;
     opens pers.dog.boot.infra.constant;
