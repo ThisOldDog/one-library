@@ -24,7 +24,9 @@ public class ControlProvider<T> {
     }
     public void set(Object control) {
         this.control = (T) control;
-        afterAssignmentConsumer.accept(this.control);
+        if (afterAssignmentConsumer != null) {
+            afterAssignmentConsumer.accept(this.control);
+        }
     }
 
     @SuppressWarnings("unchecked")

@@ -4,7 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/8/15 20:02
+ * @author 废柴 2023/8/15 20:02
  */
 public class StartingController {
     @FXML

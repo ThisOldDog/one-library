@@ -13,7 +13,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/3/6 20:09
+ * @author 废柴 2023/3/6 20:09
  */
 @Component
 public class FXMLControlValueHandler implements BeanPostProcessor {

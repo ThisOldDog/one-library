@@ -13,7 +13,6 @@ import pers.dog.app.service.ProjectService;
 import pers.dog.domain.entity.Project;
 
 public class OneLibraryController implements Initializable {
-    private static final String PROJECT_EMPTY_SCENE = "project-empty";
 
     @FXML
     private SplitPane projectSplitPane;

@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/3/6 20:07
+ * @author 废柴 2023/3/6 20:07
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

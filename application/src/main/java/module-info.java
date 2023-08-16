@@ -23,6 +23,7 @@ module pers.dog {
 
     requires org.slf4j;
     requires org.apache.commons.lang3;
+    requires com.fasterxml.jackson.core;
     requires org.jfxtras.styles.jmetro;
     requires org.controlsfx.controls;
     requires org.fxmisc.richtext;
@@ -49,13 +50,16 @@ module pers.dog {
 
     // resource
     opens pers.dog;
+    opens pers.dog.setting;
     // package
     opens pers.dog.api.controller;
+    opens pers.dog.api.controller.setting;
     opens pers.dog.api.callback;
     opens pers.dog.app.service;
     opens pers.dog.app.service.impl;
     opens pers.dog.domain.entity;
     opens pers.dog.domain.repository;
+    opens pers.dog.config;
     opens pers.dog.infra.action;
     opens pers.dog.infra.action.application;
     opens pers.dog.infra.action.project;

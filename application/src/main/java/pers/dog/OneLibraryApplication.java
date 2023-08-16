@@ -9,13 +9,16 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import pers.dog.boot.JavaFXSpringBootApplication;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
+import pers.dog.config.OneLibraryProperties;
 
 /**
  * JavaFX App
  */
+@EnableConfigurationProperties(OneLibraryProperties.class)
 @SpringBootApplication
 public class OneLibraryApplication extends JavaFXSpringBootApplication {
     private static final Logger logger = LoggerFactory.getLogger(OneLibraryApplication.class);

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.VBox?>
+<?import org.controlsfx.control.MasterDetailPane?>
+<?import pers.dog.api.callback.SettingGroupTreeCallback?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pers.dog.api.controller.setting.SettingController"
+      prefHeight="400.0" prefWidth="600.0">
+    <fx:define>
+        <SettingGroupTreeCallback fx:id="settingGroupTreeCallback"/>
+    </fx:define>
+    <MasterDetailPane fx:id="settingWorkspace" dividerPosition="0.2">
+        <masterNode>
+            <TreeView fx:id="settingGroupTree" focusTraversable="false" showRoot="false"
+                      VBox.vgrow="ALWAYS"/>
+        </masterNode>
+        <detailNode>
+
+        </detailNode>
+    </MasterDetailPane>
+</VBox>

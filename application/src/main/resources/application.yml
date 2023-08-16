@@ -11,3 +11,12 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
 logging:
   config: classpath:logback-spring.xml
+one-library:
+  setting:
+    - group-name: info.setting.markdown
+      children:
+        - code: markdown-preview
+          group-name: info.setting.markdown.preview
+          scene-name: setting/markdown-preview
+          options:
+            style: default-light
