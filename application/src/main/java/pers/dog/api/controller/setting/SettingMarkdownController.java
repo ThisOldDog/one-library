@@ -13,9 +13,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import org.controlsfx.control.PrefixSelectionComboBox;
 import org.springframework.util.ObjectUtils;
-import pers.dog.api.controller.dto.MarkdownStyle;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
+import pers.dog.boot.infra.dto.ValueMeaning;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.domain.entity.SettingGroup;
 
@@ -27,10 +27,10 @@ public class SettingMarkdownController implements SettingOptionController, Initi
     public static final String OPTION_PREVIEW_STYLE = "preview-style";
     private final Map<String, String> optionMap = new HashMap<>();
     @FXML
-    public PrefixSelectionComboBox<MarkdownStyle> previewStyleComboBox;
+    public PrefixSelectionComboBox<ValueMeaning> previewStyleComboBox;
     private SettingGroup settingGroup;
     private boolean changed = false;
-    private final ObservableList<MarkdownStyle> markdownStyles = FXCollections.observableArrayList();
+    private final ObservableList<ValueMeaning> markdownStyles = FXCollections.observableArrayList();
 
     public SettingMarkdownController() {
         ApplicationDirFileOperationHandler handler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix(".data/style/markdown"));
@@ -38,7 +38,7 @@ public class SettingMarkdownController implements SettingOptionController, Initi
         try {
             try (BufferedReader reader = Files.newBufferedReader(handler.directory().resolve("styles.properties"), StandardCharsets.UTF_8)) {
                 markdownStyleProperties.load(reader);
-                markdownStyleProperties.forEach((code, name) -> markdownStyles.add(new MarkdownStyle().setCode(String.valueOf(code)).setName(I18nMessageSource.getResource(String.valueOf(name)))));
+                markdownStyleProperties.forEach((code, name) -> markdownStyles.add(new ValueMeaning().setValue(String.valueOf(code)).setMeaning(I18nMessageSource.getResource(String.valueOf(name)))));
             }
         } catch (IOException e) {
             throw new IllegalStateException("Unable to load .data/style/markdown/styles.properties", e);
@@ -51,7 +51,7 @@ public class SettingMarkdownController implements SettingOptionController, Initi
         previewStyleComboBox.setItems(markdownStyles);
         previewStyleComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
             changed = true;
-            optionMap.put(OPTION_PREVIEW_STYLE, newValue.getCode());
+            optionMap.put(OPTION_PREVIEW_STYLE, newValue.getValue());
         });
     }
 
@@ -76,8 +76,8 @@ public class SettingMarkdownController implements SettingOptionController, Initi
         optionMap.putAll(option);
         String previewStyle = option.get(OPTION_PREVIEW_STYLE);
         if (!ObjectUtils.isEmpty(previewStyle)) {
-            for (MarkdownStyle item : previewStyleComboBox.getItems()) {
-                if (Objects.equals(item.getCode(), previewStyle)) {
+            for (ValueMeaning item : previewStyleComboBox.getItems()) {
+                if (Objects.equals(item.getValue(), previewStyle)) {
                     previewStyleComboBox.setValue(item);
                 }
             }

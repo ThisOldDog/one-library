@@ -218,9 +218,11 @@ public class ProjectServiceImpl implements ProjectService {
         });
         projectList.removeAll(matchedList);
         Map<Long, Project> parentMap = matchedList.stream().collect(Collectors.toMap(Project::getProjectId, Function.identity()));
-        logger.warn("[One Library] If no file or directory is found for these records, the records will be deleted: {}",
-                StringUtils.collectionToCommaDelimitedString(projectList.stream().map(project -> getPath(parentMap, project)).collect(Collectors.toList())));
-        projectRepository.deleteAll(projectList);
+        if (!projectList.isEmpty()) {
+            logger.warn("[One Library] If no file or directory is found for these records, the records will be deleted: {}",
+                    StringUtils.collectionToCommaDelimitedString(projectList.stream().map(project -> getPath(parentMap, project)).collect(Collectors.toList())));
+            projectRepository.deleteAll(projectList);
+        }
     }
 
     private String getPath(Map<Long, Project> parentMap, Project project) {

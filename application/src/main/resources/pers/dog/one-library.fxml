@@ -35,6 +35,7 @@
 <?import pers.dog.infra.action.project.ExportProjectToHtmlAction?>
 <?import pers.dog.infra.action.project.ExportProjectToHtmlWithoutStyleAction?>
 <?import pers.dog.infra.action.application.SettingAction?>
+<?import pers.dog.infra.action.markdown.HtmlToMarkdownAction?>
 <BorderPane fx:id="oneLibraryWorkspace" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="pers.dog.api.controller.OneLibraryController">
     <top>
@@ -201,6 +202,9 @@
                         <Boolean fx:value="true"/>
                     </disabled>
                 </ReplaceAction>
+            </ActionGroup>
+            <ActionGroup text="%info.action.markdown">
+                <HtmlToMarkdownAction/>
             </ActionGroup>
         </ActionMenuBar>
     </top>

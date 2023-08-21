@@ -33,6 +33,7 @@ module javafx.spring.boot.starter {
     exports pers.dog.boot.infra.constant;
     exports pers.dog.boot.infra.i18n;
     exports pers.dog.boot.infra.util;
+    exports pers.dog.boot.infra.dto;
 
     opens pers.dog.boot;
     opens pers.dog.boot.autoconfiguration;
@@ -48,4 +49,5 @@ module javafx.spring.boot.starter {
     opens pers.dog.boot.infra.i18n;
     opens pers.dog.boot.infra.util;
     opens pers.dog.boot.infra.dialog;
+    opens pers.dog.boot.infra.dto;
 }

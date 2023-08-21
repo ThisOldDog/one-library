@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+<?import org.controlsfx.control.PrefixSelectionComboBox?>
+<?import pers.dog.infra.control.MarkdownCodeArea?>
+<?import javafx.geometry.Insets?>
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pers.dog.api.controller.markdown.HtmlToMarkdownController">
+    <VBox minWidth="120" prefWidth="160">
+        <Label text="%info.project.html-to-markdown.url"/>
+        <TextField fx:id="url" prefWidth="720" text="https://"/>
+        <Label text="%info.project.html-to-markdown.insert-position">
+            <VBox.margin>
+                <Insets top="8"/>
+            </VBox.margin>
+        </Label>
+        <PrefixSelectionComboBox fx:id="insertPosition"/>
+    </VBox>
+    <SplitPane dividerPositions="0.5" HBox.hgrow="ALWAYS">
+        <WebView fx:id="contentPreview"/>
+        <MarkdownCodeArea fx:id="markdownPreview"/>
+    </SplitPane>
+</HBox>

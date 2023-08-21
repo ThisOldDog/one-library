@@ -64,9 +64,10 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
         projectContextMenu = ActionUtils.createContextMenu(Arrays.asList(
                 createMarkdownAction,
                 createDirectoryAction,
-                deleteProjectAction,
                 ActionUtils.ACTION_SEPARATOR,
-                openRenameProjectAction
+                openRenameProjectAction,
+                ActionUtils.ACTION_SEPARATOR,
+                deleteProjectAction
         ));
     }
 

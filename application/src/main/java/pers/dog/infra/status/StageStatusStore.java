@@ -208,6 +208,7 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
                     projectService.openFile(child.getValue());
                     return;
                 }
+                openProject(child, projectId);
             }
         }
     }
