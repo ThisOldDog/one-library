@@ -3,7 +3,7 @@
  *   https://github.com/YiNNx/typora-theme-lapis
  */
 
-@import "light.css";
+@import "default-light.css";
 
 :root {
     --text-color: #e4e4e4e3;
@@ -25,6 +25,8 @@
     --block-bg-color: #080e1d;
     /* Code Block Background */
     --quote-block-bg-color: #2a2f3b;
+    /* Scroll */
+    --block-scroll-color: #b0b0b0;
     /* Quote Block Background */
 
     /* Overwrite of Typora Base Color */
@@ -36,13 +38,14 @@
     --window-border: 1px solid var(--bg-color);
     --control-text-hover-color: var(--text-color);
     --rawblock-edit-panel-bd: var(--block-bg-color);
+
 }
 
 /*
  * Background Color
  */
 
-content {
+.markdown-body {
     background: var(--bg-color);
 }
 
@@ -317,5 +320,9 @@ cm-s-inner .cm-link,
 }
 
 ::-webkit-scrollbar-thumb {
+    background: var(--block-scroll-color);
+}
+
+::-webkit-scrollbar-track {
     background: var(--block-bg-color);
 }

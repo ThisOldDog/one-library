@@ -61,6 +61,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import pers.dog.api.controller.setting.SettingMarkdownController;
+import pers.dog.app.service.SettingService;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationException;
 import pers.dog.boot.component.file.FileOperationHandler;
@@ -151,9 +153,11 @@ public class ProjectEditorController implements Initializable {
 
     private static final Logger logger = LoggerFactory.getLogger(ProjectEditorController.class);
     private static final String STYLE_CLASS_BUTTON_SAVE_DIRTY = "button-save-dirty";
+    private static final String DEFAULT_STYLE_NAME = "default-light";
     private final ObjectProperty<Project> projectProperty = new SimpleObjectProperty<>();
     private final ProjectRepository projectRepository;
     private final StageStatusStore stageStatusStore;
+    private final SettingService settingService;
     private final ObjectProperty<Boolean> dirty = new SimpleObjectProperty<>(false);
     private final AtomicBoolean loaded = new AtomicBoolean(false);
     private final DataHolder markdownParserOptions = PegdownOptionsAdapter.flexmarkOptions(PegdownExtensions.ALL, TocExtension.create(), TaskListExtension.create(), ClassAttributeRenderExtension.create(this));
@@ -185,12 +189,18 @@ public class ProjectEditorController implements Initializable {
     private FileInternalSearch fileInternalSearch;
     private String path;
 
-    private static String htmlWrapper;
-    private static String htmlWrapperWithoutStyle;
+    private String htmlWrapper;
+    private String htmlWrapperWithoutStyle;
     private String html;
     private String body;
 
-    static {
+    public ProjectEditorController(ProjectRepository projectRepository,
+                                   StageStatusStore stageStatusStore,
+                                   SettingService settingService) {
+        this.projectRepository = projectRepository;
+        this.stageStatusStore = stageStatusStore;
+        this.settingService = settingService;
+        //
         try {
             htmlWrapperWithoutStyle = Files.readString(Path.of(ProjectEditorController.class.getClassLoader().getResource("static/markdown-template-without-style.html").toURI()), StandardCharsets.UTF_8);
             String template = Files.readString(Path.of(ProjectEditorController.class.getClassLoader().getResource("static/markdown-template.html").toURI()), StandardCharsets.UTF_8);
@@ -207,15 +217,24 @@ public class ProjectEditorController implements Initializable {
                     return super.visitFile(file, attrs);
                 }
             });
-            htmlWrapper = template.replace("{{header}}", codeMirrorHeaderBuilder.toString());
+            String style = Optional.ofNullable(settingService.getOption(SettingMarkdownController.SETTING_CODE, SettingMarkdownController.OPTION_PREVIEW_STYLE))
+                    .orElse(DEFAULT_STYLE_NAME) + ".css";
+            Path markdownStyleDir = Path.of(".data/style/markdown");
+            if (Files.exists(markdownStyleDir) && Files.isDirectory(markdownStyleDir)) {
+                File[] styles = markdownStyleDir.toFile().listFiles();
+                if (styles != null) {
+                    for (File file : styles) {
+                        if (file.isFile() && file.exists() && file.getName().equals(style)) {
+                            style = "    <link rel=\"stylesheet\" type=\"text/css\" href=\"file:///" + file.getAbsolutePath() + "\">";
+                        }
+                    }
+                }
+            }
+            htmlWrapper = template.replace("{{header}}", codeMirrorHeaderBuilder.toString())
+                    .replace("{{style}}", style);
         } catch (Exception e) {
             logger.error("[ProjectEditor] Unable loading resource.", e);
         }
-    }
-
-    public ProjectEditorController(ProjectRepository projectRepository, StageStatusStore stageStatusStore) {
-        this.projectRepository = projectRepository;
-        this.stageStatusStore = stageStatusStore;
     }
 
     @Override
@@ -230,9 +249,11 @@ public class ProjectEditorController implements Initializable {
         this.fileInternalSearch.setReplaceAllAction(new Action(actionEvent -> codeArea.replaceSearchAll(this.fileInternalSearch.getReplaceText())));
         this.engine = previewArea.getEngine();
         this.engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue == Worker.State.SUCCEEDED) { {
-                scrollEngine();
-            }}
+            if (newValue == Worker.State.SUCCEEDED) {
+                {
+                    scrollEngine();
+                }
+            }
         });
         this.codeArea.getSearchCandidateList().addListener((InvalidationListener) observable -> this.fileInternalSearch.searchCandidateCountProperty().set(codeArea.getSearchCandidateList().size()));
         this.codeArea.searchCurrentIndexProperty().addListener(observable -> this.fileInternalSearch.setCurrentIndex(codeArea.getSearchCurrentIndex() + 1));
@@ -300,7 +321,7 @@ public class ProjectEditorController implements Initializable {
 
     private String toHtml(String markdownContent) {
         html = htmlWrapper.replace("{{body}}", body = renderer.render(parser.parse(markdownContent)));
-        return body;
+        return html;
     }
 
     private void setProjectProperty(Project project) {

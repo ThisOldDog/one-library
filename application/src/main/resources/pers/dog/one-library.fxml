@@ -67,7 +67,11 @@
                     <ExportProjectToHtmlWithoutStyleAction/>
                 </ActionGroup>
                 <ActionSeparator fx:factory="getInstance"/>
-                <SettingAction />
+                <SettingAction>
+                    <accelerator>
+                        <KeyCodeCombination code="S" shift="UP" control="DOWN" alt="DOWN" meta="UP" shortcut="UP"/>
+                    </accelerator>
+                </SettingAction>
                 <ActionSeparator fx:factory="getInstance"/>
                 <ExitAction fx:factory="getInstance"/>
             </ActionGroup>

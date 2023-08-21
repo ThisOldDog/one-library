@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
 {{header}}
-    <link rel="stylesheet" type="text/css" href="file:///C:/Users/废柴/Documents/Persion/JavaFX/one-library/application/src/main/resources/static/css/markdown/light.css">
+
+{{style}}
 </head>
 <body class="markdown-body">
 {{body}}
@@ -21,7 +22,7 @@
                 }
             }
             let textarea = document.createElement('textarea')
-            textarea.innerHTML = preElement.innerHTML
+            textarea.innerHTML = child.innerHTML
             console.log(textarea)
             preElement.parentElement.replaceChild(textarea, preElement)
             let mime

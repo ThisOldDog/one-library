@@ -1,78 +1,72 @@
 package pers.dog.api.controller.setting;
 
 import java.net.URL;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import org.controlsfx.control.MasterDetailPane;
-import org.springframework.util.CollectionUtils;
 import pers.dog.api.callback.SettingGroupTreeCallback;
-import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
-import pers.dog.boot.component.file.FileOperationOption;
-import pers.dog.config.OneLibraryProperties;
+import pers.dog.app.service.SettingService;
 import pers.dog.domain.entity.SettingGroup;
+import pers.dog.infra.status.StageStatusStore;
 
 /**
  * @author 废柴 2023/8/15 21:49
  */
 public class SettingController implements Initializable {
-    private final OneLibraryProperties oneLibraryProperties;
+    private final SettingService settingService;
+    private final StageStatusStore stageStatusStore;
     @FXML
     public MasterDetailPane settingWorkspace;
     @FXML
     public TreeView<SettingGroup> settingGroupTree;
 
-    private ApplicationDirFileOperationHandler handler;
-    private Map<String, Map<String, String>> settingLocalMap;
+    private SettingGroupTreeCallback settingGroupTreeCallback;
 
-    public SettingController(OneLibraryProperties oneLibraryProperties) {
-        this.oneLibraryProperties = oneLibraryProperties;
+    public SettingController(SettingService settingService,
+                             StageStatusStore stageStatusStore) {
+        this.settingService = settingService;
+        this.stageStatusStore = stageStatusStore;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        handler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix(".data/conf"));
-        settingLocalMap = Optional.ofNullable(handler.read("setting.json", new TypeReference<Map<String, Map<String, String>>>() {
-        })).orElseGet(HashMap::new);
-        List<SettingGroup> settingGroupList = oneLibraryProperties.getSetting();
-        TreeItem<SettingGroup> root = new TreeItem<>();
-        buildSettingGroupTree(root, settingGroupList);
-        settingGroupTree.setRoot(root);
-        settingGroupTree.setCellFactory(new SettingGroupTreeCallback(this));
+        settingGroupTree.setRoot(settingService.buildSettingGroupTree());
+        settingGroupTreeCallback = new SettingGroupTreeCallback(this, stageStatusStore);
+        settingGroupTree.setCellFactory(settingGroupTreeCallback);
+        openOption(settingGroupTreeCallback, settingGroupTree.getRoot().getChildren(), stageStatusStore.getStageStatus().getLatestSettingOption(), new AtomicBoolean(false));
     }
 
-    private void buildSettingGroupTree(TreeItem<SettingGroup> root, List<SettingGroup> settingGroupList) {
-        if (CollectionUtils.isEmpty(settingGroupList)) {
+    private void openOption(SettingGroupTreeCallback settingGroupTreeCallback, List<TreeItem<SettingGroup>> nodeList, String latestSettingOption, AtomicBoolean breakFlag) {
+        if (nodeList == null || breakFlag.get()) {
             return;
         }
-        for (SettingGroup settingGroup : settingGroupList) {
-            if (settingGroup.getCode() != null) {
-                settingGroup.setOptions(setOption(settingGroup.getOptions(), settingLocalMap.get(settingGroup.getCode())));
+        for (TreeItem<SettingGroup> node : nodeList) {
+            if (node.getValue().getCode() != null && (Objects.equals(node.getValue().getCode(), latestSettingOption) || latestSettingOption == null)) {
+                settingGroupTreeCallback.openSetting(node.getValue());
+                breakFlag.set(true);
+                return;
             }
-            TreeItem<SettingGroup> node = new TreeItem<>(settingGroup);
-            root.getChildren().add(node);
-            buildSettingGroupTree(node, settingGroup.getChildren());
+            openOption(settingGroupTreeCallback, node.getChildren(), latestSettingOption, breakFlag);
         }
     }
 
-    private Map<String, String> setOption(Map<String, String> defaultOptions, Map<String, String> options) {
-        if (defaultOptions == null) {
-            defaultOptions = new HashMap<>();
-        }
-        if (!(defaultOptions instanceof HashMap<String, String>)) {
-            defaultOptions = new HashMap<>(defaultOptions);
-        }
-        if (options != null) {
-            defaultOptions.putAll(options);
-        }
-        return defaultOptions;
-    }
+
+
 
     public MasterDetailPane getSettingWorkspace() {
         return settingWorkspace;
+    }
+
+    public void saveSetting() {
+        Map<String, Map<String, String>> optionMap = settingGroupTreeCallback.changedOption();
+        settingService.saveSetting(optionMap);
     }
 }

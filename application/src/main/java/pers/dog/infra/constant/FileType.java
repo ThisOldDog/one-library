@@ -4,7 +4,7 @@ package pers.dog.infra.constant;
  * @author 废柴 2023/2/21 20:32
  */
 public enum FileType {
-    MARKDOWN("Markdown", "md", "static/icon/project/markdown"),
+    MARKDOWN("Markdown", ".md", "static/icon/project/markdown"),
     UNKNOWN("Unknown", "", "static/icon/project/markdown");
     private final String name;
     private final String suffix;

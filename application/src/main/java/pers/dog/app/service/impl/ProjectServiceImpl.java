@@ -176,6 +176,9 @@ public class ProjectServiceImpl implements ProjectService {
 
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                if (FileType.UNKNOWN.equals(FileType.identify(file.getFileName().toString()))) {
+                    return super.visitFile(file, attrs);
+                }
                 String dirName = file.toFile().getName();
                 Project current = null;
                 for (Project project : projectList) {

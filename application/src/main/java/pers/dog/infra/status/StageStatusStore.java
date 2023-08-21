@@ -40,6 +40,7 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
         private long[] openProjectIds;
 
         private String latestExportDirectory;
+        private String latestSettingOption;
 
 
         public boolean isMaximized() {
@@ -111,6 +112,15 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
 
         public StageStatus setLatestExportDirectory(String latestExportDirectory) {
             this.latestExportDirectory = latestExportDirectory;
+            return this;
+        }
+
+        public String getLatestSettingOption() {
+            return latestSettingOption;
+        }
+
+        public StageStatus setLatestSettingOption(String latestSettingOption) {
+            this.latestSettingOption = latestSettingOption;
             return this;
         }
     }

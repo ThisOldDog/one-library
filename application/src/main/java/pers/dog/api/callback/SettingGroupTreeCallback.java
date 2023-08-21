@@ -1,27 +1,33 @@
 package pers.dog.api.callback;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import javafx.scene.Parent;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeView;
 import javafx.util.Callback;
+import org.springframework.data.util.Pair;
 import pers.dog.api.controller.setting.SettingController;
 import pers.dog.api.controller.setting.SettingOptionController;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.FXMLUtils;
 import pers.dog.domain.entity.SettingGroup;
+import pers.dog.infra.status.StageStatusStore;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/8/16 11:04
+ * @author 废柴 2023/8/16 11:04
  */
 public class SettingGroupTreeCallback implements Callback<TreeView<SettingGroup>, TreeCell<SettingGroup>> {
     private final SettingController controller;
+    private final StageStatusStore stageStatusStore;
 
-    private List<Object> controllerList;
+    private final Map<String, Pair<SettingOptionController, Parent>> optionMap;
 
-    public SettingGroupTreeCallback(SettingController controller) {
+    public SettingGroupTreeCallback(SettingController controller, StageStatusStore stageStatusStore) {
         this.controller = controller;
+        this.stageStatusStore = stageStatusStore;
+        this.optionMap = new HashMap<>();
     }
 
     @Override
@@ -44,15 +50,34 @@ public class SettingGroupTreeCallback implements Callback<TreeView<SettingGroup>
 
             private void handleSettingGroup(SettingGroup settingGroup) {
                 setText(I18nMessageSource.getResource(settingGroup.getGroupName()));
-                setOnMouseClicked(event -> {
-                    if (settingGroup.getCode() != null) {
-                        Parent setting = FXMLUtils.loadFXML(settingGroup.getSceneName());
-                        if (previousController != null && previousController instanceof SettingOptionController) {
-
-                        }
-                    }
-                });
+                setOnMouseClicked(event -> openSetting(settingGroup));
             }
         };
+    }
+
+    public void openSetting(SettingGroup settingGroup) {
+        if (settingGroup.getCode() != null) {
+            Pair<SettingOptionController, Parent> option = optionMap.get(settingGroup.getCode());
+            if (option == null) {
+                Parent setting = FXMLUtils.loadFXML(settingGroup.getSceneName());
+                SettingOptionController optionController = FXMLUtils.getController(setting);
+                option = Pair.of(optionController, setting);
+                optionController.loadOption(settingGroup);
+                optionMap.put(settingGroup.getCode(), Pair.of(optionController, setting));
+            }
+            stageStatusStore.getStageStatus().setLatestSettingOption(settingGroup.getCode());
+            controller.getSettingWorkspace().setDetailNode(option.getSecond());
+        }
+    }
+
+    public Map<String, Map<String, String>> changedOption() {
+        Map<String, Map<String, String>> changedOption = new HashMap<>();
+        optionMap.forEach((k, v) -> {
+            SettingOptionController settingOptionController = v.getFirst();
+            if (settingOptionController.changed()) {
+                changedOption.put(k, settingOptionController.getOption());
+            }
+        });
+        return changedOption;
     }
 }
