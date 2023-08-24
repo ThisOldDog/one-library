@@ -42,23 +42,22 @@ public class HtmlToMarkdownAction extends Action {
         HtmlToMarkdownController controller = FXMLUtils.getController(parent);
         Dialog<String> dialog = new Dialog<>();
         dialog.setTitle(getText());
+        dialog.setResizable(true);
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.setContent(parent);
-        ButtonType previewButtonType = new ButtonType(I18nMessageSource.getResource("info.project.html-to-markdown.preview"));
-        dialogPane.getButtonTypes().addAll(previewButtonType, ButtonType.OK, ButtonType.CANCEL);
+        dialogPane.getButtonTypes().addAll(ButtonType.NEXT, ButtonType.OK, ButtonType.CANCEL);
 
-
-        Node previewButton = dialogPane.lookupButton(previewButtonType);
+        Node previewButton = dialogPane.lookupButton(ButtonType.NEXT);
         Node okButton = dialogPane.lookupButton(ButtonType.OK);
         previewButton.setDisable(true);
         okButton.setDisable(true);
-        previewButton.addEventHandler(ActionEvent.ACTION, previewAction -> {
-            if (controller.preview()) {
-                okButton.setDisable(false);
-            }
+        previewButton.addEventFilter(ActionEvent.ACTION, previewAction -> {
+            controller.preview();
+            previewAction.consume();
         });
 
         controller.getUrl().textProperty().addListener((observable, oldValue, newValue) -> previewButton.setDisable(ObjectUtils.isEmpty(newValue)));
+        controller.getMarkdownPreview().textProperty().addListener((observable, oldValue, newValue) -> okButton.setDisable(ObjectUtils.isEmpty(newValue)));
 
         dialog.setResultConverter(buttonType -> {
             if (ButtonType.CANCEL.equals(buttonType)) {
@@ -67,7 +66,7 @@ public class HtmlToMarkdownAction extends Action {
             return controller.getMarkdown();
         });
         dialog.showAndWait().ifPresent(markdown ->
-                ((ProjectEditorController) projectEditorWorkspace.get().getSelectionModel().getSelectedItem().getUserData()).save()
+                ((ProjectEditorController) projectEditorWorkspace.get().getSelectionModel().getSelectedItem().getUserData()).replaceSelection(markdown)
         );
     }
 }

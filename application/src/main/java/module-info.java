@@ -45,6 +45,7 @@ module pers.dog {
     requires flexmark.ext.footnotes;
     requires flexmark.ext.emoji;
     requires flexmark.ext.superscript;
+    requires flexmark.html2md.converter;
     requires antlr;
     requires org.antlr.antlr4.runtime;
 

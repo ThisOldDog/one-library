@@ -647,4 +647,10 @@ public class ProjectEditorController implements Initializable {
         Platform.runLater(() -> codeArea.requestFocus());
     }
 
+    public void replaceSelection(String markdown) {
+        if (ObjectUtils.isEmpty(markdown)) {
+            return;
+        }
+        codeArea.replaceSelection(markdown);
+    }
 }

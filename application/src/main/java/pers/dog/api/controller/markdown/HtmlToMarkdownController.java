@@ -3,15 +3,22 @@ package pers.dog.api.controller.markdown;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.web.WebView;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.controlsfx.control.MaskerPane;
 import org.controlsfx.control.PrefixSelectionComboBox;
 import pers.dog.boot.infra.dto.ValueMeaning;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
+import pers.dog.domain.entity.Project;
 import pers.dog.infra.control.MarkdownCodeArea;
 
 /**
@@ -19,27 +26,65 @@ import pers.dog.infra.control.MarkdownCodeArea;
  */
 public class HtmlToMarkdownController implements Initializable {
     private static final ObservableList<ValueMeaning> INSERT_POSITION_ALL = FXCollections.observableArrayList(
-            new ValueMeaning().setValue("CURSOR").setMeaning(I18nMessageSource.getResource("info.project.html-to-markdown.insert-position.cursor")),
-            new ValueMeaning().setValue("START").setMeaning(I18nMessageSource.getResource("info.project.html-to-markdown.insert-position.start")),
-            new ValueMeaning().setValue("END").setMeaning(I18nMessageSource.getResource("info.project.html-to-markdown.insert-position.end"))
+            new ValueMeaning()
+                    .setValue("NEW_PROJECT")
+                    .setMeaning(I18nMessageSource.getResource("info.project.html-to-markdown.insert-position.new_project")),
+            new ValueMeaning()
+                    .setValue("CURSOR")
+                    .setMeaning(I18nMessageSource.getResource("info.project.html-to-markdown.insert-position.cursor"))
     );
 
     @FXML
-    public TextField url;
+    public TextArea url;
     @FXML
     public PrefixSelectionComboBox<ValueMeaning> insertPosition;
     @FXML
     public WebView contentPreview;
     @FXML
     public MarkdownCodeArea markdownPreview;
+    @FXML
+    public MaskerPane masker;
+    @FXML
+    public ComboBox<Project> directory;
+    @FXML
+    public TextField projectName;
+    private final FlexmarkHtmlConverter converter = FlexmarkHtmlConverter.builder().build();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         insertPosition.setItems(INSERT_POSITION_ALL);
         insertPosition.setValue(INSERT_POSITION_ALL.get(0));
+        contentPreview.getEngine().getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == Worker.State.SUCCEEDED) {
+                try {
+                    String markdown = converter.convert(String.valueOf(contentPreview.getEngine().executeScript("document.documentElement.outerHTML")));
+                    markdownPreview.replaceText(markdown);
+                } finally {
+                    masker.setVisible(false);
+                }
+            } else if (newValue == Worker.State.FAILED) {
+                masker.setVisible(false);
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle(I18nMessageSource.getResource("info.project.html-to-markdown.html.error.title"));
+                alert.setHeaderText(I18nMessageSource.getResource("info.project.html-to-markdown.html.error.header_text"));
+                alert.setContentText(I18nMessageSource.getResource("info.project.html-to-markdown.html.error.content_text"));
+                Label label = new Label(I18nMessageSource.getResource("info.project.html-to-markdown.html.error.exception_stacktrace"));
+                TextArea textArea = new TextArea(ExceptionUtils.getStackTrace(contentPreview.getEngine().getLoadWorker().getException()));
+                textArea.setMaxWidth(Double.MAX_VALUE);
+                textArea.setMaxHeight(Double.MAX_VALUE);
+                GridPane.setVgrow(textArea, Priority.ALWAYS);
+                GridPane.setHgrow(textArea, Priority.ALWAYS);
+                GridPane content = new GridPane();
+                content.setMaxWidth(Double.MAX_VALUE);
+                content.add(label, 0, 0);
+                content.add(textArea, 0, 1);
+                alert.getDialogPane().setExpandableContent(content);
+                alert.showAndWait();
+            }
+        });
     }
 
-    public TextField getUrl() {
+    public TextArea getUrl() {
         return url;
     }
 
@@ -55,12 +100,13 @@ public class HtmlToMarkdownController implements Initializable {
         return markdownPreview;
     }
 
-    public boolean preview() {
+    public void preview() {
+        masker.setVisible(true);
+        markdownPreview.clear();
         contentPreview.getEngine().load(url.getText());
-        return true;
     }
 
     public String getMarkdown() {
-        return null;
+        return markdownPreview.getText();
     }
 }
