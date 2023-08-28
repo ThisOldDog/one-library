@@ -22,8 +22,11 @@ import pers.dog.api.controller.ProjectItemController;
 import pers.dog.api.controller.ProjectItemEditingController;
 import pers.dog.app.service.ProjectService;
 import pers.dog.boot.component.control.FXMLControl;
+import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.FXMLUtils;
 import pers.dog.domain.entity.Project;
+import pers.dog.infra.action.ActionGroup;
+import pers.dog.infra.action.markdown.HtmlToMarkdownAction;
 import pers.dog.infra.action.project.CreateDirectoryAction;
 import pers.dog.infra.action.project.CreateMarkdownAction;
 import pers.dog.infra.action.project.DeleteProjectAction;
@@ -41,6 +44,7 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
     private static final String CELL_DRAG_OVER_STYLE_CLASS_FILE = "project-tree-drag-over-file";
     private static final String CELL_DRAG_OVER_STYLE_CLASS_DIR = "project-tree-drag-over-dir";
     private final ContextMenu blankContextMenu;
+    private final ContextMenu projectDirectoryContextMenu;
     private final ContextMenu projectContextMenu;
 
     @SuppressWarnings("unused")
@@ -55,11 +59,27 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                                CreateMarkdownAction createMarkdownAction,
                                CreateDirectoryAction createDirectoryAction,
                                DeleteProjectAction deleteProjectAction,
-                               OpenRenameProjectAction openRenameProjectAction) {
+                               OpenRenameProjectAction openRenameProjectAction,
+                               HtmlToMarkdownAction htmlToMarkdownAction) {
         this.projectService = projectService;
+        ActionGroup markdownActionGroup = new ActionGroup(
+                I18nMessageSource.getResource("info.action.markdown"),
+                htmlToMarkdownAction
+        );
         blankContextMenu = ActionUtils.createContextMenu(Arrays.asList(
                 createMarkdownAction,
-                createDirectoryAction
+                createDirectoryAction,
+                markdownActionGroup
+        ));
+        projectDirectoryContextMenu = ActionUtils.createContextMenu(Arrays.asList(
+                createMarkdownAction,
+                createDirectoryAction,
+                ActionUtils.ACTION_SEPARATOR,
+                openRenameProjectAction,
+                ActionUtils.ACTION_SEPARATOR,
+                markdownActionGroup,
+                ActionUtils.ACTION_SEPARATOR,
+                deleteProjectAction
         ));
         projectContextMenu = ActionUtils.createContextMenu(Arrays.asList(
                 createMarkdownAction,
@@ -123,7 +143,11 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                 Parent parent = FXMLUtils.loadFXML(PROJECT_ITEM_FXML);
                 ProjectItemController controller = FXMLUtils.getController(parent);
                 controller.showProject(item);
-                setContextMenu(projectContextMenu);
+                if (ProjectType.DIRECTORY.equals(item.getProjectType())) {
+                    setContextMenu(projectDirectoryContextMenu);
+                } else {
+                    setContextMenu(projectContextMenu);
+                }
                 setGraphic(parent);
                 setOnContextMenuRequested(event -> {
                 });

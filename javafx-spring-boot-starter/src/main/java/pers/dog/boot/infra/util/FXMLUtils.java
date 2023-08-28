@@ -114,10 +114,10 @@ public class FXMLUtils {
             for (Pair<String, Method> method : setter) {
                 if (method.getKey().equals(key)) {
                     try {
-                        method.getValue().invoke(this.value, value);
+                        method.getValue().invoke(this.value, value instanceof String ? ValueConverterUtils.read(String.valueOf(value), method.getValue().getParameters()[0].getType()) : value);
                         return value;
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        throw new RuntimeException(String.format("Unable set %s to type %s", key, type), e);
+                    } catch (Exception e) {
+                        throw new IllegalStateException(String.format("Unable set %s to type %s", key, type), e);
                     }
                 }
             }

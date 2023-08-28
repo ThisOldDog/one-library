@@ -1,5 +1,6 @@
 package pers.dog.api.controller.markdown;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -16,6 +17,7 @@ import javafx.scene.web.WebView;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.controlsfx.control.MaskerPane;
 import org.controlsfx.control.PrefixSelectionComboBox;
+import pers.dog.app.service.ProjectService;
 import pers.dog.boot.infra.dto.ValueMeaning;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.domain.entity.Project;
@@ -45,15 +47,19 @@ public class HtmlToMarkdownController implements Initializable {
     @FXML
     public MaskerPane masker;
     @FXML
-    public ComboBox<Project> directory;
+    public TextField directory;
     @FXML
     public TextField projectName;
     private final FlexmarkHtmlConverter converter = FlexmarkHtmlConverter.builder().build();
 
+    private final ProjectService projectService;
+
+    public HtmlToMarkdownController(ProjectService projectService) {
+        this.projectService = projectService;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        insertPosition.setItems(INSERT_POSITION_ALL);
-        insertPosition.setValue(INSERT_POSITION_ALL.get(0));
         contentPreview.getEngine().getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == Worker.State.SUCCEEDED) {
                 try {
@@ -82,6 +88,39 @@ public class HtmlToMarkdownController implements Initializable {
                 alert.showAndWait();
             }
         });
+    }
+
+    public void saveToDirectory() {
+        insertPosition.setItems(INSERT_POSITION_ALL);
+        insertPosition.setValue(INSERT_POSITION_ALL.get(0));
+        directory.setText(getProjectTreeDirectory());
+        projectName.setDisable(false);
+    }
+
+    public void saveToProject() {
+        insertPosition.setItems(INSERT_POSITION_ALL);
+        insertPosition.setValue(INSERT_POSITION_ALL.get(1));
+        directory.setText(getProjectTreeDirectory());
+        projectName.setText(projectService.currentProject().getValue().getSimpleProjectName());
+    }
+
+
+    private String getProjectTreeDirectory() {
+        TreeItem<Project> projectTreeItem = projectService.currentDirectory();
+        if (ProjectService.ROOT == projectTreeItem) {
+            return projectTreeItem.getValue().getProjectName();
+        }
+        return getProjectTreeDirectory(null, projectTreeItem);
+    }
+
+    private String getProjectTreeDirectory(String path, TreeItem<Project> node) {
+        if (node == null || ProjectService.ROOT == node) {
+            return path;
+        }
+        if (node.getValue() != null) {
+            path = path == null ? node.getValue().getProjectName() : (node.getValue().getProjectName() + File.separator + path);
+        }
+        return getProjectTreeDirectory(path, node.getParent());
     }
 
     public TextArea getUrl() {

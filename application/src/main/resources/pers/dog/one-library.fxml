@@ -205,6 +205,7 @@
             </ActionGroup>
             <ActionGroup text="%info.action.markdown">
                 <HtmlToMarkdownAction/>
+                <HtmlToMarkdownAction text="%info.project.html-to-markdown.sava-to-file" saveToProject="true"/>
             </ActionGroup>
         </ActionMenuBar>
     </top>

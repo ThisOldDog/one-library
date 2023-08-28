@@ -49,7 +49,6 @@ import pers.dog.infra.constant.ProjectType;
 public class ProjectServiceImpl implements ProjectService {
     private static final String PROJECT_EDITOR_FXML = "project-editor";
     private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
-    private static final TreeItem<Project> ROOT = new TreeItem<>(new Project().setProjectName("ROOT").setProjectType(ProjectType.DIRECTORY));
     private final ProjectRepository projectRepository;
     private final FileOperationHandler fileOperationHandler;
     @SuppressWarnings("unused")
@@ -74,14 +73,24 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public TreeItem<Project> createFile(ProjectType projectType, FileType fileType) {
-        TreeItem<Project> parent = currentParentDirectory();
+        return createFile(projectType, fileType, null);
+    }
+
+    public TreeItem<Project> createFile(ProjectType projectType, FileType fileType, String fileName) {
+        TreeItem<Project> parent = currentDirectory();
         Assert.isTrue(ProjectType.DIRECTORY.equals(projectType) || fileType != null, "[Project] When the project type is file, the type of the file cannot be null.");
         Project project = new Project()
-                .setProjectName(buildFileName(parent, projectType, fileType))
+                .setProjectName(fileName != null ? fileName : buildFileName(parent, projectType, fileType))
                 .setProjectType(projectType)
                 .setFileType(fileType)
                 .setParentProjectId(parent.getValue().getProjectId())
                 .setSortIndex(parent.getChildren().size() + 1);
+        if (projectRepository.findByParentProjectId(project.getParentProjectId())
+                .stream()
+                .anyMatch(bro -> Objects.equals(bro.getProjectName(), project.getProjectName()))) {
+            alertNameDuplicate();
+            return null;
+        }
         if (ProjectType.DIRECTORY.equals(projectType)) {
             fileOperationHandler.createDirectory(project.getProjectName(), getRelativePath(parent));
         } else {
@@ -92,6 +101,16 @@ public class ProjectServiceImpl implements ProjectService {
         parent.getChildren().add(treeItem);
         expandDirectory(parent);
         return treeItem;
+    }
+
+    @Override
+    public TreeItem<Project> createFile(ProjectType projectType, FileType fileType, String fileName, String markdown) {
+        TreeItem<Project> projectTreeItem = createFile(projectType, fileType, fileName);
+        if (!ObjectUtils.isEmpty(markdown)) {
+            fileOperationHandler.write(projectTreeItem.getValue().getProjectName(), markdown, getRelativePath(currentDirectory()));
+        }
+        openFile(projectTreeItem.getValue());
+        return projectTreeItem;
     }
 
     @Override
@@ -118,10 +137,7 @@ public class ProjectServiceImpl implements ProjectService {
             return true;
         }
         if (fileOperationHandler.exists(projectValue.getProjectName(), getRelativePath(parent))) {
-            Alert renameFiled = new Alert(Alert.AlertType.ERROR);
-            renameFiled.setHeaderText(I18nMessageSource.getResource("error"));
-            renameFiled.setContentText(I18nMessageSource.getResource("error.project.move.name_duplicate"));
-            renameFiled.show();
+            alertNameDuplicate();
             return false;
         } else {
             fileOperationHandler.move(projectValue.getProjectName(), getRelativePath(project.getParent()), getRelativePath(parent));
@@ -291,7 +307,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void openFile() {
-        Project item = currentProject();
+        Project item = currentProjectValue();
         if (item == null) {
             return;
         }
@@ -342,7 +358,8 @@ public class ProjectServiceImpl implements ProjectService {
         });
     }
 
-    private TreeItem<Project> currentParentDirectory() {
+    @Override
+    public TreeItem<Project> currentDirectory() {
         TreeItem<Project> parentNode = projectTree.getSelectionModel().getSelectedItem();
         if (parentNode == null || parentNode.getValue() == null) {
             return ROOT;
@@ -355,7 +372,16 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
-    private Project currentProject() {
+    @Override
+    public TreeItem<Project> currentProject() {
+        TreeItem<Project> selectedItem = projectTree.getSelectionModel().getSelectedItem();
+        if (selectedItem == null || selectedItem.getValue() == null) {
+            return null;
+        }
+        return selectedItem;
+    }
+
+    public Project currentProjectValue() {
         TreeItem<Project> selectedItem = projectTree.getSelectionModel().getSelectedItem();
         if (selectedItem == null || selectedItem.getValue() == null) {
             return null;
@@ -452,5 +478,12 @@ public class ProjectServiceImpl implements ProjectService {
         if (!directory.isExpanded()) {
             directory.setExpanded(true);
         }
+    }
+
+    private static void alertNameDuplicate() {
+        Alert nameDuplicateAlert = new Alert(Alert.AlertType.ERROR);
+        nameDuplicateAlert.setHeaderText(I18nMessageSource.getResource("error"));
+        nameDuplicateAlert.setContentText(I18nMessageSource.getResource("error.project.name.duplicate"));
+        nameDuplicateAlert.show();
     }
 }

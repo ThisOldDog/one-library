@@ -27,19 +27,19 @@
                     <Insets top="12"/>
                 </VBox.margin>
             </Label>
-            <PrefixSelectionComboBox fx:id="insertPosition"/>
+            <PrefixSelectionComboBox fx:id="insertPosition" disable="true"/>
             <Label text="%info.project.html-to-markdown.insert-position.directory">
                 <VBox.margin>
                     <Insets top="12"/>
                 </VBox.margin>
             </Label>
-            <ComboBox fx:id="directory"/>
+            <TextField fx:id="directory" disable="true"/>
             <Label text="%info.project.html-to-markdown.insert-position.project">
                 <VBox.margin>
                     <Insets top="12"/>
                 </VBox.margin>
             </Label>
-            <TextField fx:id="projectName"/>
+            <TextField fx:id="projectName" disable="true"/>
         </VBox>
         <SplitPane dividerPositions="0.5" HBox.hgrow="ALWAYS">
             <WebView fx:id="contentPreview"/>
