@@ -128,7 +128,7 @@
                 <configuration>
                     <mainClass>pers.dog.OneLibraryApplication</mainClass>
                     <skip>false</skip>
-                    <finalName>OneLibrary</finalName>
+                    <finalName>One Library</finalName>
                 </configuration>
                 <executions>
                     <execution>

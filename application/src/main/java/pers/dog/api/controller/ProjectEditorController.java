@@ -1,9 +1,6 @@
 package pers.dog.api.controller;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -60,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 import pers.dog.api.controller.setting.SettingMarkdownController;
 import pers.dog.app.service.SettingService;
@@ -202,11 +200,11 @@ public class ProjectEditorController implements Initializable {
         this.settingService = settingService;
         //
         try {
-            htmlWrapperWithoutStyle = Files.readString(Path.of(ProjectEditorController.class.getClassLoader().getResource("static/markdown-template-without-style.html").toURI()), StandardCharsets.UTF_8);
-            String template = Files.readString(Path.of(ProjectEditorController.class.getClassLoader().getResource("static/markdown-template.html").toURI()), StandardCharsets.UTF_8);
+            htmlWrapperWithoutStyle = StreamUtils.copyToString(ProjectEditorController.class.getClassLoader().getResource("static/markdown-template-without-style.html").openStream(), StandardCharsets.UTF_8);
+            String template = StreamUtils.copyToString(ProjectEditorController.class.getClassLoader().getResource("static/markdown-template.html").openStream(), StandardCharsets.UTF_8);
             // 添加 CodeMirror
             StringBuilder codeMirrorHeaderBuilder = new StringBuilder();
-            Files.walkFileTree(Path.of(".data/lib"), new SimpleFileVisitor<>() {
+            Files.walkFileTree(Path.of("lib"), new SimpleFileVisitor<>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     if (file.toString().endsWith(".js")) {
@@ -219,7 +217,7 @@ public class ProjectEditorController implements Initializable {
             });
             String style = Optional.ofNullable(settingService.getOption(SettingMarkdownController.SETTING_CODE, SettingMarkdownController.OPTION_PREVIEW_STYLE))
                     .orElse(DEFAULT_STYLE_NAME) + ".css";
-            Path markdownStyleDir = Path.of(".data/style/markdown");
+            Path markdownStyleDir = Path.of("style/markdown");
             if (Files.exists(markdownStyleDir) && Files.isDirectory(markdownStyleDir)) {
                 File[] styles = markdownStyleDir.toFile().listFiles();
                 if (styles != null) {
