@@ -19,7 +19,7 @@ import pers.dog.boot.context.ApplicationContextHolder;
  */
 public class ImageUtils {
     private static final Logger logger = LoggerFactory.getLogger(ImageUtils.class);
-    private static final Set<String> IMAGE_SUFFIX = Set.of("png", "jpeg", "jpg", "gif");
+    private static final Set<String> IMAGE_SUFFIX = Set.of("png", "jpeg", "jpg", "gif", "ico");
     private static final Map<String, Image> IMAGE_CACHE = new HashMap<>();
 
     public static void load(String name, Consumer<InputStream> apply) {
