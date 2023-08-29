@@ -71,7 +71,7 @@ public class SettingGroupTreeCallback implements Callback<TreeView<SettingGroup>
         }
     }
 
-    public Map<String, Map<String, Object>> changedOption() {
+    public Map<String, Map<String, Object>> applyOption() {
         Map<String, Map<String, Object>> changedOption = new HashMap<>();
         optionMap.forEach((k, v) -> {
             SettingOptionController settingOptionController = v.getFirst();
@@ -85,6 +85,7 @@ public class SettingGroupTreeCallback implements Callback<TreeView<SettingGroup>
                     }
                 });
                 changedOption.put(k, validOptionMap);
+                settingOptionController.apply();
             }
         });
         return changedOption;

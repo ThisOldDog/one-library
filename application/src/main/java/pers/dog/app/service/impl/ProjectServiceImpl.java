@@ -330,6 +330,7 @@ public class ProjectServiceImpl implements ProjectService {
         Tab tab = new Tab(project.getSimpleProjectName(), projectEditor);
         tab.setUserData(projectEditorController);
         tab.setId(String.valueOf(project.getProjectId()));
+        tab.setOnClosed(event -> projectEditorController.close());
         projectEditorController.dirtyProperty().addListener((change, oldValue, newValue) -> {
             if (Boolean.TRUE.equals(newValue)) {
                 tab.setText("* " + project.getSimpleProjectName());

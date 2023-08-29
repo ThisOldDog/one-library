@@ -1,9 +1,6 @@
 package pers.dog.api.controller;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -13,6 +10,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
@@ -163,8 +161,16 @@ public class ProjectEditorController implements Initializable {
     private final MarkdownExtension markdownExtension;
     private final ObjectProperty<Boolean> dirty = new SimpleObjectProperty<>(false);
     private final AtomicBoolean loaded = new AtomicBoolean(false);
-    private final Parser parser;
-    private final HtmlRenderer renderer;
+    private final Consumer<List<Class<? extends Extension>>> ENABLED_EXTENSION_CHANGED = enabledExtension -> {
+        DataHolder markdownParserOptions = PegdownOptionsAdapter.flexmarkOptions(PegdownExtensions.ALL, getOptions(enabledExtension));
+        this.parser = Parser.builder(markdownParserOptions).build();
+        this.renderer = HtmlRenderer.builder(markdownParserOptions).build();
+        if (this.codeArea != null) {
+            refreshPreview(this.codeArea.getText());
+        }
+    };
+    private Parser parser;
+    private HtmlRenderer renderer;
 
     @FXML
     public SplitPane projectEditorWorkspace;
@@ -204,9 +210,12 @@ public class ProjectEditorController implements Initializable {
         this.stageStatusStore = stageStatusStore;
         this.settingService = settingService;
         this.markdownExtension = markdownExtension;
-        DataHolder markdownParserOptions = PegdownOptionsAdapter.flexmarkOptions(PegdownExtensions.ALL, getOptions());
-        this.parser = Parser.builder(markdownParserOptions).build();
-        this.renderer = HtmlRenderer.builder(markdownParserOptions).build();
+        markdownExtension.onExtensionChanged(ENABLED_EXTENSION_CHANGED);
+        ENABLED_EXTENSION_CHANGED.accept(markdownExtension.enabledExtension());
+        loadSetting();
+    }
+
+    public void loadSetting() {
         //
         try {
             htmlWrapperWithoutStyle = StreamUtils.copyToString(ProjectEditorController.class.getClassLoader().getResource("static/markdown-template-without-style.html").openStream(), StandardCharsets.UTF_8);
@@ -239,15 +248,18 @@ public class ProjectEditorController implements Initializable {
             }
             htmlWrapper = template.replace("{{header}}", codeMirrorHeaderBuilder.toString())
                     .replace("{{style}}", style);
+            if (this.codeArea != null) {
+                refreshPreview(this.codeArea.getText());
+            }
         } catch (Exception e) {
             logger.error("[ProjectEditor] Unable loading resource.", e);
         }
     }
 
-    private Extension[] getOptions() {
+    private Extension[] getOptions(List<Class<? extends Extension>> enabledExtension) {
         List<Extension> extensions = new ArrayList<>();
         extensions.add(ClassAttributeRenderExtension.create(this));
-        for (Class<? extends Extension> extensionClass : markdownExtension.enabledExtension()) {
+        for (Class<? extends Extension> extensionClass : enabledExtension) {
             try {
                 extensions.add((Extension) MethodUtils.invokeStaticMethod(extensionClass, "create"));
             } catch (Exception e) {
@@ -672,5 +684,9 @@ public class ProjectEditorController implements Initializable {
             return;
         }
         codeArea.replaceSelection(markdown);
+    }
+
+    public void close() {
+        markdownExtension.removeOnExtensionChanged(ENABLED_EXTENSION_CHANGED);
     }
 }

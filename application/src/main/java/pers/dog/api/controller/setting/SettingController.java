@@ -51,6 +51,7 @@ public class SettingController implements Initializable {
         for (TreeItem<SettingGroup> node : nodeList) {
             if (node.getValue().getCode() != null && (Objects.equals(node.getValue().getCode(), latestSettingOption) || latestSettingOption == null)) {
                 settingGroupTreeCallback.openSetting(node.getValue());
+                expandParent(node.getParent());
                 breakFlag.set(true);
                 return;
             }
@@ -58,7 +59,12 @@ public class SettingController implements Initializable {
         }
     }
 
-
+    private void expandParent(TreeItem<SettingGroup> parent) {
+        if (parent != null) {
+            parent.setExpanded(true);
+            expandParent(parent.getParent());
+        }
+    }
 
 
     public MasterDetailPane getSettingWorkspace() {
@@ -66,7 +72,7 @@ public class SettingController implements Initializable {
     }
 
     public void saveSetting() {
-        Map<String, Map<String, Object>> optionMap = settingGroupTreeCallback.changedOption();
+        Map<String, Map<String, Object>> optionMap = settingGroupTreeCallback.applyOption();
         settingService.saveSetting(optionMap);
     }
 }

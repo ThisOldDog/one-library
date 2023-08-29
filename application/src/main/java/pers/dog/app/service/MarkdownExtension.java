@@ -1,6 +1,7 @@
 package pers.dog.app.service;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import com.vladsch.flexmark.util.misc.Extension;
 import javafx.collections.ObservableList;
@@ -15,4 +16,7 @@ public interface MarkdownExtension {
     void enableExtension(String extension);
 
     void disableExtension(String extension);
+
+    void onExtensionChanged(Consumer<List<Class<? extends Extension>>> action);
+    void removeOnExtensionChanged(Consumer<List<Class<? extends Extension>>> action);
 }

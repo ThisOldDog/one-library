@@ -1,9 +1,10 @@
 package pers.dog.app.service.impl;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
 
 import com.vladsch.flexmark.util.misc.Extension;
+import javafx.beans.InvalidationListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.apache.commons.lang3.BooleanUtils;
@@ -28,46 +29,14 @@ public class MarkdownExtensionImpl implements MarkdownExtension {
     private static final Set<String> SKIP_EXTENSIONS = Set.of(
             "com.vladsch.flexmark.ext.gfm.strikethrough.SubscriptExtension",
             "com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughSubscriptExtension",
-            "com.vladsch.flexmark.jira.converter.JiraConverterExtension");
-    /*
-            "com.vladsch.flexmark.ext.abbreviation.AbbreviationExtension",
-            "com.vladsch.flexmark.ext.enumerated.reference.EnumeratedReferenceExtension",
-            "com.vladsch.flexmark.ext.xwiki.macros.MacroExtension",
-            "com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension",
-            "com.vladsch.flexmark.ext.attributes.AttributesExtension",
-            "com.vladsch.flexmark.ext.gfm.users.GfmUsersExtension",
-            "com.vladsch.flexmark.ext.superscript.SuperscriptExtension",
-            "com.vladsch.flexmark.ext.typographic.TypographicExtension",
-            "com.vladsch.flexmark.ext.toc.SimTocExtension",
-            "com.vladsch.flexmark.ext.ins.InsExtension",
-            "com.vladsch.flexmark.ext.aside.AsideExtension",
-            "com.vladsch.flexmark.ext.anchorlink.AnchorLinkExtension",
-            "com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension",
-            "com.vladsch.flexmark.ext.youtube.embedded.YouTubeLinkExtension",
-            "com.vladsch.flexmark.ext.tables.TablesExtension",
-            "com.vladsch.flexmark.ext.emoji.EmojiExtension",
-            "com.vladsch.flexmark.ext.jekyll.front.matter.JekyllFrontMatterExtension",
-            "com.vladsch.flexmark.ext.escaped.character.EscapedCharacterExtension",
-            "com.vladsch.flexmark.ext.wikilink.WikiLinkExtension",
-            "com.vladsch.flexmark.ext.gitlab.GitLabExtension",
-            "com.vladsch.flexmark.ext.footnotes.FootnoteExtension",
-            "com.vladsch.flexmark.ext.definition.DefinitionExtension",
-            "com.vladsch.flexmark.ext.jekyll.tag.JekyllTagExtension",
-            "com.vladsch.flexmark.ext.toc.TocExtension",
-            "com.vladsch.flexmark.ext.macros.MacrosExtension",
-            "com.vladsch.flexmark.ext.autolink.AutolinkExtension",
-            "com.vladsch.flexmark.ext.admonition.AdmonitionExtension",
-            "com.vladsch.flexmark.youtrack.converter.YouTrackConverterExtension",
-            "com.vladsch.flexmark.ext.resizable.image.ResizableImageExtension",
-            "com.vladsch.flexmark.ext.media.tags.MediaTagsExtension",
-            "com.vladsch.flexmark.ext.gfm.issues.GfmIssuesExtension",
-            "com.vladsch.flexmark.ext.yaml.front.matter.YamlFrontMatterExtension"
-     */
+            "com.vladsch.flexmark.jira.converter.JiraConverterExtension",
+            "com.vladsch.flexmark.youtrack.converter.YouTrackConverterExtension");
     private static final Map<String, Class<? extends Extension>> EXTENSION_MAP = new HashMap<>();
     private static final List<String> EXTENSION_ENABLE_LIST = new ArrayList<>();
     private final ObservableList<Class<? extends Extension>> extensionEnabled = FXCollections.observableArrayList();
 
     private final SettingService settingService;
+    private final List<Consumer<List<Class<? extends Extension>>>> extensionChangeActions = new ArrayList<>();
 
     static {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
@@ -107,6 +76,11 @@ public class MarkdownExtensionImpl implements MarkdownExtension {
                 enableExtension(extensionKey);
             }
         }
+        extensionEnabled.addListener((InvalidationListener) observable -> {
+            if (!extensionChangeActions.isEmpty()) {
+                extensionChangeActions.forEach(action -> action.accept(extensionEnabled));
+            }
+        });
     }
 
 
@@ -134,5 +108,13 @@ public class MarkdownExtensionImpl implements MarkdownExtension {
         if (extensionClass != null) {
             extensionEnabled.remove(extensionClass);
         }
+    }
+
+    public void onExtensionChanged(Consumer<List<Class<? extends Extension>>> action) {
+         this.extensionChangeActions.add(action);
+    }
+
+    public void removeOnExtensionChanged(Consumer<List<Class<? extends Extension>>> action) {
+        this.extensionChangeActions.add(action);
     }
 }

@@ -15,4 +15,6 @@ public interface SettingOptionController {
     Set<String> optionKeys();
     void loadOption(SettingGroup settingGroup);
     void setOption(Map<String, Object> option);
+
+    void apply();
 }

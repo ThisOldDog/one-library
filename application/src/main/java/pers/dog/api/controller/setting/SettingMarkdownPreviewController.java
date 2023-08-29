@@ -11,8 +11,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Tab;
 import org.controlsfx.control.PrefixSelectionComboBox;
 import org.springframework.util.ObjectUtils;
+import pers.dog.api.controller.ProjectEditorController;
+import pers.dog.app.service.ProjectEditorService;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
 import pers.dog.boot.infra.dto.ValueMeaning;
@@ -29,11 +32,13 @@ public class SettingMarkdownPreviewController implements SettingOptionController
     private final Map<String, Object> optionMap = new HashMap<>();
     @FXML
     public PrefixSelectionComboBox<ValueMeaning> previewStyleComboBox;
+    private final ProjectEditorService projectEditorService;
     private SettingGroup settingGroup;
     private boolean changed = false;
     private final ObservableList<ValueMeaning> markdownStyles = FXCollections.observableArrayList();
 
-    public SettingMarkdownPreviewController() {
+    public SettingMarkdownPreviewController(ProjectEditorService projectEditorService) {
+        this.projectEditorService = projectEditorService;
         ApplicationDirFileOperationHandler handler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix("style/markdown"));
         Properties markdownStyleProperties = new Properties();
         try {
@@ -95,5 +100,10 @@ public class SettingMarkdownPreviewController implements SettingOptionController
     public void setOption(Map<String, Object> option) {
         changed = true;
         loadOption(option);
+    }
+
+    @Override
+    public void apply() {
+        projectEditorService.reloadAllSetting();
     }
 }

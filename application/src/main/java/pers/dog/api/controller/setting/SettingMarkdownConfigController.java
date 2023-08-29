@@ -57,11 +57,9 @@ public class SettingMarkdownConfigController implements SettingOptionController,
                         Set<String> extensionItemValue = (Set<String>) optionMap.computeIfAbsent(OPTION_EXTENSION_ITEMS, key -> new HashSet<String>());
                         if (BooleanUtils.isTrue(newValue)) {
                             extensionItemValue.add(checkBox.getText());
-                            markdownExtension.enableExtension(checkBox.getText());
                         } else {
                             extensionAll.setSelected(false);
                             extensionItemValue.remove(checkBox.getText());
-                            markdownExtension.disableExtension(checkBox.getText());
                         }
                     });
                     return checkBox;
@@ -142,5 +140,16 @@ public class SettingMarkdownConfigController implements SettingOptionController,
     public void setOption(Map<String, Object> option) {
         changed = true;
         loadOption(option);
+    }
+
+    @Override
+    public void apply() {
+        for (CheckBox checkBox : extensionCheckBoxList) {
+            if (checkBox.isSelected()) {
+                markdownExtension.enableExtension(checkBox.getText());
+            } else {
+                markdownExtension.disableExtension(checkBox.getText());
+            }
+        }
     }
 }

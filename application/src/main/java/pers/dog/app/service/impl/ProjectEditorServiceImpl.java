@@ -210,4 +210,11 @@ public class ProjectEditorServiceImpl implements ProjectEditorService {
         }
         editorController.editorAndPreview();
     }
+
+    @Override
+    public void reloadAllSetting() {
+        for (Tab tab : projectEditorWorkspace.getTabs()) {
+            ((ProjectEditorController) tab.getUserData()).loadSetting();
+        }
+    }
 }

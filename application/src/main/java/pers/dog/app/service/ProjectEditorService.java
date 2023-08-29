@@ -42,4 +42,6 @@ public interface ProjectEditorService {
     void onlyPreview();
 
     void editorAndPreview();
+
+    void reloadAllSetting();
 }
