@@ -1,6 +1,9 @@
 package pers.dog.api.controller;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -16,8 +19,6 @@ import javax.imageio.ImageIO;
 
 import com.vladsch.flexmark.ast.FencedCodeBlock;
 import com.vladsch.flexmark.ast.Image;
-import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension;
-import com.vladsch.flexmark.ext.toc.TocExtension;
 import com.vladsch.flexmark.html.AttributeProvider;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.html.IndependentAttributeProviderFactory;
@@ -30,6 +31,7 @@ import com.vladsch.flexmark.util.data.DataHolder;
 import com.vladsch.flexmark.util.data.MutableDataHolder;
 import com.vladsch.flexmark.util.html.Attribute;
 import com.vladsch.flexmark.util.html.MutableAttributes;
+import com.vladsch.flexmark.util.misc.Extension;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
@@ -51,6 +53,7 @@ import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.controlsfx.control.action.Action;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.slf4j.Logger;
@@ -60,6 +63,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 import pers.dog.api.controller.setting.SettingMarkdownPreviewController;
+import pers.dog.app.service.MarkdownExtension;
 import pers.dog.app.service.SettingService;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationException;
@@ -156,11 +160,11 @@ public class ProjectEditorController implements Initializable {
     private final ProjectRepository projectRepository;
     private final StageStatusStore stageStatusStore;
     private final SettingService settingService;
+    private final MarkdownExtension markdownExtension;
     private final ObjectProperty<Boolean> dirty = new SimpleObjectProperty<>(false);
     private final AtomicBoolean loaded = new AtomicBoolean(false);
-    private final DataHolder markdownParserOptions = PegdownOptionsAdapter.flexmarkOptions(PegdownExtensions.ALL, TocExtension.create(), TaskListExtension.create(), ClassAttributeRenderExtension.create(this));
-    private final Parser parser = Parser.builder(markdownParserOptions).build();
-    private final HtmlRenderer renderer = HtmlRenderer.builder(markdownParserOptions).build();
+    private final Parser parser;
+    private final HtmlRenderer renderer;
 
     @FXML
     public SplitPane projectEditorWorkspace;
@@ -194,10 +198,15 @@ public class ProjectEditorController implements Initializable {
 
     public ProjectEditorController(ProjectRepository projectRepository,
                                    StageStatusStore stageStatusStore,
-                                   SettingService settingService) {
+                                   SettingService settingService,
+                                   MarkdownExtension markdownExtension) {
         this.projectRepository = projectRepository;
         this.stageStatusStore = stageStatusStore;
         this.settingService = settingService;
+        this.markdownExtension = markdownExtension;
+        DataHolder markdownParserOptions = PegdownOptionsAdapter.flexmarkOptions(PegdownExtensions.ALL, getOptions());
+        this.parser = Parser.builder(markdownParserOptions).build();
+        this.renderer = HtmlRenderer.builder(markdownParserOptions).build();
         //
         try {
             htmlWrapperWithoutStyle = StreamUtils.copyToString(ProjectEditorController.class.getClassLoader().getResource("static/markdown-template-without-style.html").openStream(), StandardCharsets.UTF_8);
@@ -233,6 +242,19 @@ public class ProjectEditorController implements Initializable {
         } catch (Exception e) {
             logger.error("[ProjectEditor] Unable loading resource.", e);
         }
+    }
+
+    private Extension[] getOptions() {
+        List<Extension> extensions = new ArrayList<>();
+        extensions.add(ClassAttributeRenderExtension.create(this));
+        for (Class<? extends Extension> extensionClass : markdownExtension.enabledExtension()) {
+            try {
+                extensions.add((Extension) MethodUtils.invokeStaticMethod(extensionClass, "create"));
+            } catch (Exception e) {
+                logger.error("[Markdown Extension] Unable create extension: " + extensionClass, e);
+            }
+        }
+        return extensions.toArray(new Extension[]{});
     }
 
     @Override
@@ -283,7 +305,7 @@ public class ProjectEditorController implements Initializable {
         int lastLine = this.codeArea.lastVisibleParToAllParIndex();
         int totalLine = this.codeArea.getParagraphs().size();
         double target = firstLine == 0 ? 0 : firstLine * 1D / (totalLine - lastLine + firstLine);
-        this.engine.executeScript(String.format("window.scrollTo(0, document.body.scrollHeight * %s);", target));
+        this.engine.executeScript(String.format("if (document && document.body) window.scrollTo(0, document.body.scrollHeight * %s);", target));
     }
 
     public void show(Project project) {

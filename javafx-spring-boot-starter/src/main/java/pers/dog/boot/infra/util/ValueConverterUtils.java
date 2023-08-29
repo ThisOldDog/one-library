@@ -79,11 +79,9 @@ public class ValueConverterUtils {
     private static final Map<Class<?>, ParameterValueReader> SIMPLE_TYPE_PARAMETER_READER_HOLDER = new ConcurrentHashMap<>(16);
     private static final Map<Class<?>, ParameterValueWriter> SIMPLE_TYPE_PARAMETER_WRITER_HOLDER = new ConcurrentHashMap<>(16);
     public static final ObjectMapper OBJECT_MAPPER;
+    public static final ObjectMapper OBJECT_MAPPER_WITH_TYPE;
 
     static {
-        OBJECT_MAPPER = JsonMapper.builder()
-                .disable(MapperFeature.IGNORE_DUPLICATE_MODULE_REGISTRATIONS)
-                .build();
         // 8 种基本类型
         ParameterValueReader byteReader = value -> value instanceof Byte ? value : Byte.parseByte(String.valueOf(value));
         SIMPLE_TYPE_PARAMETER_READER_HOLDER.put(byte.class, byteReader);
@@ -185,6 +183,18 @@ public class ValueConverterUtils {
         });
         SIMPLE_TYPE_PARAMETER_WRITER_HOLDER.put(ZonedDateTime.class, value -> zoneDateTimeFormatter.format((ZonedDateTime) value));
         // ObjectMapper
+        OBJECT_MAPPER = configObjectMapper(timeZone, dateFormatter, dateTimeFormatter, zoneDateTimeFormatter);
+        OBJECT_MAPPER_WITH_TYPE = configObjectMapper(timeZone, dateFormatter, dateTimeFormatter, zoneDateTimeFormatter);
+        OBJECT_MAPPER_WITH_TYPE.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.EVERYTHING, JsonTypeInfo.As.WRAPPER_OBJECT);
+    }
+
+    public static ObjectMapper configObjectMapper(TimeZone timeZone,
+                                                  DateTimeFormatter dateFormatter,
+                                                  DateTimeFormatter dateTimeFormatter,
+                                                  DateTimeFormatter zoneDateTimeFormatter) {
+        ObjectMapper objectMapper = JsonMapper.builder()
+                .disable(MapperFeature.IGNORE_DUPLICATE_MODULE_REGISTRATIONS)
+                .build();
         JavaTimeModule javaTimeModule = new JavaTimeModule();
         StdDateFormat stdDateFormat = new StdDateFormat().withTimeZone(timeZone);
         javaTimeModule.addSerializer(Date.class, new DateSerializer(null, stdDateFormat));
@@ -216,15 +226,18 @@ public class ValueConverterUtils {
                 return this;
             }
         });
-        OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        OBJECT_MAPPER.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-        OBJECT_MAPPER.registerModules(javaTimeModule);
-        OBJECT_MAPPER.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.EVERYTHING, JsonTypeInfo.As.WRAPPER_OBJECT);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        objectMapper.registerModules(javaTimeModule);
+        return objectMapper;
     }
 
-
     public static <T> T read(String value, Class<T> type) {
+        return read(value, type, false);
+    }
+
+    public static <T> T read(String value, Class<T> type, boolean withType) {
         // 是否为 null
         if (ObjectUtils.isEmpty(value)) {
             return null;
@@ -236,7 +249,7 @@ public class ValueConverterUtils {
         }
         // 按照 JSON 处理
         try {
-            return OBJECT_MAPPER.readValue(value, type);
+            return (withType ? OBJECT_MAPPER_WITH_TYPE : OBJECT_MAPPER).readValue(value, type);
         } catch (IOException e) {
             String exceptionMessage = String.format("[Converter] JSON parameter conversion is an error : %s", value);
             logger.error(exceptionMessage, e);
@@ -245,13 +258,17 @@ public class ValueConverterUtils {
     }
 
     public static <T> T read(String value, TypeReference<T> type) {
+        return read(value, type);
+    }
+
+    public static <T> T read(String value, TypeReference<T> type, boolean withType) {
         // 是否为 null
         if (ObjectUtils.isEmpty(value)) {
             return null;
         }
         // 按照 JSON 处理
         try {
-            return OBJECT_MAPPER.readValue(value, type);
+            return (withType ? OBJECT_MAPPER_WITH_TYPE : OBJECT_MAPPER).readValue(value, type);
         } catch (IOException e) {
             String exceptionMessage = String.format("[Converter] JSON parameter conversion is an error : %s", value);
             logger.error(exceptionMessage, e);
@@ -266,12 +283,17 @@ public class ValueConverterUtils {
      * @return 字面值
      */
     public static String write(Object value) {
+        return write(value, false);
+    }
+
+    public static String write(Object value, boolean withType) {
         // 是否为 null
         if (value == null) {
             return null;
         }
-        return write(value, value.getClass());
+        return write(value, value.getClass(), withType);
     }
+
 
     /**
      * 写出参数
@@ -280,6 +302,10 @@ public class ValueConverterUtils {
      * @return 字面值
      */
     public static String write(Object value, Class<?> parameterType) {
+        return write(value, parameterType, false);
+    }
+
+    public static String write(Object value, Class<?> parameterType, boolean withType) {
         // 是否为 null
         if (value == null) {
             return null;
@@ -294,7 +320,7 @@ public class ValueConverterUtils {
         }
         // 按照 JSON 处理
         try {
-            return OBJECT_MAPPER.writeValueAsString(value);
+            return (withType ? OBJECT_MAPPER_WITH_TYPE : OBJECT_MAPPER).writeValueAsString(value);
         } catch (IOException e) {
             String exceptionMessage = String.format("[Converter] An error occurred while converting the parameter to a JSON string : %s %s", parameterType, value);
             logger.error(exceptionMessage, e);

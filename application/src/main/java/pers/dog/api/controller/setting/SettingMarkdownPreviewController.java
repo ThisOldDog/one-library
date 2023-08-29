@@ -25,6 +25,7 @@ import pers.dog.domain.entity.SettingGroup;
 public class SettingMarkdownPreviewController implements SettingOptionController, Initializable {
     public static final String SETTING_CODE = "markdown-preview";
     public static final String OPTION_PREVIEW_STYLE = "preview-style";
+    public static final Set<String> OPTION_KEY_LIST = Set.of(OPTION_PREVIEW_STYLE);
     private final Map<String, Object> optionMap = new HashMap<>();
     @FXML
     public PrefixSelectionComboBox<ValueMeaning> previewStyleComboBox;
@@ -33,7 +34,7 @@ public class SettingMarkdownPreviewController implements SettingOptionController
     private final ObservableList<ValueMeaning> markdownStyles = FXCollections.observableArrayList();
 
     public SettingMarkdownPreviewController() {
-        ApplicationDirFileOperationHandler handler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix(".data/style/markdown"));
+        ApplicationDirFileOperationHandler handler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix("style/markdown"));
         Properties markdownStyleProperties = new Properties();
         try {
             try (BufferedReader reader = Files.newBufferedReader(handler.directory().resolve("styles.properties"), StandardCharsets.UTF_8)) {
@@ -41,7 +42,7 @@ public class SettingMarkdownPreviewController implements SettingOptionController
                 markdownStyleProperties.forEach((code, name) -> markdownStyles.add(new ValueMeaning().setValue(String.valueOf(code)).setMeaning(I18nMessageSource.getResource(String.valueOf(name)))));
             }
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to load .data/style/markdown/styles.properties", e);
+            throw new IllegalStateException("Unable to load style/markdown/styles.properties", e);
         }
     }
 
@@ -64,6 +65,11 @@ public class SettingMarkdownPreviewController implements SettingOptionController
     @Override
     public Map<String, Object> getOption() {
         return optionMap;
+    }
+
+    @Override
+    public Set<String> optionKeys() {
+        return OPTION_KEY_LIST;
     }
 
     @Override

@@ -10,7 +10,6 @@ import pers.dog.app.service.SettingService;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
 import pers.dog.boot.component.file.WriteOption;
-import pers.dog.boot.infra.util.ObjectMapperUtils;
 import pers.dog.config.OneLibraryProperties;
 import pers.dog.domain.entity.SettingGroup;
 
@@ -30,11 +29,25 @@ public class SettingServiceImpl implements SettingService {
         this.oneLibraryProperties = oneLibraryProperties;
 
         handler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix(".data/conf"));
-        settingLocalMap = Optional.ofNullable(handler.read(SETTING_FILE_NAME, String.class))
-                .map(value -> ObjectMapperUtils.readValue(value, new TypeReference<Map<String, Map<String, Object>>>() {
+        handler.setWithType(true);
+        settingLocalMap = Optional.ofNullable(handler.read(SETTING_FILE_NAME, new TypeReference<Map<String, Map<String, Object>>>() {
                 }))
                 .map(HashMap::new)
                 .orElseGet(HashMap::new);
+        setDefaultValue(oneLibraryProperties.getSetting());
+    }
+
+    private void setDefaultValue(List<SettingGroup> setting) {
+        if (setting == null) {
+            return;
+        }
+        for (SettingGroup settingGroup : setting) {
+            if (settingGroup.getCode() != null && settingGroup.getOptions() != null) {
+                Map<String, Object> optionMap = settingLocalMap.computeIfAbsent(settingGroup.getCode(), key -> new HashMap<>());
+                settingGroup.getOptions().forEach(optionMap::putIfAbsent);
+            }
+            setDefaultValue(settingGroup.getChildren());
+        }
     }
 
 

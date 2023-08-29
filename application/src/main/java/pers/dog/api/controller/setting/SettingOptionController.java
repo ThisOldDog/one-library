@@ -1,6 +1,7 @@
 package pers.dog.api.controller.setting;
 
 import java.util.Map;
+import java.util.Set;
 
 import pers.dog.domain.entity.SettingGroup;
 
@@ -11,7 +12,7 @@ public interface SettingOptionController {
     boolean changed();
 
     Map<String, Object> getOption();
-
+    Set<String> optionKeys();
     void loadOption(SettingGroup settingGroup);
     void setOption(Map<String, Object> option);
 }

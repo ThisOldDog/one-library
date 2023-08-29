@@ -21,14 +21,17 @@
     <CheckBox fx:id="extensionAll" text="%info.setting.markdown.extension.all" GridPane.rowIndex="0"
               GridPane.columnIndex="1"/>
     <VBox GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2">
-        <HBox alignment="CENTER_LEFT">
-            <Label text="%info.common.search"/>
-            <TextField fx:id="extensionSearch">
-                <HBox.margin>
-                    <Insets left="8"/>
-                </HBox.margin>
-            </TextField>
-        </HBox>
+        <AnchorPane>
+            <HBox alignment="CENTER_LEFT" AnchorPane.leftAnchor="0">
+                <Label text="%info.common.search"/>
+                <TextField fx:id="extensionSearch">
+                    <HBox.margin>
+                        <Insets left="8"/>
+                    </HBox.margin>
+                </TextField>
+            </HBox>
+            <Button fx:id="cancelAllButton" text="%info.setting.markdown.extension.cancel_all" AnchorPane.rightAnchor="0"/>
+        </AnchorPane>
         <ScrollPane VBox.vgrow="ALWAYS" maxHeight="200">
             <VBox.margin>
                 <Insets top="4"/>

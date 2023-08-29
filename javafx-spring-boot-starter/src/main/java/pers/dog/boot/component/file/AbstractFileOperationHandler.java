@@ -3,12 +3,7 @@ package pers.dog.boot.component.file;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.CopyOption;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.Collections;
 import java.util.List;
 
@@ -24,6 +19,8 @@ import pers.dog.boot.infra.util.ValueConverterUtils;
 @SuppressWarnings("DuplicatedCode")
 public abstract class AbstractFileOperationHandler implements FileOperationHandler {
     private static final Logger logger = LoggerFactory.getLogger(AbstractFileOperationHandler.class);
+
+    private boolean withType;
 
     public Path targetFile(String filename, String... relativePath) {
         return targetPath(relativePath).resolve(filename);
@@ -52,7 +49,7 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
             if (content instanceof InputStream) {
                 Files.write(target, StreamUtils.copyToByteArray((InputStream) content), writeOption.toOpenOption());
             } else {
-                Files.writeString(target, ValueConverterUtils.write(content), writeOption.toOpenOption());
+                Files.writeString(target, ValueConverterUtils.write(content, withType), writeOption.toOpenOption());
             }
         } catch (IOException e) {
             String exceptionMessage = String.format("[File Operation] Unable to write setting to %s", target);
@@ -85,7 +82,7 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
                 return null;
             }
             logger.info("[File Operation] Read from file {}", target);
-            return ValueConverterUtils.read(Files.readString(target), type);
+            return ValueConverterUtils.read(Files.readString(target), type, withType);
         } catch (IOException e) {
             String exceptionMessage = String.format("[File Operation] Unable to read setting from %s", target);
             logger.error(exceptionMessage, e);
@@ -102,7 +99,7 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
                 return null;
             }
             logger.info("[File Operation] Read from file {}", target);
-            return ValueConverterUtils.read(Files.readString(target), type);
+            return ValueConverterUtils.read(Files.readString(target), type, withType);
         } catch (IOException e) {
             String exceptionMessage = String.format("[File Operation] Unable to read setting from %s", target);
             logger.error(exceptionMessage, e);
@@ -213,5 +210,14 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
             logger.error(exceptionMessage, e);
             throw new FileOperationException(exceptionMessage);
         }
+    }
+
+    public boolean isWithType() {
+        return withType;
+    }
+
+    public AbstractFileOperationHandler setWithType(boolean withType) {
+        this.withType = withType;
+        return this;
     }
 }

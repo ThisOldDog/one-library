@@ -2,6 +2,7 @@ package pers.dog.api.callback;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javafx.scene.Parent;
 import javafx.scene.control.TreeCell;
@@ -75,7 +76,15 @@ public class SettingGroupTreeCallback implements Callback<TreeView<SettingGroup>
         optionMap.forEach((k, v) -> {
             SettingOptionController settingOptionController = v.getFirst();
             if (settingOptionController.changed()) {
-                changedOption.put(k, settingOptionController.getOption());
+                Map<String, Object> optionMap = settingOptionController.getOption();
+                Set<String> keySet = settingOptionController.optionKeys();
+                Map<String, Object> validOptionMap = new HashMap<>();
+                optionMap.forEach((option, value) -> {
+                    if (keySet.contains(option)) {
+                        validOptionMap.put(option, value);
+                    }
+                });
+                changedOption.put(k, validOptionMap);
             }
         });
         return changedOption;
