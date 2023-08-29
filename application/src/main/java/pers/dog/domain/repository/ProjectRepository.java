@@ -21,5 +21,5 @@ public interface ProjectRepository extends JpaRepository<Project, Long>, JpaSpec
     @Query("SELECT MAX(sortIndex) FROM Project WHERE parentProjectId = :parentProjectId")
     Optional<Integer> findMaxSortIndex(long parentProjectId);
 
-    List<Project> findByParentProjectId(long parentProjectId);
+    List<Project> findByParentProjectId(Long parentProjectId);
 }
