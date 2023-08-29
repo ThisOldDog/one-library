@@ -1,6 +1,7 @@
 package pers.dog.app.service;
 
 import java.util.Map;
+import java.util.Objects;
 
 import javafx.scene.control.TreeItem;
 import pers.dog.domain.entity.SettingGroup;
@@ -12,7 +13,7 @@ public interface SettingService {
 
     TreeItem<SettingGroup> buildSettingGroupTree();
 
-    void saveSetting(Map<String, Map<String, String>> optionMap);
+    void saveSetting(Map<String, Map<String, Object>> optionMap);
 
-    String getOption(String settingCode, String optionCode);
+    Object getOption(String settingCode, String optionCode);
 }

@@ -15,10 +15,13 @@ import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.std.DateDeserializers;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.databind.ser.std.DateSerializer;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -75,9 +78,12 @@ public class ValueConverterUtils {
     private static final String TIME_ZONE = "GMT+8";
     private static final Map<Class<?>, ParameterValueReader> SIMPLE_TYPE_PARAMETER_READER_HOLDER = new ConcurrentHashMap<>(16);
     private static final Map<Class<?>, ParameterValueWriter> SIMPLE_TYPE_PARAMETER_WRITER_HOLDER = new ConcurrentHashMap<>(16);
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    public static final ObjectMapper OBJECT_MAPPER;
 
     static {
+        OBJECT_MAPPER = JsonMapper.builder()
+                .disable(MapperFeature.IGNORE_DUPLICATE_MODULE_REGISTRATIONS)
+                .build();
         // 8 种基本类型
         ParameterValueReader byteReader = value -> value instanceof Byte ? value : Byte.parseByte(String.valueOf(value));
         SIMPLE_TYPE_PARAMETER_READER_HOLDER.put(byte.class, byteReader);
@@ -213,8 +219,8 @@ public class ValueConverterUtils {
         OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         OBJECT_MAPPER.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-        OBJECT_MAPPER.disable(MapperFeature.IGNORE_DUPLICATE_MODULE_REGISTRATIONS);
         OBJECT_MAPPER.registerModules(javaTimeModule);
+        OBJECT_MAPPER.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.EVERYTHING, JsonTypeInfo.As.WRAPPER_OBJECT);
     }
 
 

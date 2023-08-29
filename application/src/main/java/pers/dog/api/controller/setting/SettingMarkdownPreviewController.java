@@ -22,17 +22,17 @@ import pers.dog.domain.entity.SettingGroup;
 /**
  * @author 废柴 2023/8/17 19:52
  */
-public class SettingMarkdownController implements SettingOptionController, Initializable {
-    public static final String SETTING_CODE = "markdown";
+public class SettingMarkdownPreviewController implements SettingOptionController, Initializable {
+    public static final String SETTING_CODE = "markdown-preview";
     public static final String OPTION_PREVIEW_STYLE = "preview-style";
-    private final Map<String, String> optionMap = new HashMap<>();
+    private final Map<String, Object> optionMap = new HashMap<>();
     @FXML
     public PrefixSelectionComboBox<ValueMeaning> previewStyleComboBox;
     private SettingGroup settingGroup;
     private boolean changed = false;
     private final ObservableList<ValueMeaning> markdownStyles = FXCollections.observableArrayList();
 
-    public SettingMarkdownController() {
+    public SettingMarkdownPreviewController() {
         ApplicationDirFileOperationHandler handler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix(".data/style/markdown"));
         Properties markdownStyleProperties = new Properties();
         try {
@@ -62,7 +62,7 @@ public class SettingMarkdownController implements SettingOptionController, Initi
     }
 
     @Override
-    public Map<String, String> getOption() {
+    public Map<String, Object> getOption() {
         return optionMap;
     }
 
@@ -72,9 +72,9 @@ public class SettingMarkdownController implements SettingOptionController, Initi
         loadOption(settingGroup.getOptions());
     }
 
-    private void loadOption(Map<String, String> option) {
+    private void loadOption(Map<String, Object> option) {
         optionMap.putAll(option);
-        String previewStyle = option.get(OPTION_PREVIEW_STYLE);
+        String previewStyle = (String) option.get(OPTION_PREVIEW_STYLE);
         if (!ObjectUtils.isEmpty(previewStyle)) {
             for (ValueMeaning item : previewStyleComboBox.getItems()) {
                 if (Objects.equals(item.getValue(), previewStyle)) {
@@ -86,7 +86,7 @@ public class SettingMarkdownController implements SettingOptionController, Initi
     }
 
     @Override
-    public void setOption(Map<String, String> option) {
+    public void setOption(Map<String, Object> option) {
         changed = true;
         loadOption(option);
     }

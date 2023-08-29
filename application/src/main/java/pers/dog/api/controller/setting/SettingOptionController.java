@@ -10,8 +10,8 @@ import pers.dog.domain.entity.SettingGroup;
 public interface SettingOptionController {
     boolean changed();
 
-    Map<String, String> getOption();
+    Map<String, Object> getOption();
 
     void loadOption(SettingGroup settingGroup);
-    void setOption(Map<String, String> option);
+    void setOption(Map<String, Object> option);
 }

@@ -11,7 +11,7 @@ public class SettingGroup {
     private String groupName;
     private List<SettingGroup> children;
     private String sceneName;
-    private Map<String, String> options;
+    private Map<String, Object> options;
 
     public String getCode() {
         return code;
@@ -49,11 +49,11 @@ public class SettingGroup {
         return this;
     }
 
-    public Map<String, String> getOptions() {
+    public Map<String, Object> getOptions() {
         return options;
     }
 
-    public SettingGroup setOptions(Map<String, String> options) {
+    public SettingGroup setOptions(Map<String, Object> options) {
         this.options = options;
         return this;
     }

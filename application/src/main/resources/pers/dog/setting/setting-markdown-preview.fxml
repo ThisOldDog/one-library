@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.PrefixSelectionComboBox?>
-<?import javafx.geometry.Insets?>
 <GridPane xmlns="http://javafx.com/javafx/17.0.2-ea"
           xmlns:fx="http://javafx.com/fxml/1"
-          fx:controller="pers.dog.api.controller.setting.SettingMarkdownController"
-          hgap="16" vgap="16">
+          fx:controller="pers.dog.api.controller.setting.SettingMarkdownPreviewController"
+          hgap="8" vgap="8">
     <padding>
         <Insets top="16" bottom="16" left="16" right="16"/>
     </padding>

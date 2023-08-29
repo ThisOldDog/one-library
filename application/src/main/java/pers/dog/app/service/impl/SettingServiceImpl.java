@@ -10,6 +10,7 @@ import pers.dog.app.service.SettingService;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
 import pers.dog.boot.component.file.WriteOption;
+import pers.dog.boot.infra.util.ObjectMapperUtils;
 import pers.dog.config.OneLibraryProperties;
 import pers.dog.domain.entity.SettingGroup;
 
@@ -23,13 +24,14 @@ public class SettingServiceImpl implements SettingService {
     private final OneLibraryProperties oneLibraryProperties;
 
     private final ApplicationDirFileOperationHandler handler;
-    private final Map<String, Map<String, String>> settingLocalMap;
+    private final Map<String, Map<String, Object>> settingLocalMap;
 
     public SettingServiceImpl(OneLibraryProperties oneLibraryProperties) {
         this.oneLibraryProperties = oneLibraryProperties;
 
         handler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix(".data/conf"));
-        settingLocalMap = Optional.ofNullable(handler.read(SETTING_FILE_NAME, new TypeReference<Map<String, Map<String, String>>>() {
+        settingLocalMap = Optional.ofNullable(handler.read(SETTING_FILE_NAME, String.class))
+                .map(value -> ObjectMapperUtils.readValue(value, new TypeReference<Map<String, Map<String, Object>>>() {
                 }))
                 .map(HashMap::new)
                 .orElseGet(HashMap::new);
@@ -58,21 +60,21 @@ public class SettingServiceImpl implements SettingService {
         }
     }
 
-    public void saveSetting(Map<String, Map<String, String>> optionMap) {
+    public void saveSetting(Map<String, Map<String, Object>> optionMap) {
         settingLocalMap.putAll(optionMap);
         handler.write(WriteOption.CREATE_NEW, SETTING_FILE_NAME, settingLocalMap);
     }
 
     @Override
-    public String getOption(String settingCode, String optionCode) {
+    public Object getOption(String settingCode, String optionCode) {
         return settingLocalMap.getOrDefault(settingCode, Collections.emptyMap()).get(optionCode);
     }
 
-    private Map<String, String> setOption(Map<String, String> defaultOptions, Map<String, String> options) {
+    private Map<String, Object> setOption(Map<String, Object> defaultOptions, Map<String, Object> options) {
         if (defaultOptions == null) {
             defaultOptions = new HashMap<>();
         }
-        if (!(defaultOptions instanceof HashMap<String, String>)) {
+        if (!(defaultOptions instanceof HashMap<String, Object>)) {
             defaultOptions = new HashMap<>(defaultOptions);
         }
         if (options != null) {

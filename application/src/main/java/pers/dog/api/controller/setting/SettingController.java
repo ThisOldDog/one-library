@@ -66,7 +66,7 @@ public class SettingController implements Initializable {
     }
 
     public void saveSetting() {
-        Map<String, Map<String, String>> optionMap = settingGroupTreeCallback.changedOption();
+        Map<String, Map<String, Object>> optionMap = settingGroupTreeCallback.changedOption();
         settingService.saveSetting(optionMap);
     }
 }

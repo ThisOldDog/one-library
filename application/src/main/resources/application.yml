@@ -13,8 +13,15 @@ logging:
   config: classpath:logback-spring.xml
 one-library:
   setting:
-    - code: markdown
-      group-name: info.setting.markdown
-      scene-name: setting/setting-markdown
-      options:
-        preview-style: default-light
+    - group-name: info.setting.markdown
+      children:
+        - code: markdown-config
+          group-name: info.setting.markdown.config
+          scene-name: setting/setting-markdown-config
+          options:
+            extension-all: true
+        - code: markdown-preview
+          group-name: info.setting.markdown.preview
+          scene-name: setting/setting-markdown-preview
+          options:
+            preview-style: default-light

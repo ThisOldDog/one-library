@@ -59,7 +59,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
-import pers.dog.api.controller.setting.SettingMarkdownController;
+import pers.dog.api.controller.setting.SettingMarkdownPreviewController;
 import pers.dog.app.service.SettingService;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationException;
@@ -215,7 +215,7 @@ public class ProjectEditorController implements Initializable {
                     return super.visitFile(file, attrs);
                 }
             });
-            String style = Optional.ofNullable(settingService.getOption(SettingMarkdownController.SETTING_CODE, SettingMarkdownController.OPTION_PREVIEW_STYLE))
+            String style = Optional.ofNullable(settingService.getOption(SettingMarkdownPreviewController.SETTING_CODE, SettingMarkdownPreviewController.OPTION_PREVIEW_STYLE))
                     .orElse(DEFAULT_STYLE_NAME) + ".css";
             Path markdownStyleDir = Path.of("style/markdown");
             if (Files.exists(markdownStyleDir) && Files.isDirectory(markdownStyleDir)) {

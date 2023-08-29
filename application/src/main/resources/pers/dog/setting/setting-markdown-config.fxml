@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<GridPane xmlns="http://javafx.com/javafx/17.0.2-ea"
+          xmlns:fx="http://javafx.com/fxml/1"
+          fx:controller="pers.dog.api.controller.setting.SettingMarkdownConfigController"
+          hgap="8" vgap="8">
+    <padding>
+        <Insets top="16" bottom="16" left="16" right="16"/>
+    </padding>
+    <columnConstraints>
+        <ColumnConstraints maxWidth="480" prefWidth="280"/>
+        <ColumnConstraints maxWidth="720" prefWidth="560"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints minHeight="10.0" prefHeight="30.0"/>
+    </rowConstraints>
+    <Label text="%info.setting.markdown.extension" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <CheckBox fx:id="extensionAll" text="%info.setting.markdown.extension.all" GridPane.rowIndex="0"
+              GridPane.columnIndex="1"/>
+    <VBox GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2">
+        <HBox alignment="CENTER_LEFT">
+            <Label text="%info.common.search"/>
+            <TextField fx:id="extensionSearch">
+                <HBox.margin>
+                    <Insets left="8"/>
+                </HBox.margin>
+            </TextField>
+        </HBox>
+        <ScrollPane VBox.vgrow="ALWAYS" maxHeight="200">
+            <VBox.margin>
+                <Insets top="4"/>
+            </VBox.margin>
+            <FlowPane fx:id="extensionPane">
+                <padding>
+                    <Insets right="8" bottom="8"/>
+                </padding>
+            </FlowPane>
+        </ScrollPane>
+    </VBox>
+</GridPane>

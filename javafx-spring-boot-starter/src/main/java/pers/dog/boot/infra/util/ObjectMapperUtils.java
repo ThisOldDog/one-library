@@ -19,15 +19,8 @@ import org.springframework.util.StringUtils;
 @SuppressWarnings("DuplicatedCode")
 public class ObjectMapperUtils {
     private static final Logger logger = LoggerFactory.getLogger(ObjectMapperUtils.class);
-    private static final ObjectMapper OBJECT_MAPPER;
+    private static final ObjectMapper OBJECT_MAPPER = ValueConverterUtils.OBJECT_MAPPER;
 
-    static {
-        OBJECT_MAPPER = new ObjectMapper();
-
-        OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
-        OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-    }
 
     public static String writeAsString(Object value) {
         if (value == null) {
