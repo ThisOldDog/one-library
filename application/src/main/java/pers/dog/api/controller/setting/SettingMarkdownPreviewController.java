@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -104,6 +105,6 @@ public class SettingMarkdownPreviewController implements SettingOptionController
 
     @Override
     public void apply() {
-        projectEditorService.reloadAllSetting();
+        Platform.runLater(projectEditorService::reloadAllSetting);
     }
 }

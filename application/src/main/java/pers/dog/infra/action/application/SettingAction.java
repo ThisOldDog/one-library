@@ -34,6 +34,7 @@ public class SettingAction extends Action {
         SettingController controller = FXMLUtils.getController(parent);
         Dialog<ButtonType> settingDialog = new Dialog<>();
         settingDialog.setTitle(getText());
+        settingDialog.setResizable(true);
 
         DialogPane dialogPane = settingDialog.getDialogPane();
         dialogPane.setContent(parent);
