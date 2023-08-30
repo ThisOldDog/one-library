@@ -21,7 +21,7 @@ import pers.dog.app.service.MarkdownExtension;
 import pers.dog.app.service.SettingService;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/8/29 17:07
+ * @author 废柴 2023/8/29 17:07
  */
 @Service
 public class MarkdownExtensionImpl implements MarkdownExtension {

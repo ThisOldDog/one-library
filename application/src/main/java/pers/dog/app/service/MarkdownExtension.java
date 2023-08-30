@@ -7,7 +7,7 @@ import com.vladsch.flexmark.util.misc.Extension;
 import javafx.collections.ObservableList;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/8/29 17:07
+ * @author 废柴 2023/8/29 17:07
  */
 public interface MarkdownExtension {
     List<String> listExtension();
