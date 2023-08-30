@@ -1,10 +1,9 @@
 package pers.dog.app.service;
 
 import java.util.Map;
-import java.util.Objects;
 
 import javafx.scene.control.TreeItem;
-import pers.dog.domain.entity.SettingGroup;
+import pers.dog.api.dto.SettingGroup;
 
 /**
  * @author 废柴 2023/8/21 15:00

@@ -54,6 +54,7 @@ public class HtmlToMarkdownAction extends Action {
         return false;
     }
 
+    @SuppressWarnings("DuplicatedCode")
     public void onAction(ActionEvent event) {
         Parent parent = FXMLUtils.loadFXML(VIEW);
         HtmlToMarkdownController controller = FXMLUtils.getController(parent);

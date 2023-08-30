@@ -13,7 +13,7 @@ import pers.dog.api.controller.setting.SettingController;
 import pers.dog.api.controller.setting.SettingOptionController;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.FXMLUtils;
-import pers.dog.domain.entity.SettingGroup;
+import pers.dog.api.dto.SettingGroup;
 import pers.dog.infra.status.StageStatusStore;
 
 /**

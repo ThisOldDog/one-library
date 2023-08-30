@@ -3,7 +3,7 @@ package pers.dog.api.controller.setting;
 import java.util.Map;
 import java.util.Set;
 
-import pers.dog.domain.entity.SettingGroup;
+import pers.dog.api.dto.SettingGroup;
 
 /**
  * @author 废柴 2023/8/16 15:14

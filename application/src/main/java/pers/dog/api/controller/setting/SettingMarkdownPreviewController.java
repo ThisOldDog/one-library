@@ -12,16 +12,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Tab;
 import org.controlsfx.control.PrefixSelectionComboBox;
 import org.springframework.util.ObjectUtils;
-import pers.dog.api.controller.ProjectEditorController;
 import pers.dog.app.service.ProjectEditorService;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
 import pers.dog.boot.infra.dto.ValueMeaning;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
-import pers.dog.domain.entity.SettingGroup;
+import pers.dog.api.dto.SettingGroup;
 
 /**
  * @author 废柴 2023/8/17 19:52

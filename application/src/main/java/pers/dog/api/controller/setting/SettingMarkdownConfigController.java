@@ -14,7 +14,7 @@ import javafx.scene.layout.FlowPane;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import pers.dog.app.service.MarkdownExtension;
-import pers.dog.domain.entity.SettingGroup;
+import pers.dog.api.dto.SettingGroup;
 
 /**
  * @author 废柴 2023/8/17 19:52

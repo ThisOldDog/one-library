@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import pers.dog.domain.entity.SettingGroup;
+import pers.dog.api.dto.SettingGroup;
 
 /**
  * @author 废柴 2023/8/16 11:24

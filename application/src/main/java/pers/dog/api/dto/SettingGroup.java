@@ -1,4 +1,4 @@
-package pers.dog.domain.entity;
+package pers.dog.api.dto;
 
 import java.util.List;
 import java.util.Map;

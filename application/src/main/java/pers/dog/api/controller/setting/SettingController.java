@@ -14,7 +14,7 @@ import javafx.scene.control.TreeView;
 import org.controlsfx.control.MasterDetailPane;
 import pers.dog.api.callback.SettingGroupTreeCallback;
 import pers.dog.app.service.SettingService;
-import pers.dog.domain.entity.SettingGroup;
+import pers.dog.api.dto.SettingGroup;
 import pers.dog.infra.status.StageStatusStore;
 
 /**

@@ -11,14 +11,14 @@ import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
 import pers.dog.boot.component.file.WriteOption;
 import pers.dog.config.OneLibraryProperties;
-import pers.dog.domain.entity.SettingGroup;
+import pers.dog.api.dto.SettingGroup;
 
 /**
  * @author 废柴 2023/8/21 15:00
  */
 @Service
 public class SettingServiceImpl implements SettingService {
-    private static final String SETTING_FILE_NAME = "setting.json";
+    private static final String SETTING_FILE_NAME = "application-setting.json";
 
     private final OneLibraryProperties oneLibraryProperties;
 

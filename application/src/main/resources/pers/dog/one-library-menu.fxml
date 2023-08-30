@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.input.*?>
+<?import pers.dog.infra.action.*?>
+<?import pers.dog.infra.action.application.ExitAction?>
+<?import pers.dog.infra.action.application.SettingAction?>
+<?import pers.dog.infra.action.editor.*?>
+<?import pers.dog.infra.action.markdown.HtmlToMarkdownAction?>
+<?import pers.dog.infra.action.project.*?>
+<?import pers.dog.infra.control.*?>
+<?import pers.dog.infra.action.git.GitSettingAction?>
+<ActionMenuBar xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
+               maxWidth="Infinity">
+    <ActionGroup text="%info.action.file">
+        <ActionGroup text="%info.action.create">
+            <CreateMarkdownAction/>
+            <CreateDirectoryAction/>
+        </ActionGroup>
+        <ActionSeparator fx:factory="getInstance"/>
+        <SaveProjectAction>
+            <accelerator>
+                <KeyCodeCombination code="S" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+            </accelerator>
+            <disabled>
+                <Boolean fx:value="true"/>
+            </disabled>
+        </SaveProjectAction>
+        <SaveAllProjectAction>
+            <accelerator>
+                <KeyCodeCombination code="S" shift="DOWN" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+            </accelerator>
+            <disabled>
+                <Boolean fx:value="true"/>
+            </disabled>
+        </SaveAllProjectAction>
+        <ActionSeparator fx:factory="getInstance"/>
+        <ActionGroup text="%info.action.edit.export">
+            <ExportProjectToHtmlAction/>
+            <ExportProjectToHtmlWithoutStyleAction/>
+        </ActionGroup>
+        <ActionSeparator fx:factory="getInstance"/>
+        <SettingAction>
+            <accelerator>
+                <KeyCodeCombination code="S" shift="UP" control="DOWN" alt="DOWN" meta="UP" shortcut="UP"/>
+            </accelerator>
+        </SettingAction>
+        <ActionSeparator fx:factory="getInstance"/>
+        <ExitAction fx:factory="getInstance"/>
+    </ActionGroup>
+    <ActionGroup text="%info.action.edit">
+        <QuashAction>
+            <accelerator>
+                <KeyCodeCombination code="Z" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+            </accelerator>
+            <disabled>
+                <Boolean fx:value="true"/>
+            </disabled>
+        </QuashAction>
+        <RedoAction>
+            <accelerator>
+                <KeyCodeCombination code="Z" shift="DOWN" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+            </accelerator>
+            <disabled>
+                <Boolean fx:value="true"/>
+            </disabled>
+        </RedoAction>
+        <ActionGroup text="%info.action.edit.insert">
+            <BoldAction>
+                <accelerator>
+                    <KeyCodeCombination code="B" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                </accelerator>
+                <disabled>
+                    <Boolean fx:value="true"/>
+                </disabled>
+            </BoldAction>
+            <ItalicAction>
+                <accelerator>
+                    <KeyCodeCombination code="I" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                </accelerator>
+                <disabled>
+                    <Boolean fx:value="true"/>
+                </disabled>
+            </ItalicAction>
+            <StrikethroughAction>
+                <disabled>
+                    <Boolean fx:value="true"/>
+                </disabled>
+            </StrikethroughAction>
+            <HeaderAction>
+                <accelerator>
+                    <KeyCodeCombination code="H" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                </accelerator>
+                <disabled>
+                    <Boolean fx:value="true"/>
+                </disabled>
+            </HeaderAction>
+            <BlockQuoteAction>
+                <disabled>
+                    <Boolean fx:value="true"/>
+                </disabled>
+            </BlockQuoteAction>
+            <UnorderedListAction>
+                <disabled>
+                    <Boolean fx:value="true"/>
+                </disabled>
+            </UnorderedListAction>
+            <OrderedListAction>
+                <disabled>
+                    <Boolean fx:value="true"/>
+                </disabled>
+            </OrderedListAction>
+            <TableAction>
+                <accelerator>
+                    <KeyCodeCombination code="T" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                </accelerator>
+                <disabled>
+                    <Boolean fx:value="true"/>
+                </disabled>
+            </TableAction>
+            <DividingLineAction>
+                <disabled>
+                    <Boolean fx:value="true"/>
+                </disabled>
+            </DividingLineAction>
+            <LinkAction>
+                <accelerator>
+                    <KeyCodeCombination code="L" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                </accelerator>
+                <disabled>
+                    <Boolean fx:value="true"/>
+                </disabled>
+            </LinkAction>
+            <ImageAction>
+                <accelerator>
+                    <KeyCodeCombination code="L" shift="DOWN" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                </accelerator>
+                <disabled>
+                    <Boolean fx:value="true"/>
+                </disabled>
+            </ImageAction>
+            <CodeInlineAction>
+                <accelerator>
+                    <KeyCodeCombination code="D" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                </accelerator>
+                <disabled>
+                    <Boolean fx:value="true"/>
+                </disabled>
+            </CodeInlineAction>
+            <CodeBlockAction>
+                <accelerator>
+                    <KeyCodeCombination code="D" shift="DOWN" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+                </accelerator>
+                <disabled>
+                    <Boolean fx:value="true"/>
+                </disabled>
+            </CodeBlockAction>
+        </ActionGroup>
+    </ActionGroup>
+    <ActionGroup text="%info.action.search">
+        <SearchAction>
+            <accelerator>
+                <KeyCodeCombination code="F" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+            </accelerator>
+            <disabled>
+                <Boolean fx:value="true"/>
+            </disabled>
+        </SearchAction>
+        <ReplaceAction>
+            <accelerator>
+                <KeyCodeCombination code="R" shift="UP" control="UP" alt="UP" meta="UP" shortcut="DOWN"/>
+            </accelerator>
+            <disabled>
+                <Boolean fx:value="true"/>
+            </disabled>
+        </ReplaceAction>
+    </ActionGroup>
+    <ActionGroup text="%info.action.markdown">
+        <HtmlToMarkdownAction/>
+        <HtmlToMarkdownAction text="%info.project.html-to-markdown.sava-to-file" saveToProject="true"/>
+    </ActionGroup>
+    <ActionGroup text="%info.action.git">
+        <GitSettingAction />
+    </ActionGroup>
+</ActionMenuBar>

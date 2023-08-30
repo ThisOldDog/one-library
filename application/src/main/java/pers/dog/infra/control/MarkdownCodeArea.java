@@ -323,6 +323,9 @@ public class MarkdownCodeArea extends CodeArea {
 
     public void search(String searchText) {
         Platform.runLater(() -> {
+            if (searchText == null) {
+                return;
+            }
             searchCandidateList.clear();
             searchCurrentIndex.set(-1);
             String text = getText();
