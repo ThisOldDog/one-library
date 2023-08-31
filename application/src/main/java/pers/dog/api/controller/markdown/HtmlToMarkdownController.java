@@ -20,6 +20,7 @@ import org.controlsfx.control.PrefixSelectionComboBox;
 import pers.dog.app.service.ProjectService;
 import pers.dog.boot.infra.dto.ValueMeaning;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
+import pers.dog.boot.infra.util.AlertUtils;
 import pers.dog.domain.entity.Project;
 import pers.dog.infra.control.MarkdownCodeArea;
 
@@ -70,22 +71,11 @@ public class HtmlToMarkdownController implements Initializable {
                 }
             } else if (newValue == Worker.State.FAILED) {
                 masker.setVisible(false);
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle(I18nMessageSource.getResource("info.project.html-to-markdown.html.error.title"));
-                alert.setHeaderText(I18nMessageSource.getResource("info.project.html-to-markdown.html.error.header_text"));
-                alert.setContentText(I18nMessageSource.getResource("info.project.html-to-markdown.html.error.content_text"));
-                Label label = new Label(I18nMessageSource.getResource("info.project.html-to-markdown.html.error.exception_stacktrace"));
-                TextArea textArea = new TextArea(ExceptionUtils.getStackTrace(contentPreview.getEngine().getLoadWorker().getException()));
-                textArea.setMaxWidth(Double.MAX_VALUE);
-                textArea.setMaxHeight(Double.MAX_VALUE);
-                GridPane.setVgrow(textArea, Priority.ALWAYS);
-                GridPane.setHgrow(textArea, Priority.ALWAYS);
-                GridPane content = new GridPane();
-                content.setMaxWidth(Double.MAX_VALUE);
-                content.add(label, 0, 0);
-                content.add(textArea, 0, 1);
-                alert.getDialogPane().setExpandableContent(content);
-                alert.showAndWait();
+                AlertUtils.showException("info.project.html-to-markdown.html.error.title",
+                        "info.project.html-to-markdown.html.error.header_text",
+                        "info.project.html-to-markdown.html.error.content_text",
+                        "info.project.html-to-markdown.html.error.exception_stacktrace",
+                        contentPreview.getEngine().getLoadWorker().getException());
             }
         });
     }

@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javafx.application.Platform;
 import javafx.util.Duration;
@@ -73,4 +75,20 @@ public class PlatformUtils {
             return new ReversibleTimerTask(delay, task);
         });
     }
+
+//    public static <T> void runLater(Runnable uiBefore, Supplier<T> task, Consumer<T> uiAfter) {
+//        CompletableFuture
+//                .runAsync(() -> {
+//                    if (uiBefore != null) {
+//                        Platform.runLater(uiBefore);
+//                    }
+//                })
+//                .th(v -> task.get())
+//                .thenRunAsync(() -> {
+//                    if (uiAfter != null) {
+//                        Platform.runLater(uiAfter);
+//                    }
+//                });
+//
+//    }
 }

@@ -81,6 +81,8 @@ module pers.dog {
     requires flexmark.youtrack.converter;
     requires antlr;
     requires org.antlr.antlr4.runtime;
+    requires org.eclipse.jgit;
+    requires org.kohsuke.github.api;
 
     // resource
     opens pers.dog;

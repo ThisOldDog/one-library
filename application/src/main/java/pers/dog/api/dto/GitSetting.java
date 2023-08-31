@@ -1,12 +1,25 @@
 package pers.dog.api.dto;
 
+import pers.dog.infra.constant.GitRepositoryType;
+
 /**
- * @author qingsheng.chen@hand-china.com 2023/8/30 15:37
+ * @author 废柴 2023/8/30 15:37
  */
 public class GitSetting {
-    private String gitRepository;
+    private GitRepositoryType gitRepositoryType = GitRepositoryType.GitHub;
+    private String gitRepository = "https://github.com";
+    private String repositoryName = "one-library";
     private String username;
     private String privateToken;
+
+    public GitRepositoryType getGitRepositoryType() {
+        return gitRepositoryType;
+    }
+
+    public GitSetting setGitRepositoryType(GitRepositoryType gitRepositoryType) {
+        this.gitRepositoryType = gitRepositoryType;
+        return this;
+    }
 
     public String getGitRepository() {
         return gitRepository;
@@ -14,6 +27,15 @@ public class GitSetting {
 
     public GitSetting setGitRepository(String gitRepository) {
         this.gitRepository = gitRepository;
+        return this;
+    }
+
+    public String getRepositoryName() {
+        return repositoryName;
+    }
+
+    public GitSetting setRepositoryName(String repositoryName) {
+        this.repositoryName = repositoryName;
         return this;
     }
 

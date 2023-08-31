@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
 <?import org.controlsfx.control.MaskerPane?>
 <?import org.controlsfx.control.PrefixSelectionComboBox?>
 <?import org.fxmisc.flowless.VirtualizedScrollPane?>
 <?import pers.dog.infra.control.MarkdownCodeArea?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ComboBox?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="pers.dog.api.controller.markdown.HtmlToMarkdownController">

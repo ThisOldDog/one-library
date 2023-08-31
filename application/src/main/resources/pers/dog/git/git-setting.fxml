@@ -5,75 +5,84 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import org.controlsfx.glyphfont.Glyph?>
-<GridPane xmlns="http://javafx.com/javafx/17.0.2-ea"
-          xmlns:fx="http://javafx.com/fxml/1"
-          fx:controller="pers.dog.api.controller.git.GitSettingController"
-          hgap="8" vgap="8">
-    <padding>
-        <Insets top="16" bottom="16" left="16" right="16"/>
-    </padding>
-    <columnConstraints>
-        <ColumnConstraints maxWidth="120" prefWidth="120"/>
-        <ColumnConstraints maxWidth="720" prefWidth="560"/>
-    </columnConstraints>
-    <rowConstraints>
-        <RowConstraints minHeight="10.0" prefHeight="30.0"/>
-    </rowConstraints>
-    <Label text="%info.action.git.setting.repository" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-    <TextField fx:id="gitRepository" text="https://github.com/" prefWidth="720" GridPane.rowIndex="0"
-               GridPane.columnIndex="1"/>
+<?import org.controlsfx.control.MaskerPane?>
+<StackPane xmlns="http://javafx.com/javafx/17.0.2-ea"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="pers.dog.api.controller.git.GitSettingController">
+    <GridPane hgap="8" vgap="8">
+        <padding>
+            <Insets top="16" bottom="16" left="16" right="16"/>
+        </padding>
+        <columnConstraints>
+            <ColumnConstraints maxWidth="120" prefWidth="120"/>
+            <ColumnConstraints maxWidth="720" prefWidth="560"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="0.0" prefHeight="30.0"/>
+        </rowConstraints>
 
-    <Label text="%info.action.git.setting.username" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-    <TextField fx:id="username" maxWidth="240" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <Label text="%info.action.git.setting.repository_type" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="gitRepositoryType" maxWidth="240" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-    <Label text="%info.action.git.setting.private_token" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-    <PasswordField fx:id="privateToken" maxWidth="240" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <Label text="%info.action.git.setting.repository" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="gitRepository" prefWidth="720" disable="true" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-    <Accordion GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.columnSpan="2" expandedPane="$gitlabPane">
-        <panes>
-            <TitledPane fx:id="gitlabPane">
-                <graphic>
-                    <HBox alignment="CENTER_LEFT" minHeight="24">
-                        <Glyph fontFamily="FontAwesome" icon="QUESTION_CIRCLE" textFill="cornflowerblue"/>
-                        <Text text="%info.action.git.setting.private_token.github">
-                            <HBox.margin>
-                                <Insets left="4"/>
-                            </HBox.margin>
-                        </Text>
-                    </HBox>
-                </graphic>
-                <VBox>
-                    <HBox alignment="CENTER_LEFT" minHeight="24">
-                        <Text text="%info.action.git.setting.private_token.github.step1.prefix"/>
-                        <Hyperlink text="%info.action.git.setting.private_token.github.step1.link"/>
-                    </HBox>
-                    <Label text="%info.action.git.setting.private_token.github.step2" minHeight="24"/>
-                    <Label text="%info.action.git.setting.private_token.github.step3" minHeight="24"/>
-                    <Label text="%info.action.git.setting.private_token.github.step4" minHeight="24"/>
-                    <Label text="%info.action.git.setting.private_token.github.step5" minHeight="24"/>
-                    <Label text="%info.action.git.setting.private_token.github.step6" minHeight="24"/>
-                    <Label text="%info.action.git.setting.private_token.github.step7" minHeight="24"/>
-                </VBox>
-            </TitledPane>
-            <TitledPane>
-                <graphic>
-                    <HBox alignment="CENTER_LEFT" minHeight="24">
-                        <Glyph fontFamily="FontAwesome" icon="QUESTION_CIRCLE" textFill="cornflowerblue"/>
-                        <Text text="%info.action.git.setting.private_token.gitlab">
-                            <HBox.margin>
-                                <Insets left="4"/>
-                            </HBox.margin>
-                        </Text>
-                    </HBox>
-                </graphic>
-                <VBox>
-                    <Label text="%info.action.git.setting.private_token.gitlab.step1" minHeight="24"/>
-                    <Label text="%info.action.git.setting.private_token.gitlab.step2" minHeight="24"/>
-                    <Label text="%info.action.git.setting.private_token.gitlab.step3" minHeight="24"/>
-                    <Label text="%info.action.git.setting.private_token.gitlab.step4" minHeight="24"/>
-                    <Label text="%info.action.git.setting.private_token.gitlab.step5" minHeight="24"/>
-                </VBox>
-            </TitledPane>
-        </panes>
-    </Accordion>
-</GridPane>
+        <Label text="%info.action.git.setting.repository_name" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="repositoryName" maxWidth="240" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <Label text="%info.action.git.setting.username" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="username" maxWidth="240" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <Label text="%info.action.git.setting.private_token" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <PasswordField fx:id="privateToken" maxWidth="360" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+        <Accordion GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.columnSpan="2" expandedPane="$gitlabPane">
+            <panes>
+                <TitledPane fx:id="gitlabPane">
+                    <graphic>
+                        <HBox alignment="CENTER_LEFT" minHeight="24">
+                            <Glyph fontFamily="FontAwesome" icon="QUESTION_CIRCLE" textFill="cornflowerblue"/>
+                            <Text text="%info.action.git.setting.private_token.github">
+                                <HBox.margin>
+                                    <Insets left="4"/>
+                                </HBox.margin>
+                            </Text>
+                        </HBox>
+                    </graphic>
+                    <VBox>
+                        <HBox alignment="CENTER_LEFT" minHeight="24">
+                            <Text text="%info.action.git.setting.private_token.github.step1.prefix"/>
+                            <Hyperlink text="%info.action.git.setting.private_token.github.step1.link"/>
+                        </HBox>
+                        <Label text="%info.action.git.setting.private_token.github.step2" minHeight="24"/>
+                        <Label text="%info.action.git.setting.private_token.github.step3" minHeight="24"/>
+                        <Label text="%info.action.git.setting.private_token.github.step4" minHeight="24"/>
+                        <Label text="%info.action.git.setting.private_token.github.step5" minHeight="24"/>
+                        <Label text="%info.action.git.setting.private_token.github.step6" minHeight="24"/>
+                        <Label text="%info.action.git.setting.private_token.github.step7" minHeight="24"/>
+                    </VBox>
+                </TitledPane>
+                <!--            <TitledPane>-->
+                <!--                <graphic>-->
+                <!--                    <HBox alignment="CENTER_LEFT" minHeight="24">-->
+                <!--                        <Glyph fontFamily="FontAwesome" icon="QUESTION_CIRCLE" textFill="cornflowerblue"/>-->
+                <!--                        <Text text="%info.action.git.setting.private_token.gitlab">-->
+                <!--                            <HBox.margin>-->
+                <!--                                <Insets left="4"/>-->
+                <!--                            </HBox.margin>-->
+                <!--                        </Text>-->
+                <!--                    </HBox>-->
+                <!--                </graphic>-->
+                <!--                <VBox>-->
+                <!--                    <Label text="%info.action.git.setting.private_token.gitlab.step1" minHeight="24"/>-->
+                <!--                    <Label text="%info.action.git.setting.private_token.gitlab.step2" minHeight="24"/>-->
+                <!--                    <Label text="%info.action.git.setting.private_token.gitlab.step3" minHeight="24"/>-->
+                <!--                    <Label text="%info.action.git.setting.private_token.gitlab.step4" minHeight="24"/>-->
+                <!--                    <Label text="%info.action.git.setting.private_token.gitlab.step5" minHeight="24"/>-->
+                <!--                </VBox>-->
+                <!--            </TitledPane>-->
+            </panes>
+        </Accordion>
+    </GridPane>
+    <MaskerPane fx:id="masker" visible="false" text="%info.wait.later"/>
+</StackPane>

@@ -8,5 +8,7 @@ import pers.dog.api.dto.GitSetting;
 public interface GitService {
     void save(GitSetting setting);
 
-    void test(GitSetting setting);
+    boolean test(GitSetting setting);
+
+    GitSetting getGitSetting();
 }
