@@ -13,7 +13,6 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import org.apache.commons.lang3.BooleanUtils;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
@@ -34,7 +33,7 @@ public class GitSettingAction extends Action {
     private static final String VIEW = "git/git-setting";
     private final GitService gitService;
 
-    private GitSettingAction(GitService gitService) {
+    public GitSettingAction(GitService gitService) {
         super(I18nMessageSource.getResource("info.action.git.setting"));
         this.gitService = gitService;
         super.setEventHandler(this::onAction);
