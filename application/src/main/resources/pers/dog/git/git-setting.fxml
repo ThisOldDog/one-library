@@ -15,26 +15,28 @@
         </padding>
         <columnConstraints>
             <ColumnConstraints maxWidth="120" prefWidth="120"/>
-            <ColumnConstraints maxWidth="720" prefWidth="560"/>
+            <ColumnConstraints maxWidth="360" prefWidth="280"/>
+            <ColumnConstraints maxWidth="360" prefWidth="280"/>
         </columnConstraints>
         <rowConstraints>
             <RowConstraints minHeight="0.0" prefHeight="30.0"/>
         </rowConstraints>
 
         <Label text="%info.action.git.setting.repository_type" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <ComboBox fx:id="gitRepositoryType" maxWidth="240" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <ComboBox fx:id="gitRepositoryType" maxWidth="240" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
 
         <Label text="%info.action.git.setting.repository" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <TextField fx:id="gitRepository" prefWidth="720" disable="true" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <TextField fx:id="gitRepository" prefWidth="720" disable="true" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
 
         <Label text="%info.action.git.setting.repository_name" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <TextField fx:id="repositoryName" maxWidth="240" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <TextField fx:id="repositoryName" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <HBox fx:id="testResultBox" alignment="CENTER_LEFT" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
 
         <Label text="%info.action.git.setting.username" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <TextField fx:id="username" maxWidth="240" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        <TextField fx:id="username" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
         <Label text="%info.action.git.setting.private_token" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-        <PasswordField fx:id="privateToken" maxWidth="360" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+        <PasswordField fx:id="privateToken" maxWidth="420" GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
 
         <Accordion GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.columnSpan="2" expandedPane="$gitlabPane">
             <panes>

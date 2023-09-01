@@ -6,16 +6,21 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 
 /**
  * @author 废柴 2023/8/31 11:11
  */
 public class AlertUtils {
-    private AlertUtils(){
+    private static final Logger logger = LoggerFactory.getLogger(AlertUtils.class);
+
+    private AlertUtils() {
     }
 
     public static void showException(String title, String headerText, String contentText, String labelText, Throwable e) {
+        logger.error("[Alert Error] " + e.getMessage(), e);
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(I18nMessageSource.getResource(title));
         alert.setHeaderText(I18nMessageSource.getResource(headerText));
@@ -31,6 +36,15 @@ public class AlertUtils {
         content.add(label, 0, 0);
         content.add(textArea, 0, 1);
         alert.getDialogPane().setExpandableContent(content);
+        alert.showAndWait();
+    }
+
+    public static void showWarning(String title, String headerText, String contentText) {
+        logger.warn("[Alert Warning] {}", title);
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(I18nMessageSource.getResource(title));
+        alert.setHeaderText(I18nMessageSource.getResource(headerText));
+        alert.setContentText(I18nMessageSource.getResource(contentText));
         alert.showAndWait();
     }
 }
