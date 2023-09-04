@@ -1,5 +1,7 @@
 package pers.dog.app.service;
 
+import java.util.function.Consumer;
+
 import pers.dog.api.dto.GitSetting;
 import pers.dog.app.service.impl.GitServiceImpl;
 
@@ -14,4 +16,6 @@ public interface GitService {
     GitServiceImpl.GitRepositoryResult create(GitSetting setting);
 
     GitSetting getGitSetting();
+
+    void push(Consumer<GitServiceImpl.GitPushStep> pushStepListener);
 }

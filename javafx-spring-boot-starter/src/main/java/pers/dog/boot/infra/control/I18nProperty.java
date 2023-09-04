@@ -1,4 +1,4 @@
-package pers.dog.boot.infra.dialog;
+package pers.dog.boot.infra.control;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

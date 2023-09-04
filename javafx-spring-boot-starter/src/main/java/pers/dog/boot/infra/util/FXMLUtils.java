@@ -200,7 +200,7 @@ public class FXMLUtils {
             alert.setTitle("An error occurred when the scene load!");
             alert.setContentText(ExceptionUtils.getMessage(e));
             alert.showAndWait();
-            return null;
+            throw new IllegalStateException("FXML Load failed.", e);
         }
     }
 

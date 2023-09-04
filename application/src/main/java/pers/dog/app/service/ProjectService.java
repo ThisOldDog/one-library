@@ -1,5 +1,6 @@
 package pers.dog.app.service;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import javafx.scene.control.TreeItem;
@@ -39,4 +40,10 @@ public interface ProjectService {
     TreeItem<Project> currentDirectory();
 
     TreeItem<Project> currentProject();
+
+    List<Project> dirtyProject();
+
+    void saveAll();
+
+    Path documentDir();
 }

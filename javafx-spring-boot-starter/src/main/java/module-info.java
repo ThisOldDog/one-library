@@ -29,7 +29,7 @@ module javafx.spring.boot.starter {
     exports pers.dog.boot.component.file;
     exports pers.dog.boot.context;
     exports pers.dog.boot.context.property;
-    exports pers.dog.boot.infra.dialog;
+    exports pers.dog.boot.infra.control;
     exports pers.dog.boot.infra.constant;
     exports pers.dog.boot.infra.i18n;
     exports pers.dog.boot.infra.util;
@@ -48,6 +48,6 @@ module javafx.spring.boot.starter {
     opens pers.dog.boot.infra.constant;
     opens pers.dog.boot.infra.i18n;
     opens pers.dog.boot.infra.util;
-    opens pers.dog.boot.infra.dialog;
+    opens pers.dog.boot.infra.control;
     opens pers.dog.boot.infra.dto;
 }

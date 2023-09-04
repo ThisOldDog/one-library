@@ -70,6 +70,7 @@ public abstract class JavaFXSpringBootApplication extends Application {
     public static void run(Class<? extends JavaFXSpringBootApplication> applicationClass, String... args) {
         ApplicationContextHolder.setApplicationClass(applicationClass);
         ApplicationContextHolder.setArgs(args);
+        Platform.setImplicitExit(false);
         launch(applicationClass, args);
     }
 

@@ -40,8 +40,16 @@ public class AlertUtils {
     }
 
     public static void showWarning(String title, String headerText, String contentText) {
-        logger.warn("[Alert Warning] {}", title);
-        Alert alert = new Alert(Alert.AlertType.WARNING);
+        showAlert(Alert.AlertType.WARNING, title, headerText, contentText);
+    }
+
+    public static void showError(String title, String headerText, String contentText) {
+        showAlert(Alert.AlertType.ERROR, title, headerText, contentText);
+    }
+
+    private static void showAlert(Alert.AlertType alertType, String title, String headerText, String contentText) {
+        logger.warn("[Alert {}] {}", alertType, title);
+        Alert alert = new Alert(alertType);
         alert.setTitle(I18nMessageSource.getResource(title));
         alert.setHeaderText(I18nMessageSource.getResource(headerText));
         alert.setContentText(I18nMessageSource.getResource(contentText));

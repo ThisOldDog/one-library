@@ -83,6 +83,7 @@ module pers.dog {
     requires org.antlr.antlr4.runtime;
     requires org.eclipse.jgit;
     requires org.kohsuke.github.api;
+    requires freemarker;
 
     // resource
     opens pers.dog;

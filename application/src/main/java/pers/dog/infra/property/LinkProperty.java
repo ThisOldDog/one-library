@@ -1,6 +1,6 @@
 package pers.dog.infra.property;
 
-import pers.dog.boot.infra.dialog.I18nProperty;
+import pers.dog.boot.infra.control.I18nProperty;
 
 @I18nProperty(name = "info.editor.toolbar.link")
 public class LinkProperty {

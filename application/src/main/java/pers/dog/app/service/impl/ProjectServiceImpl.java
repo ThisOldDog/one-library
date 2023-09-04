@@ -382,6 +382,30 @@ public class ProjectServiceImpl implements ProjectService {
         return selectedItem;
     }
 
+    @Override
+    public List<Project> dirtyProject() {
+        return projectEditorWorkspace.getTabs()
+                .stream()
+                .map(tab -> (ProjectEditorController)tab.getUserData())
+                .filter(ProjectEditorController::getDirty)
+                .map(ProjectEditorController::getProject)
+                .toList();
+    }
+
+    @Override
+    public void saveAll() {
+        projectEditorWorkspace.getTabs()
+                .stream()
+                .map(tab -> (ProjectEditorController)tab.getUserData())
+                .filter(ProjectEditorController::getDirty)
+                .forEach(ProjectEditorController::save);
+    }
+
+    @Override
+    public Path documentDir() {
+        return fileOperationHandler.directory();
+    }
+
     public Project currentProjectValue() {
         TreeItem<Project> selectedItem = projectTree.getSelectionModel().getSelectedItem();
         if (selectedItem == null || selectedItem.getValue() == null) {

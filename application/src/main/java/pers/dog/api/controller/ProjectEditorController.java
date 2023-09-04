@@ -68,7 +68,7 @@ import pers.dog.boot.component.file.FileOperationException;
 import pers.dog.boot.component.file.FileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
 import pers.dog.boot.context.ApplicationContextHolder;
-import pers.dog.boot.infra.dialog.PropertySheetDialog;
+import pers.dog.boot.infra.control.PropertySheetDialog;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.PlatformUtils;
 import pers.dog.domain.entity.Project;
@@ -161,7 +161,7 @@ public class ProjectEditorController implements Initializable {
     private final MarkdownExtension markdownExtension;
     private final ObjectProperty<Boolean> dirty = new SimpleObjectProperty<>(false);
     private final AtomicBoolean loaded = new AtomicBoolean(false);
-    private final Consumer<List<Class<? extends Extension>>> ENABLED_EXTENSION_CHANGED = enabledExtension -> {
+    private final Consumer<List<Class<? extends Extension>>> enabledExtensionChanged = enabledExtension -> {
         DataHolder markdownParserOptions = PegdownOptionsAdapter.flexmarkOptions(PegdownExtensions.ALL, getOptions(enabledExtension));
         this.parser = Parser.builder(markdownParserOptions).build();
         this.renderer = HtmlRenderer.builder(markdownParserOptions).build();
@@ -210,8 +210,8 @@ public class ProjectEditorController implements Initializable {
         this.stageStatusStore = stageStatusStore;
         this.settingService = settingService;
         this.markdownExtension = markdownExtension;
-        markdownExtension.onExtensionChanged(ENABLED_EXTENSION_CHANGED);
-        ENABLED_EXTENSION_CHANGED.accept(markdownExtension.enabledExtension());
+        markdownExtension.onExtensionChanged(enabledExtensionChanged);
+        enabledExtensionChanged.accept(markdownExtension.enabledExtension());
         loadSetting();
     }
 
@@ -687,6 +687,6 @@ public class ProjectEditorController implements Initializable {
     }
 
     public void close() {
-        markdownExtension.removeOnExtensionChanged(ENABLED_EXTENSION_CHANGED);
+        markdownExtension.removeOnExtensionChanged(enabledExtensionChanged);
     }
 }
