@@ -11,6 +11,7 @@
 <?import pers.dog.infra.control.*?>
 <?import pers.dog.infra.action.git.GitSettingAction?>
 <?import pers.dog.infra.action.git.GitPushAction?>
+<?import pers.dog.infra.action.git.GitPullAction?>
 <ActionMenuBar xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
                maxWidth="Infinity">
     <ActionGroup text="%info.action.file">
@@ -181,6 +182,7 @@
         <HtmlToMarkdownAction text="%info.project.html-to-markdown.sava-to-file" saveToProject="true"/>
     </ActionGroup>
     <ActionGroup text="%info.action.git">
+        <GitPullAction />
         <GitPushAction />
         <ActionSeparator fx:factory="getInstance"/>
         <GitSettingAction />

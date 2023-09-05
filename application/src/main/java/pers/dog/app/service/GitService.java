@@ -17,5 +17,7 @@ public interface GitService {
 
     GitSetting getGitSetting();
 
-    void push(Consumer<GitServiceImpl.GitPushStep> pushStepListener);
+    void pull(Consumer<GitServiceImpl.GitStep> pullStepListener);
+
+    void push(Consumer<GitServiceImpl.GitStep> pushStepListener);
 }

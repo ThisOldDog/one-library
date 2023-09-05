@@ -21,12 +21,12 @@ import pers.dog.boot.infra.i18n.I18nMessageSource;
  * @author 废柴 2022/6/2 22:40
  */
 @Component
-public class GitPushAction extends Action {
+public class GitPullAction extends Action {
     private final GitService gitService;
     private final ProjectService projectService;
 
-    public GitPushAction(GitService gitService, ProjectService projectService) {
-        super(I18nMessageSource.getResource("info.action.git.push"));
+    public GitPullAction(GitService gitService, ProjectService projectService) {
+        super(I18nMessageSource.getResource("info.action.git.pull"));
         this.gitService = gitService;
         this.projectService = projectService;
         super.setEventHandler(this::onAction);
@@ -41,18 +41,16 @@ public class GitPushAction extends Action {
                 Platform.runLater(progressDialog::close);
             }
         });
-        Consumer<GitServiceImpl.GitStep> gitPushStepListener = gitPushStep -> {
-            switch (gitPushStep) {
+        Consumer<GitServiceImpl.GitStep> gitPushStepListener = gitPullStep -> {
+            switch (gitPullStep) {
                 case CHECK ->
                         Platform.runLater(() -> progressDialog.setText(I18nMessageSource.getResource("confirmation.git.check")));
                 case OPEN ->
                         Platform.runLater(() -> progressDialog.setText(I18nMessageSource.getResource("confirmation.git.open")));
                 case PULL ->
                         Platform.runLater(() -> progressDialog.setText(I18nMessageSource.getResource("confirmation.git.pull")));
-                case COPY_TO_REPOSITORY ->
-                        Platform.runLater(() -> progressDialog.setText(I18nMessageSource.getResource("confirmation.git.copy_to_repository")));
                 default ->
-                        Platform.runLater(() -> progressDialog.setText(I18nMessageSource.getResource("confirmation.git.push")));
+                        Platform.runLater(() -> progressDialog.setText(I18nMessageSource.getResource("confirmation.git.copy_to_local")));
             }
             progressDialog.getDialogPane().autosize();
         };
@@ -65,18 +63,15 @@ public class GitPushAction extends Action {
                     confirmation.setHeaderText(I18nMessageSource.getResource("confirmation.git.project.dirty"));
                     confirmation.setContentText(I18nMessageSource.getResource("confirmation.git.project.dirty.prompt"));
                     confirmation.getButtonTypes().clear();
-                    ButtonType saveButtonType = new ButtonType(I18nMessageSource.getResource("info.action.git.push.save_and_push"));
-                    ButtonType skipButtonType = new ButtonType(I18nMessageSource.getResource("info.action.git.push.skip_and_push"));
-                    confirmation.getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL, skipButtonType);
+                    ButtonType saveButtonType = new ButtonType(I18nMessageSource.getResource("info.action.git.pull.save_and_push"));
+                    confirmation.getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
                     confirmation.showAndWait().ifPresent(buttonType ->
                             new Thread(() -> {
                                 try {
                                     if (saveButtonType.equals(buttonType)) {
                                         Platform.runLater(() -> progressDialog.setText(I18nMessageSource.getResource("confirmation.git.project.dirty.save")));
                                         projectService.saveAll();
-                                    }
-                                    if (saveButtonType.equals(buttonType) || skipButtonType.equals(buttonType)) {
-                                        gitService.push(gitPushStepListener);
+                                        gitService.pull(gitPushStepListener);
                                     }
                                 } finally {
                                     showing.set(false);
@@ -85,7 +80,7 @@ public class GitPushAction extends Action {
                 });
             } else {
                 try {
-                    gitService.push(gitPushStepListener);
+                    gitService.pull(gitPushStepListener);
                 } finally {
                     showing.set(false);
                 }

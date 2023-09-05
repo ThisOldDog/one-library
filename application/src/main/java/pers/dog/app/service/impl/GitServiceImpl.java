@@ -49,11 +49,12 @@ import pers.dog.infra.util.FreeMarkerUtils;
 public class GitServiceImpl implements GitService {
     private static final Logger logger = LoggerFactory.getLogger(GitServiceImpl.class);
 
-    public enum GitPushStep {
+    public enum GitStep {
         CHECK,
         OPEN,
         PULL,
-        COPY,
+        COPY_TO_REPOSITORY,
+        COPY_TO_LOCAL,
         PUSH
     }
 
@@ -68,7 +69,9 @@ public class GitServiceImpl implements GitService {
 
         GitRepositoryResult create(GitSetting setting);
 
-        void push(GitSetting setting, Consumer<GitPushStep> pushStepListener);
+        void pull(GitSetting setting, Consumer<GitStep> pullStepListener);
+
+        void push(GitSetting setting, Consumer<GitStep> pushStepListener);
     }
 
     @Component
@@ -146,26 +149,47 @@ public class GitServiceImpl implements GitService {
         }
 
         @Override
-        public void push(GitSetting setting, Consumer<GitPushStep> pushStepListener) {
-            pushStepListener.accept(GitPushStep.CHECK);
+        public void pull(GitSetting setting, Consumer<GitStep> pullStepListener) {
+            pullStepListener.accept(GitStep.CHECK);
             Path dir = check(setting);
             if (dir == null) {
                 return;
             }
-            pushStepListener.accept(GitPushStep.OPEN);
+            pullStepListener.accept(GitStep.OPEN);
             try (Git git = open(dir, setting)) {
                 if (git == null) {
                     return;
                 }
-                pushStepListener.accept(GitPushStep.PULL);
+                pullStepListener.accept(GitStep.PULL);
                 if (!pull(git)) {
                     return;
                 }
-                pushStepListener.accept(GitPushStep.COPY);
-                if (!copy(git)) {
+                pullStepListener.accept(GitStep.COPY_TO_LOCAL);
+                copyToLocal(git);
+            }
+        }
+
+        @Override
+        public void push(GitSetting setting, Consumer<GitStep> pushStepListener) {
+            pushStepListener.accept(GitStep.CHECK);
+            Path dir = check(setting);
+            if (dir == null) {
+                return;
+            }
+            pushStepListener.accept(GitStep.OPEN);
+            try (Git git = open(dir, setting)) {
+                if (git == null) {
                     return;
                 }
-                pushStepListener.accept(GitPushStep.PUSH);
+                pushStepListener.accept(GitStep.PULL);
+                if (!pull(git)) {
+                    return;
+                }
+                pushStepListener.accept(GitStep.COPY_TO_REPOSITORY);
+                if (!copyToRepository(git)) {
+                    return;
+                }
+                pushStepListener.accept(GitStep.PUSH);
                 push(git);
             }
         }
@@ -273,10 +297,10 @@ public class GitServiceImpl implements GitService {
             return false;
         }
 
-        private boolean copy(Git git) {
+        private boolean copyToRepository(Git git) {
             try {
                 Path repository = git.getRepository().getDirectory().toPath().getParent();
-                FileUtils.replace(projectService.documentDir(), repository.resolve("document"));
+                FileUtils.replace(projectService.documentDir(), repository.resolve("document"), FileUtils.FileReplaceOption.DELETE_IF_NOT_EXISTS);
 
                 String template = StreamUtils.copyToString(ApplicationContextHolder.getResourceLoader().getResource("static/README.ftl").getInputStream(), StandardCharsets.UTF_8);
                 String readme = FreeMarkerUtils.templateProcess(template, buildParam());
@@ -290,6 +314,19 @@ public class GitServiceImpl implements GitService {
                         "error.action.git.push.copy.exception_stacktrace",
                         e));
                 return false;
+            }
+        }
+
+        private void copyToLocal(Git git) {
+            try {
+                Path repository = git.getRepository().getDirectory().toPath().getParent();
+                FileUtils.replace(repository.resolve("document"), projectService.documentDir());
+            } catch (IOException e) {
+                Platform.runLater(() -> AlertUtils.showException("error.action.git.push.copy.title",
+                        "error.action.git.push.copy.header_text",
+                        "error.action.git.push.copy.content_text",
+                        "error.action.git.push.copy.exception_stacktrace",
+                        e));
             }
         }
 
@@ -313,7 +350,7 @@ public class GitServiceImpl implements GitService {
             List<String> singleProjectList = new ArrayList<>();
             paramMap.put("projectList", projectList);
             paramMap.put("singleProjectList", singleProjectList);
-            for (TreeItem<Project> child : projectService.ROOT.getChildren()) {
+            for (TreeItem<Project> child : ProjectService.ROOT.getChildren()) {
                 if (ProjectType.DIRECTORY.equals(child.getValue().getProjectType())) {
                     projectList.add(buildProjectParam(child));
                 } else {
@@ -380,7 +417,12 @@ public class GitServiceImpl implements GitService {
     }
 
     @Override
-    public void push(Consumer<GitPushStep> pushStepListener) {
+    public void pull(Consumer<GitStep> pullStepListener) {
+        GitRepositoryFactory.getService(getGitSetting().getGitRepositoryType()).pull(getGitSetting(), pullStepListener);
+    }
+
+    @Override
+    public void push(Consumer<GitStep> pushStepListener) {
         GitRepositoryFactory.getService(getGitSetting().getGitRepositoryType()).push(getGitSetting(), pushStepListener);
     }
 }

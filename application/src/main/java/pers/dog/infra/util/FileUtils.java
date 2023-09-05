@@ -3,11 +3,16 @@ package pers.dog.infra.util;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Set;
 
 /**
  * @author 废柴 2023/9/4 14:10
  */
 public class FileUtils {
+    public enum FileReplaceOption {
+        DELETE_IF_NOT_EXISTS
+    }
+
     private FileUtils() {
     }
 
@@ -27,7 +32,7 @@ public class FileUtils {
         });
     }
 
-    public static void replace(Path source, Path target) throws IOException {
+    public static void replace(Path source, Path target, FileReplaceOption... fileReplaceOptions) throws IOException {
         if (!Files.exists(source)) {
             return;
         }
@@ -54,25 +59,26 @@ public class FileUtils {
                 return super.preVisitDirectory(dir, attrs);
             }
         });
-
-        Files.walkFileTree(target, new SimpleFileVisitor<>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                Path sourceFile = source.resolve(target.relativize(file));
-                if (!Files.exists(sourceFile)) {
-                    Files.delete(file);
+        if (fileReplaceOptions != null && Set.of(fileReplaceOptions).contains(FileReplaceOption.DELETE_IF_NOT_EXISTS)) {
+            Files.walkFileTree(target, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Path sourceFile = source.resolve(target.relativize(file));
+                    if (!Files.exists(sourceFile)) {
+                        Files.delete(file);
+                    }
+                    return super.visitFile(file, attrs);
                 }
-                return super.visitFile(file, attrs);
-            }
 
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                Path sourceDir = source.resolve(target.relativize(dir));
-                if (!Files.exists(sourceDir)) {
-                    deleteDirectory(dir);
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    Path sourceDir = source.resolve(target.relativize(dir));
+                    if (!Files.exists(sourceDir)) {
+                        deleteDirectory(dir);
+                    }
+                    return super.preVisitDirectory(dir, attrs);
                 }
-                return super.preVisitDirectory(dir, attrs);
-            }
-        });
+            });
+        }
     }
 }
