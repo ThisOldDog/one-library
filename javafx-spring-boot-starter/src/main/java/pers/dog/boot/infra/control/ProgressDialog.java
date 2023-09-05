@@ -24,6 +24,7 @@ public class ProgressDialog<T> extends Dialog<T> {
         Parent parent = FXMLUtils.loadFXML(VIEW, JavaFXSpringBootApplication.class);
         ProgressDialogController controller = FXMLUtils.getController(parent);
         initStyle(StageStyle.UNDECORATED);
+        setResizable(true);
 
         DialogPane dialogPane = getDialogPane();
         dialogPane.setContent(parent);

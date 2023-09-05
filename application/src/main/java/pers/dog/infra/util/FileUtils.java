@@ -68,7 +68,7 @@ public class FileUtils {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                 Path sourceDir = source.resolve(target.relativize(dir));
-                if (Files.exists(sourceDir)) {
+                if (!Files.exists(sourceDir)) {
                     deleteDirectory(dir);
                 }
                 return super.preVisitDirectory(dir, attrs);

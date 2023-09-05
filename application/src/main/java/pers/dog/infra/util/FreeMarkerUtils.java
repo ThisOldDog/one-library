@@ -21,7 +21,9 @@ public class FreeMarkerUtils {
     }
 
     public static String templateProcess(String templateContent, Map<String, Object> parameterMap) {
-        return templateProcess(new StringTemplateLoader(), SINGLE_TEMPLATE, parameterMap);
+        StringTemplateLoader stringTemplateLoader = new StringTemplateLoader();
+        stringTemplateLoader.putTemplate(SINGLE_TEMPLATE, templateContent);
+        return templateProcess(stringTemplateLoader, SINGLE_TEMPLATE, parameterMap);
     }
 
     public static String templateProcess(Path templateDir, String templateName, Map<String, Object> parameterMap) throws IOException {

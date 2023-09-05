@@ -337,13 +337,13 @@ public class GitServiceImpl implements GitService {
             }
             String prefix = " ".repeat(level << 1);
             for (TreeItem<Project> child : project.getChildren()) {
-                String path = parentPath + child.getValue().getProjectName() + "/";
+                String path = parentPath + child.getValue().getProjectName();
                 if (ProjectType.DIRECTORY.equals(child.getValue().getProjectType())) {
                     buildDirectoryTree.append(prefix).append("- ").append(child.getValue().getSimpleProjectName()).append("\n");
+                    buildDirectoryParam(level + 1, buildDirectoryTree, child, path + "/");
                 } else {
                     buildDirectoryTree.append(prefix).append("- ").append(String.format("[%s](%s)", child.getValue().getSimpleProjectName(), path)).append("\n");
                 }
-                buildDirectoryParam(level + 1, buildDirectoryTree, child, path);
             }
         }
 
