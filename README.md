@@ -10,7 +10,7 @@
     ```shell
     mvn clean install
     ```
-2. 打开`exe4j`加载[`One Library.exe4j`](./One%2FLibrary.exe4j)打包成可执行文件`application/target/One Library.exe`
-3. 打开`Inno Setup`加载[`One Library.iss`](./One%2FLibrary.iss)打包成可执行的安装包文件`application/target/One Library Setup.exe`
+2. 打开`exe4j`加载[`One Library.exe4j`](./One%20Library.exe4j)打包成可执行文件`application/target/One Library.exe`
+3. 打开`Inno Setup`加载[`One Library.iss`](./One%20Library.iss)打包成可执行的安装包文件`application/target/One Library Setup.exe`
 
 
