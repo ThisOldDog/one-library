@@ -1,6 +1,17 @@
 # One Library
 
-一款基于 JavaFX、Spring Boot 的编辑器。
+> 一款基于 JavaFX、Spring Boot 的编辑器。
+
+## 特色
+
+- 支持拖拽文档排序
+- 支持从网页生成`Markdown`文档
+
+## 支持的文档类型
+
+|    文档类型    |  读  |  写  |
+|:----------:|:---:|:---:|
+| `Markdown` | `√` | `√` |
 
 ## 打包`exe`可执行文件
 
