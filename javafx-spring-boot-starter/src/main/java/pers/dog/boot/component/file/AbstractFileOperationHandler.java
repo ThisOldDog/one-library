@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StreamUtils;
+import pers.dog.boot.infra.util.FileUtils;
 import pers.dog.boot.infra.util.ValueConverterUtils;
 
 /**
@@ -204,7 +205,8 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
         Path source = targetFile(name, sourcePath);
         Path target = targetFile(name, targetPath);
         try {
-            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+            FileUtils.replace(source, target);
+            FileUtils.delete(source);
         } catch (IOException e) {
             String exceptionMessage = String.format("[File Operation] Unable to move file from %s to %s", source, target);
             logger.error(exceptionMessage, e);

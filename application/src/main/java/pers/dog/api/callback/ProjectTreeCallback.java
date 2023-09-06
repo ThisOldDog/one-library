@@ -16,6 +16,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.controlsfx.control.action.ActionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import pers.dog.api.controller.OneLibraryController;
 import pers.dog.api.controller.ProjectItemController;
@@ -41,18 +42,18 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
     private static final Logger logger = LoggerFactory.getLogger(ProjectTreeCallback.class);
     private static final String PROJECT_ITEM_FXML = "project-item";
     private static final String PROJECT_ITEM_EDITING_FXML = "project-item-editing";
-    private static final String CELL_DRAG_OVER_STYLE_CLASS_FILE = "project-tree-drag-over-file";
-    private static final String CELL_DRAG_OVER_STYLE_CLASS_DIR = "project-tree-drag-over-dir";
+    private static final String CELL_DRAG_OVER_STYLE_CLASS_TOP = "project-tree-drag-over-top";
+    private static final String CELL_DRAG_OVER_STYLE_CLASS_ENCLOSE = "project-tree-drag-over-enclose";
+    private static final String CELL_DRAG_OVER_STYLE_CLASS_BOTTOM = "project-tree-drag-over-bottom";
     private final ContextMenu blankContextMenu;
-    private final ContextMenu projectDirectoryContextMenu;
     private final ContextMenu projectContextMenu;
 
     @SuppressWarnings("unused")
     @FXMLControl(controller = OneLibraryController.class)
     private TabPane projectEditorWorkspace;
     private final ProjectService projectService;
-    private static final AtomicReference<TreeCell<Project>> dragged = new AtomicReference<>();
-    private static final AtomicReference<TreeCell<Project>> previousOver = new AtomicReference<>();
+    private static final AtomicReference<TreeItem<Project>> dragged = new AtomicReference<>();
+    private static final AtomicReference<Pair<TreeCell<Project>, String>> previousOver = new AtomicReference<>();
 
     public ProjectTreeCallback(ProjectService projectService,
                                // Action
@@ -71,21 +72,13 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                 createDirectoryAction,
                 markdownActionGroup
         ));
-        projectDirectoryContextMenu = ActionUtils.createContextMenu(Arrays.asList(
+        projectContextMenu = ActionUtils.createContextMenu(Arrays.asList(
                 createMarkdownAction,
                 createDirectoryAction,
                 ActionUtils.ACTION_SEPARATOR,
                 openRenameProjectAction,
                 ActionUtils.ACTION_SEPARATOR,
                 markdownActionGroup,
-                ActionUtils.ACTION_SEPARATOR,
-                deleteProjectAction
-        ));
-        projectContextMenu = ActionUtils.createContextMenu(Arrays.asList(
-                createMarkdownAction,
-                createDirectoryAction,
-                ActionUtils.ACTION_SEPARATOR,
-                openRenameProjectAction,
                 ActionUtils.ACTION_SEPARATOR,
                 deleteProjectAction
         ));
@@ -131,26 +124,19 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
 
 
             private void handleEmpty() {
-                setText(null);
                 setContextMenu(blankContextMenu);
                 setGraphic(null);
-                setOnContextMenuRequested(event -> {
-                    projectTree.getSelectionModel().clearSelection();
-                });
+                setOnContextMenuRequested(event -> projectTree.getSelectionModel().clearSelection());
             }
 
             private void handleProject(Project item) {
                 Parent parent = FXMLUtils.loadFXML(PROJECT_ITEM_FXML);
                 ProjectItemController controller = FXMLUtils.getController(parent);
                 controller.showProject(item);
-                if (ProjectType.DIRECTORY.equals(item.getProjectType())) {
-                    setContextMenu(projectDirectoryContextMenu);
-                } else {
-                    setContextMenu(projectContextMenu);
-                }
-                setGraphic(parent);
+                setContextMenu(projectContextMenu);
                 setOnContextMenuRequested(event -> {
                 });
+                setGraphic(parent);
                 setOnMouseClicked(event -> {
                     if (ProjectType.FILE.equals(item.getProjectType()) &&
                             MouseButton.PRIMARY.equals(event.getButton()) && event.getClickCount() == 2) {
@@ -160,7 +146,7 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
 
                 setOnDragDetected(event -> {
                     Dragboard dragboard = this.startDragAndDrop(TransferMode.MOVE);
-                    dragged.set(this);
+                    dragged.set(getTreeItem());
                     Pane pane = (Pane) getGraphic();
                     WritableImage writableImage = new WritableImage((int) pane.getWidth(), (int) pane.getHeight());
                     parent.snapshot(new SnapshotParameters(), writableImage);
@@ -171,51 +157,71 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                 setOnDragOver(event -> {
                     event.acceptTransferModes(TransferMode.MOVE);
                     if (previousOver.get() != null) {
-                        previousOver.get().getStyleClass().removeAll(CELL_DRAG_OVER_STYLE_CLASS_FILE, CELL_DRAG_OVER_STYLE_CLASS_DIR);
+                        previousOver.get().getFirst().getStyleClass().removeAll(CELL_DRAG_OVER_STYLE_CLASS_TOP, CELL_DRAG_OVER_STYLE_CLASS_ENCLOSE, CELL_DRAG_OVER_STYLE_CLASS_BOTTOM);
                     }
-                    previousOver.set(this);
-                    if (ProjectType.DIRECTORY.equals(getItem().getProjectType())) {
-                        getStyleClass().add(CELL_DRAG_OVER_STYLE_CLASS_DIR);
-                    } else {
-                        getStyleClass().add(CELL_DRAG_OVER_STYLE_CLASS_FILE);
+                    Project value = getItem();
+                    if (value != null) {
+                        String cellStyle;
+                        if (ProjectType.DIRECTORY.equals(value.getProjectType())) {
+                            cellStyle = getCellStyle(getHeight(), event.getY(), CELL_DRAG_OVER_STYLE_CLASS_TOP, CELL_DRAG_OVER_STYLE_CLASS_ENCLOSE, CELL_DRAG_OVER_STYLE_CLASS_BOTTOM);
+                        } else {
+                            cellStyle = getCellStyle(getHeight(), event.getY(), CELL_DRAG_OVER_STYLE_CLASS_TOP, CELL_DRAG_OVER_STYLE_CLASS_BOTTOM);
+                        }
+                        getStyleClass().add(cellStyle);
+                        previousOver.set(Pair.of(this, cellStyle));
                     }
                 });
                 setOnDragDropped(event -> {
-                    TreeCell<Project> source = dragged.get();
-                    TreeCell<Project> target = previousOver.get();
+                    TreeItem<Project> source = dragged.get();
+                    TreeCell<Project> target = Optional.ofNullable(previousOver.get()).map(Pair::getFirst).orElse(null);
+                    String cellStyle = Optional.ofNullable(previousOver.get()).map(Pair::getSecond).orElse(null);
+
                     dragged.set(null);
-                    if (target != null) {
-                        target.getStyleClass().removeAll(CELL_DRAG_OVER_STYLE_CLASS_FILE, CELL_DRAG_OVER_STYLE_CLASS_DIR);
+                    if (target != null && cellStyle != null && source != null && target.getItem() != null) {
+                        target.getStyleClass().removeAll(CELL_DRAG_OVER_STYLE_CLASS_TOP, CELL_DRAG_OVER_STYLE_CLASS_ENCLOSE, CELL_DRAG_OVER_STYLE_CLASS_BOTTOM);
                         previousOver.set(null);
-                        if (source == target) {
+                        if (source == target.getTreeItem()) {
                             return;
                         }
                         // 先把 source 移除
-                        TreeItem<Project> sourceParent = source.getTreeItem().getParent();
+                        TreeItem<Project> sourceParent = source.getParent();
                         TreeItem<Project> targetParent;
                         int targetIndex;
-                        if (ProjectType.DIRECTORY.equals(target.getItem().getProjectType())) {
+                        if (CELL_DRAG_OVER_STYLE_CLASS_ENCLOSE.equals(cellStyle)) {
                             targetParent = target.getTreeItem();
                         } else {
                             targetParent = target.getTreeItem().getParent();
                         }
-                        if (!projectService.move(source.getTreeItem(), targetParent)) {
+                        if (!projectService.move(source, targetParent)) {
                             return;
                         }
-                        sourceParent.getChildren().remove(source.getTreeItem());
+                        sourceParent.getChildren().remove(source);
                         projectService.reordered(sourceParent.getChildren());
-                        targetIndex = Math.min(0, targetParent.getChildren().indexOf(target.getTreeItem()));
-                        if (targetIndex + 1 < targetParent.getChildren().size()) {
-                            targetParent.getChildren().add(targetIndex + 1, source.getTreeItem());
+                        targetIndex = Math.max(0, targetParent.getChildren().indexOf(target.getTreeItem()));
+                        targetIndex = CELL_DRAG_OVER_STYLE_CLASS_BOTTOM.equals(cellStyle) ? (targetIndex + 1) : targetIndex;
+                        if (targetIndex < targetParent.getChildren().size()) {
+                            targetParent.getChildren().add(targetIndex, source);
                         } else {
-                            targetParent.getChildren().add(source.getTreeItem());
+                            targetParent.getChildren().add(source);
                         }
                         targetParent.setExpanded(true);
                         sourceParent.setExpanded(true);
-                        source.getTreeItem().setExpanded(true);
+                        source.setExpanded(true);
                         projectService.reordered(targetParent.getChildren());
                     }
                 });
+                setOnDragExited(event -> {
+                    if (previousOver.get() != null) {
+                        previousOver.get().getFirst().getStyleClass().removeAll(CELL_DRAG_OVER_STYLE_CLASS_TOP, CELL_DRAG_OVER_STYLE_CLASS_ENCLOSE, CELL_DRAG_OVER_STYLE_CLASS_BOTTOM);
+                    }
+                    previousOver.set(null);
+                });
+            }
+
+            private String getCellStyle(double height, double y, String... cellStyles) {
+                double styleFragmentHeight = height / cellStyles.length;
+                int index = styleFragmentHeight == 0 ? 0 : (int) Math.floor(y / styleFragmentHeight);
+                return cellStyles[Math.max(Math.min(index, cellStyles.length - 1), 0)];
             }
 
             private void handleProjectEditing() {
@@ -242,6 +248,7 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                     }
                 });
                 setContextMenu(null);
+                setGraphic(null);
                 setGraphic(parent);
                 controller.getProjectNameEditor().requestFocus();
             }

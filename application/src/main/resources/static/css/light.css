@@ -11,8 +11,9 @@
     -rtfx-background-color: #00000033;
 }
 
-.project-tree-drag-over-file, .project-tree-drag-over-dir {
+.project-tree-drag-over-top, .project-tree-drag-over-bottom, .project-tree-drag-over-enclose {
     -fx-border-color: lightskyblue;
+    -fx-background-color: lightblue;
 }
 
 /* Markdown */

@@ -5,8 +5,6 @@
 <?import javafx.scene.layout.HBox?>
 <HBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      maxHeight="24" minHeight="24"
-      maxWidth="480" prefWidth="40"
       alignment="CENTER_LEFT"
       fx:controller="pers.dog.api.controller.ProjectItemController">
     <ImageView fx:id="projectIcon" fitWidth="16" fitHeight="16"/>

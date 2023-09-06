@@ -5,12 +5,7 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -35,12 +30,14 @@ import pers.dog.boot.component.control.FXMLControl;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
+import pers.dog.boot.infra.control.PropertySheetDialog;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.FXMLUtils;
 import pers.dog.domain.entity.Project;
 import pers.dog.domain.repository.ProjectRepository;
 import pers.dog.infra.constant.FileType;
 import pers.dog.infra.constant.ProjectType;
+import pers.dog.infra.property.NameProperty;
 
 /**
  * @author 废柴 2022/8/19 15:59
@@ -79,8 +76,20 @@ public class ProjectServiceImpl implements ProjectService {
     public TreeItem<Project> createFile(ProjectType projectType, FileType fileType, String fileName) {
         TreeItem<Project> parent = currentDirectory();
         Assert.isTrue(ProjectType.DIRECTORY.equals(projectType) || fileType != null, "[Project] When the project type is file, the type of the file cannot be null.");
+        NameProperty nameProperty = new NameProperty();
+        nameProperty.setName(fileName != null ? fileName : buildFileName(parent, projectType, fileType));
+        nameProperty = new PropertySheetDialog<>(nameProperty, ButtonType.OK)
+                .showAndWait()
+                .orElse(null);
+        if (nameProperty == null || ObjectUtils.isEmpty(nameProperty.getName())) {
+            alertNameEmpty();
+            return null;
+        }
+        if (fileType != null && !nameProperty.getName().endsWith(fileType.getSuffix())) {
+            nameProperty.setName(nameProperty.getName() + fileType.getSuffix());
+        }
         Project project = new Project()
-                .setProjectName(fileName != null ? fileName : buildFileName(parent, projectType, fileType))
+                .setProjectName(nameProperty.getName())
                 .setProjectType(projectType)
                 .setFileType(fileType)
                 .setParentProjectId(parent.getValue().getProjectId())
@@ -100,6 +109,9 @@ public class ProjectServiceImpl implements ProjectService {
         TreeItem<Project> treeItem = new TreeItem<>(project);
         parent.getChildren().add(treeItem);
         expandDirectory(parent);
+        projectTree.layout();
+        projectTree.getSelectionModel().clearSelection();
+        projectTree.getSelectionModel().select(treeItem);
         return treeItem;
     }
 
@@ -285,22 +297,28 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void deleteProject() {
-        TreeItem<Project> selected = projectTree.getSelectionModel().getSelectedItem();
-        Project selectedProject = selected != null && !ROOT.equals(selected) ? selected.getValue() : null;
-        if (selectedProject == null) {
+        List<TreeItem<Project>> selected = projectTree.getSelectionModel().getSelectedItems();
+        if (selected.isEmpty()) {
             return;
         }
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
         confirmation.setTitle(I18nMessageSource.getResource("confirmation"));
-        if (ProjectType.DIRECTORY.equals(selectedProject.getProjectType())) {
-            confirmation.setHeaderText(I18nMessageSource.getResource("confirmation.project.delete.project.confirmation.dir", selectedProject.getProjectName()));
+        if (selected.size() == 1) {
+            if (ProjectType.DIRECTORY.equals(selected.get(0).getValue().getProjectType())) {
+                confirmation.setHeaderText(I18nMessageSource.getResource("confirmation.project.delete.project.confirmation.dir", selected.get(0).getValue().getProjectName()));
+            } else {
+                confirmation.setHeaderText(I18nMessageSource.getResource("confirmation.project.delete.project.confirmation.file", selected.get(0).getValue().getProjectName()));
+            }
         } else {
-            confirmation.setHeaderText(I18nMessageSource.getResource("confirmation.project.delete.project.confirmation.file", selectedProject.getProjectName()));
+            confirmation.setHeaderText(I18nMessageSource.getResource("confirmation.project.delete.project.confirmation.multi"));
         }
         confirmation.setContentText(I18nMessageSource.getResource("confirmation.project.delete.project.confirmation.prompt"));
         confirmation.showAndWait().ifPresent(buttonType -> {
             if (ButtonType.OK.equals(buttonType)) {
-                delete(selected);
+                List<TreeItem<Project>> tmp = new ArrayList<>(selected);
+                for (TreeItem<Project> projectTreeItem : tmp) {
+                    delete(projectTreeItem);
+                }
             }
         });
     }
@@ -386,7 +404,7 @@ public class ProjectServiceImpl implements ProjectService {
     public List<Project> dirtyProject() {
         return projectEditorWorkspace.getTabs()
                 .stream()
-                .map(tab -> (ProjectEditorController)tab.getUserData())
+                .map(tab -> (ProjectEditorController) tab.getUserData())
                 .filter(ProjectEditorController::getDirty)
                 .map(ProjectEditorController::getProject)
                 .toList();
@@ -396,7 +414,7 @@ public class ProjectServiceImpl implements ProjectService {
     public void saveAll() {
         projectEditorWorkspace.getTabs()
                 .stream()
-                .map(tab -> (ProjectEditorController)tab.getUserData())
+                .map(tab -> (ProjectEditorController) tab.getUserData())
                 .filter(ProjectEditorController::getDirty)
                 .forEach(ProjectEditorController::save);
     }
@@ -465,9 +483,9 @@ public class ProjectServiceImpl implements ProjectService {
         while (projectName == null) {
             if (ProjectType.FILE.equals(projectType)) {
                 if (fileIndex == 0) {
-                    projectName = I18nMessageSource.getResource("info.project.default_file_name", fileType.getName(), fileType.getSuffix());
+                    projectName = I18nMessageSource.getResource("info.project.default_file_name", fileType.getName());
                 } else {
-                    projectName = I18nMessageSource.getResource("info.project.default_file_name_duplicate", fileType.getName(), fileIndex, fileType.getSuffix());
+                    projectName = I18nMessageSource.getResource("info.project.default_file_name_duplicate", fileType.getName(), fileIndex);
                 }
             } else {
                 if (fileIndex == 0) {
@@ -476,7 +494,7 @@ public class ProjectServiceImpl implements ProjectService {
                     projectName = I18nMessageSource.getResource("info.project.default_directory_name_duplicate", fileIndex);
                 }
             }
-            if (fileOperationHandler.exists(projectName, getRelativePath(parent))) {
+            if (fileOperationHandler.exists(fileType != null ? (projectName + fileType.getSuffix()) : projectName, getRelativePath(parent))) {
                 projectName = null;
             }
             fileIndex++;
@@ -503,6 +521,13 @@ public class ProjectServiceImpl implements ProjectService {
         if (!directory.isExpanded()) {
             directory.setExpanded(true);
         }
+    }
+
+    private void alertNameEmpty() {
+        Alert nameDuplicateAlert = new Alert(Alert.AlertType.ERROR);
+        nameDuplicateAlert.setHeaderText(I18nMessageSource.getResource("error"));
+        nameDuplicateAlert.setContentText(I18nMessageSource.getResource("error.project.name.empty"));
+        nameDuplicateAlert.show();
     }
 
     private static void alertNameDuplicate() {

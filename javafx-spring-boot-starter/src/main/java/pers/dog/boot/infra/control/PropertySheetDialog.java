@@ -47,11 +47,19 @@ public class PropertySheetDialog<T> extends Dialog<T> {
         this(value, 360D, 60D, 1200D, 1000D);
     }
 
+    public PropertySheetDialog(T value, ButtonType... buttonTypes) {
+        this(value, 360D, 60D, 1200D, 1000D, buttonTypes);
+    }
+
     public PropertySheetDialog(T value, double minWidth, double minHeight) {
         this(value, minWidth, minHeight, 1200D, 1000D);
     }
 
-    public PropertySheetDialog(T value, double minWidth, double minHeight, double maxWidth, double maxHeight) {
+    public PropertySheetDialog(T value, double minWidth, double minHeight, ButtonType... buttonTypes) {
+        this(value, minWidth, minHeight, 1200D, 1000D, buttonTypes);
+    }
+
+    public PropertySheetDialog(T value, double minWidth, double minHeight, double maxWidth, double maxHeight, ButtonType... buttonTypes) {
         this.value = value;
         DialogPane dialogPane = getDialogPane();
         PropertySheet propertySheet = buildFormPane(value);
@@ -74,7 +82,11 @@ public class PropertySheetDialog<T> extends Dialog<T> {
         dialogPane.requestLayout();
         dialogPane.autosize();
 
-        dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        if (buttonTypes != null && buttonTypes.length > 0) {
+            dialogPane.getButtonTypes().addAll(buttonTypes);
+        } else {
+            dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        }
         setResultConverter(buttonType ->
                 ButtonType.OK.equals(buttonType) ? this.value : null
         );

@@ -1,4 +1,4 @@
-package pers.dog.infra.util;
+package pers.dog.boot.infra.util;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -9,11 +9,20 @@ import java.util.Set;
  * @author 废柴 2023/9/4 14:10
  */
 public class FileUtils {
+
+
     public enum FileReplaceOption {
-        DELETE_IF_NOT_EXISTS
+        DELETE_IF_NOT_EXISTS;
+    }
+    private FileUtils() {
     }
 
-    private FileUtils() {
+    public static void delete(Path source) throws IOException {
+        if (Files.isDirectory(source)) {
+            deleteDirectory(source);
+        } else {
+            Files.deleteIfExists(source);
+        }
     }
 
     public static void deleteDirectory(Path dir) throws IOException {

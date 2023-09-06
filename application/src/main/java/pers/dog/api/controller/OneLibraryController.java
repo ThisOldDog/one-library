@@ -9,6 +9,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import org.controlsfx.control.textfield.CustomTextField;
+import pers.dog.api.callback.ProjectTreeCallback;
 import pers.dog.app.service.ProjectService;
 import pers.dog.domain.entity.Project;
 
@@ -30,9 +31,11 @@ public class OneLibraryController implements Initializable {
     private TreeView<Project> projectTree;
 
     private final ProjectService projectService;
+    private final ProjectTreeCallback projectTreeCallback;
 
-    public OneLibraryController(ProjectService projectService) {
+    public OneLibraryController(ProjectService projectService, ProjectTreeCallback projectTreeCallback) {
         this.projectService = projectService;
+        this.projectTreeCallback = projectTreeCallback;
     }
 
     @Override
@@ -42,6 +45,8 @@ public class OneLibraryController implements Initializable {
         projectTree.setRoot(projectTreeItem);
         projectTree.requestFocus();
         projectTree.setEditable(false);
+        projectTree.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        projectTree.setCellFactory(projectTreeCallback);
         projectEditorWorkspace.getSelectionModel().selectedItemProperty().addListener(observable -> {
             Tab selectedItem = projectEditorWorkspace.getSelectionModel().getSelectedItem();
             if (selectedItem != null) {

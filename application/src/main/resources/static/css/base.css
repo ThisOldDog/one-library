@@ -22,12 +22,17 @@
     -fx-font-family: Monospaced;
 }
 
-.project-tree-drag-over-file {
+.project-tree-drag-over-top {
+    -fx-border-width: 2 0 0 0;
+    -fx-border-style: SOLID;
+}
+
+.project-tree-drag-over-bottom {
     -fx-border-width: 0 0 2 0;
     -fx-border-style: SOLID;
 }
 
-.project-tree-drag-over-dir {
+.project-tree-drag-over-enclose {
     -fx-border-width: 2 2 2 2;
     -fx-border-style: SOLID;
 }

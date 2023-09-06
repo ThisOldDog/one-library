@@ -4,7 +4,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.textfield.CustomTextField?>
-<?import pers.dog.api.callback.ProjectTreeCallback?>
 <BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
             fx:id="oneLibraryWorkspace"
             fx:controller="pers.dog.api.controller.OneLibraryController">
@@ -31,11 +30,8 @@
                         </tooltip>
                     </Button>
                 </HBox>
-                <fx:define>
-                    <ProjectTreeCallback fx:id="projectTreeCallback"/>
-                </fx:define>
                 <TreeView fx:id="projectTree" focusTraversable="false" showRoot="false"
-                          VBox.vgrow="ALWAYS" cellFactory="$projectTreeCallback" editable="true">
+                          VBox.vgrow="ALWAYS" editable="true">
                     <VBox.margin>
                         <Insets top="4"/>
                     </VBox.margin>

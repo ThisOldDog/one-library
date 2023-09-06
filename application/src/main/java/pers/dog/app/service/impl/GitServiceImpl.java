@@ -39,7 +39,7 @@ import pers.dog.domain.entity.Project;
 import pers.dog.infra.constant.GitRepositoryType;
 import pers.dog.infra.constant.ProjectType;
 import pers.dog.infra.util.EncryptUtils;
-import pers.dog.infra.util.FileUtils;
+import pers.dog.boot.infra.util.FileUtils;
 import pers.dog.infra.util.FreeMarkerUtils;
 
 /**
