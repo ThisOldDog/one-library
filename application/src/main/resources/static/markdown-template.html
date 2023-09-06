@@ -22,8 +22,7 @@
                 }
             }
             let textarea = document.createElement('textarea')
-            textarea.innerHTML = child.innerHTML
-            console.log(textarea)
+            textarea.innerHTML = child.innerHTML.slice(0, -1)
             preElement.parentElement.replaceChild(textarea, preElement)
             let mime
             if (language) {
@@ -33,11 +32,12 @@
                     }
                 }
             }
-            CodeMirror.fromTextArea(textarea, {
+            let editor = CodeMirror.fromTextArea(textarea, {
                 mode: mime ? mime : "text/x-textile", //实现Java代码高亮
                 lineNumbers: true,
                 readOnly: true
             });
+            editor.setSize('auto', 'auto')
         }
     }
 </script>

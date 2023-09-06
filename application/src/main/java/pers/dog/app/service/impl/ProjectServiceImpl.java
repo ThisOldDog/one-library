@@ -118,10 +118,10 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public TreeItem<Project> createFile(ProjectType projectType, FileType fileType, String fileName, String markdown) {
         TreeItem<Project> projectTreeItem = createFile(projectType, fileType, fileName);
-        if (!ObjectUtils.isEmpty(markdown)) {
+        if (projectTreeItem != null && !ObjectUtils.isEmpty(markdown)) {
             fileOperationHandler.write(projectTreeItem.getValue().getProjectName(), markdown, getRelativePath(currentDirectory()));
+            openFile(projectTreeItem.getValue());
         }
-        openFile(projectTreeItem.getValue());
         return projectTreeItem;
     }
 
