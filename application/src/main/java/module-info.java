@@ -84,8 +84,7 @@ module pers.dog {
     requires org.eclipse.jgit;
     requires org.kohsuke.github.api;
     requires freemarker;
-    requires google.cloud.core;
-    requires google.cloud.translate;
+    requires com.azure.ai.translation.text;
 
     // resource
     opens pers.dog;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
@@ -36,6 +36,22 @@
                 </VBox.margin>
             </Label>
             <TextField fx:id="projectName" disable="true"/>
+            <Accordion>
+                <panes>
+                    <TitledPane text="%info.project.html-to-markdown.translate">
+                        <VBox>
+                            <Label text="%info.project.html-to-markdown.translate.source_language"/>
+                            <PrefixSelectionComboBox fx:id="sourceLanguage"/>
+                            <Label text="%info.project.html-to-markdown.translate.target_language">
+                                <VBox.margin>
+                                    <Insets top="12"/>
+                                </VBox.margin>
+                            </Label>
+                            <PrefixSelectionComboBox fx:id="targetLanguage"/>
+                        </VBox>
+                    </TitledPane>
+                </panes>
+            </Accordion>
         </VBox>
         <SplitPane dividerPositions="0.5" HBox.hgrow="ALWAYS">
             <WebView fx:id="contentPreview"/>

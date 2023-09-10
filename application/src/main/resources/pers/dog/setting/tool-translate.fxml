@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.PrefixSelectionComboBox?>
+<?import javafx.scene.control.TextField?>
+<GridPane xmlns="http://javafx.com/javafx/17.0.2-ea"
+          xmlns:fx="http://javafx.com/fxml/1"
+          fx:controller="pers.dog.api.controller.setting.SettingToolTranslateController"
+          hgap="8" vgap="8">
+    <padding>
+        <Insets top="16" bottom="16" left="16" right="16"/>
+    </padding>
+    <columnConstraints>
+        <ColumnConstraints maxWidth="480" prefWidth="280"/>
+        <ColumnConstraints maxWidth="720" prefWidth="560"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints minHeight="10.0" prefHeight="30.0"/>
+    </rowConstraints>
+    <Label text="%info.setting.tool.translate.service_type" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <PrefixSelectionComboBox fx:id="translateServiceType" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+    <Label text="%info.setting.tool.translate.api_key" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+    <PasswordField fx:id="apiKey" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+    <Label text="%info.setting.tool.translate.endpoint" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+    <TextField fx:id="endpoint" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+    <Label text="%info.setting.tool.translate.region" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+    <TextField fx:id="region" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+</GridPane>

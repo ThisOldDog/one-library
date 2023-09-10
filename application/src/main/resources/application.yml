@@ -25,3 +25,11 @@ one-library:
           scene-name: setting/setting-markdown-preview
           options:
             preview-style: default-light
+    - group-name: info.setting.tool
+      children:
+        - code: tool-translate
+          group-name: info.setting.tool.translate
+          scene-name: setting/tool-translate
+          options:
+            service-type: AZURE_AI_TRANSLATE
+            endpoint: https://api.cognitive.microsofttranslator.com/

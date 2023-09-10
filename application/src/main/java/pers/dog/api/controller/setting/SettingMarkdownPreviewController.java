@@ -82,6 +82,7 @@ public class SettingMarkdownPreviewController implements SettingOptionController
         loadOption(settingGroup.getOptions());
     }
 
+    @SuppressWarnings("DuplicatedCode")
     private void loadOption(Map<String, Object> option) {
         optionMap.putAll(option);
         String previewStyle = (String) option.get(OPTION_PREVIEW_STYLE);

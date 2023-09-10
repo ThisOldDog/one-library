@@ -1,16 +1,5 @@
 package pers.dog.app.service.impl;
 
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
@@ -38,6 +27,17 @@ import pers.dog.domain.repository.ProjectRepository;
 import pers.dog.infra.constant.FileType;
 import pers.dog.infra.constant.ProjectType;
 import pers.dog.infra.property.NameProperty;
+
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author 废柴 2022/8/19 15:59
@@ -393,11 +393,28 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public TreeItem<Project> currentProject() {
-        TreeItem<Project> selectedItem = projectTree.getSelectionModel().getSelectedItem();
-        if (selectedItem == null || selectedItem.getValue() == null) {
+        Tab selectedItem = projectEditorWorkspace.getSelectionModel().getSelectedItem();
+        if (selectedItem == null) {
             return null;
         }
-        return selectedItem;
+        Project project = ((ProjectEditorController) selectedItem.getUserData()).getProject();
+        return find(projectTree.getRoot(), project);
+    }
+
+    private TreeItem<Project> find(TreeItem<Project> root, Project project) {
+        if (root == null || CollectionUtils.isEmpty(root.getChildren())) {
+            return null;
+        }
+        for (TreeItem<Project> child : root.getChildren()) {
+            if (Objects.equals(child.getValue().getProjectId(), project.getProjectId())) {
+                return child;
+            }
+            TreeItem<Project> projectTreeItem = find(child, project);
+            if (projectTreeItem != null) {
+                return projectTreeItem;
+            }
+        }
+        return null;
     }
 
     @Override
