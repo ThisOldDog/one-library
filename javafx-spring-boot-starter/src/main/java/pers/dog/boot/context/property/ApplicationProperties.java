@@ -1,8 +1,11 @@
 package pers.dog.boot.context.property;
 
+import java.util.List;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import pers.dog.boot.component.cache.status.StatusStoreProperties;
+import pers.dog.boot.component.setting.SettingGroup;
 
 /**
  * 应用属性
@@ -31,6 +34,10 @@ public class ApplicationProperties {
     @NestedConfigurationProperty
     private StatusStoreProperties status = new StatusStoreProperties();
 
+    @NestedConfigurationProperty
+    private List<SettingGroup> setting;
+
+
     public StageProperties getStage() {
         return stage;
     }
@@ -55,6 +62,15 @@ public class ApplicationProperties {
 
     public ApplicationProperties setStatus(StatusStoreProperties status) {
         this.status = status;
+        return this;
+    }
+
+    public List<SettingGroup> getSetting() {
+        return setting;
+    }
+
+    public ApplicationProperties setSetting(List<SettingGroup> setting) {
+        this.setting = setting;
         return this;
     }
 }

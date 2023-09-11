@@ -11,7 +11,20 @@ import pers.dog.boot.infra.constant.FileStoreLocation;
  * @author 废柴 2021/6/17 20:22
  */
 public class FileOperationOption {
-    public static class UserHomeDirOption {
+    public abstract static class BaseOption {
+        private boolean withType;
+
+        public boolean isWithType() {
+            return withType;
+        }
+
+        public BaseOption setWithType(boolean withType) {
+            this.withType = withType;
+            return this;
+        }
+    }
+
+    public static class UserHomeDirOption extends BaseOption {
         private String pathPrefix = "AppData" + File.separator + "Local";
 
         public String getPathPrefix() {
@@ -24,7 +37,7 @@ public class FileOperationOption {
         }
     }
 
-    public static class ApplicationDirOption {
+    public static class ApplicationDirOption extends BaseOption {
         private String pathPrefix = "";
 
         public String getPathPrefix() {

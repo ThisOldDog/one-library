@@ -102,7 +102,6 @@ module pers.dog {
     opens pers.dog.app.service.impl;
     opens pers.dog.domain.entity;
     opens pers.dog.domain.repository;
-    opens pers.dog.config;
     opens pers.dog.infra.action;
     opens pers.dog.infra.action.application;
     opens pers.dog.infra.action.project;

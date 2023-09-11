@@ -7,6 +7,7 @@ public class ValueMeaning {
     private String meaning;
     private String value;
 
+
     public String getMeaning() {
         return meaning;
     }

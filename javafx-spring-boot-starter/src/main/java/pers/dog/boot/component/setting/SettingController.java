@@ -1,4 +1,4 @@
-package pers.dog.api.controller.setting;
+package pers.dog.boot.component.setting;
 
 import java.net.URL;
 import java.util.List;
@@ -12,17 +12,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import org.controlsfx.control.MasterDetailPane;
-import pers.dog.api.callback.SettingGroupTreeCallback;
-import pers.dog.app.service.SettingService;
-import pers.dog.api.dto.SettingGroup;
-import pers.dog.infra.status.StageStatusStore;
 
 /**
  * @author 废柴 2023/8/15 21:49
  */
 public class SettingController implements Initializable {
     private final SettingService settingService;
-    private final StageStatusStore stageStatusStore;
     @FXML
     public MasterDetailPane settingWorkspace;
     @FXML
@@ -30,18 +25,16 @@ public class SettingController implements Initializable {
 
     private SettingGroupTreeCallback settingGroupTreeCallback;
 
-    public SettingController(SettingService settingService,
-                             StageStatusStore stageStatusStore) {
+    public SettingController(SettingService settingService) {
         this.settingService = settingService;
-        this.stageStatusStore = stageStatusStore;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         settingGroupTree.setRoot(settingService.buildSettingGroupTree());
-        settingGroupTreeCallback = new SettingGroupTreeCallback(this, stageStatusStore);
+        settingGroupTreeCallback = new SettingGroupTreeCallback(this, settingService);
         settingGroupTree.setCellFactory(settingGroupTreeCallback);
-        openOption(settingGroupTreeCallback, settingGroupTree.getRoot().getChildren(), stageStatusStore.getStageStatus().getLatestSettingOption(), new AtomicBoolean(false));
+        openOption(settingGroupTreeCallback, settingGroupTree.getRoot().getChildren(), settingService.getLatestSettingOption(), new AtomicBoolean(false));
     }
 
     private void openOption(SettingGroupTreeCallback settingGroupTreeCallback, List<TreeItem<SettingGroup>> nodeList, String latestSettingOption, AtomicBoolean breakFlag) {
@@ -72,7 +65,7 @@ public class SettingController implements Initializable {
     }
 
     public void saveSetting() {
-        Map<String, Map<String, Object>> optionMap = settingGroupTreeCallback.applyOption();
+        Map<String, Object> optionMap = settingGroupTreeCallback.applyOption();
         settingService.saveSetting(optionMap);
     }
 }

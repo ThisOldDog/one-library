@@ -9,6 +9,7 @@ module javafx.spring.boot.starter {
     requires spring.context;
     requires spring.boot;
     requires spring.boot.autoconfigure;
+    requires spring.data.commons;
     requires static spring.boot.starter.data.jpa;
 
     requires org.slf4j;
@@ -27,6 +28,7 @@ module javafx.spring.boot.starter {
     exports pers.dog.boot.component.control;
     exports pers.dog.boot.component.event;
     exports pers.dog.boot.component.file;
+    exports pers.dog.boot.component.setting;
     exports pers.dog.boot.context;
     exports pers.dog.boot.context.property;
     exports pers.dog.boot.infra.control;
@@ -42,6 +44,7 @@ module javafx.spring.boot.starter {
     opens pers.dog.boot.component.control;
     opens pers.dog.boot.component.event;
     opens pers.dog.boot.component.file;
+    opens pers.dog.boot.component.setting;
     opens pers.dog.boot.controller;
     opens pers.dog.boot.context;
     opens pers.dog.boot.context.property;

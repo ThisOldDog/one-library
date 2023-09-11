@@ -1,33 +1,28 @@
-package pers.dog.api.callback;
+package pers.dog.boot.component.setting;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javafx.scene.Parent;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeView;
 import javafx.util.Callback;
 import org.springframework.data.util.Pair;
-import pers.dog.api.controller.setting.SettingController;
-import pers.dog.api.controller.setting.SettingOptionController;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.FXMLUtils;
-import pers.dog.api.dto.SettingGroup;
-import pers.dog.infra.status.StageStatusStore;
 
 /**
  * @author 废柴 2023/8/16 11:04
  */
 public class SettingGroupTreeCallback implements Callback<TreeView<SettingGroup>, TreeCell<SettingGroup>> {
     private final SettingController controller;
-    private final StageStatusStore stageStatusStore;
+    private final SettingService settingService;
 
-    private final Map<String, Pair<SettingOptionController, Parent>> optionMap;
+    private final Map<String, Pair<AbstractSettingOptionController<?>, Parent>> optionMap;
 
-    public SettingGroupTreeCallback(SettingController controller, StageStatusStore stageStatusStore) {
+    public SettingGroupTreeCallback(SettingController controller, SettingService settingService) {
         this.controller = controller;
-        this.stageStatusStore = stageStatusStore;
+        this.settingService = settingService;
         this.optionMap = new HashMap<>();
     }
 
@@ -58,34 +53,28 @@ public class SettingGroupTreeCallback implements Callback<TreeView<SettingGroup>
 
     public void openSetting(SettingGroup settingGroup) {
         if (settingGroup.getCode() != null) {
-            Pair<SettingOptionController, Parent> option = optionMap.get(settingGroup.getCode());
+            Pair<AbstractSettingOptionController<?>, Parent> option = optionMap.get(settingGroup.getCode());
             if (option == null) {
                 Parent setting = FXMLUtils.loadFXML(settingGroup.getSceneName());
-                SettingOptionController optionController = FXMLUtils.getController(setting);
+                AbstractSettingOptionController<?> optionController = FXMLUtils.getController(setting);
                 option = Pair.of(optionController, setting);
-                optionController.loadOption(settingGroup);
+                optionController.initOption(settingService.getOption(settingGroup.getCode()));
                 optionMap.put(settingGroup.getCode(), Pair.of(optionController, setting));
             }
-            stageStatusStore.getStageStatus().setLatestSettingOption(settingGroup.getCode());
+            settingService.setLatestSettingOption(settingGroup.getCode());
             controller.getSettingWorkspace().setDetailNode(option.getSecond());
         }
     }
 
-    public Map<String, Map<String, Object>> applyOption() {
-        Map<String, Map<String, Object>> changedOption = new HashMap<>();
+    public Map<String, Object> applyOption() {
+        Map<String, Object> changedOption = new HashMap<>();
         optionMap.forEach((k, v) -> {
-            SettingOptionController settingOptionController = v.getFirst();
+            AbstractSettingOptionController<?> settingOptionController = v.getFirst();
             if (settingOptionController.changed()) {
-                Map<String, Object> optionMap = settingOptionController.getOption();
-                Set<String> keySet = settingOptionController.optionKeys();
-                Map<String, Object> validOptionMap = new HashMap<>();
-                optionMap.forEach((option, value) -> {
-                    if (keySet.contains(option)) {
-                        validOptionMap.put(option, value);
-                    }
-                });
-                changedOption.put(k, validOptionMap);
+                Object option = settingOptionController.getOption();
+                changedOption.put(k, option);
                 settingOptionController.apply();
+                settingService.publishSettingChangeEvent(settingOptionController.getSettingCode(), settingOptionController.getOption());
             }
         });
         return changedOption;

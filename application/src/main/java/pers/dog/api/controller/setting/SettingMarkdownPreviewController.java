@@ -5,35 +5,32 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.ResourceBundle;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import org.controlsfx.control.PrefixSelectionComboBox;
-import org.springframework.util.ObjectUtils;
+import pers.dog.api.dto.MarkdownPreview;
 import pers.dog.app.service.ProjectEditorService;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
+import pers.dog.boot.component.setting.AbstractSettingOptionController;
 import pers.dog.boot.infra.dto.ValueMeaning;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
-import pers.dog.api.dto.SettingGroup;
+import pers.dog.infra.constant.TranslateServiceType;
 
 /**
  * @author 废柴 2023/8/17 19:52
  */
-public class SettingMarkdownPreviewController implements SettingOptionController, Initializable {
+public class SettingMarkdownPreviewController extends AbstractSettingOptionController<MarkdownPreview> {
     public static final String SETTING_CODE = "markdown-preview";
-    public static final String OPTION_PREVIEW_STYLE = "preview-style";
-    public static final Set<String> OPTION_KEY_LIST = Set.of(OPTION_PREVIEW_STYLE);
-    private final Map<String, Object> optionMap = new HashMap<>();
     @FXML
-    public PrefixSelectionComboBox<ValueMeaning> previewStyleComboBox;
+    public PrefixSelectionComboBox<ValueMeaning> previewStyle;
     private final ProjectEditorService projectEditorService;
-    private SettingGroup settingGroup;
-    private boolean changed = false;
     private final ObservableList<ValueMeaning> markdownStyles = FXCollections.observableArrayList();
 
     public SettingMarkdownPreviewController(ProjectEditorService projectEditorService) {
@@ -53,53 +50,19 @@ public class SettingMarkdownPreviewController implements SettingOptionController
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Preview Style
-        previewStyleComboBox.setItems(markdownStyles);
-        previewStyleComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
-            changed = true;
-            optionMap.put(OPTION_PREVIEW_STYLE, newValue.getValue());
-        });
-    }
-
-
-    @Override
-    public boolean changed() {
-        return changed;
-    }
-
-    @Override
-    public Map<String, Object> getOption() {
-        return optionMap;
-    }
-
-    @Override
-    public Set<String> optionKeys() {
-        return OPTION_KEY_LIST;
-    }
-
-    @Override
-    public void loadOption(SettingGroup settingGroup) {
-        this.settingGroup = settingGroup;
-        loadOption(settingGroup.getOptions());
-    }
-
-    @SuppressWarnings("DuplicatedCode")
-    private void loadOption(Map<String, Object> option) {
-        optionMap.putAll(option);
-        String previewStyle = (String) option.get(OPTION_PREVIEW_STYLE);
-        if (!ObjectUtils.isEmpty(previewStyle)) {
-            for (ValueMeaning item : previewStyleComboBox.getItems()) {
-                if (Objects.equals(item.getValue(), previewStyle)) {
-                    previewStyleComboBox.setValue(item);
-                }
-            }
-        }
-        settingGroup.setOptions(optionMap);
-    }
-
-    @Override
-    public void setOption(Map<String, Object> option) {
-        changed = true;
-        loadOption(option);
+        previewStyle.setItems(markdownStyles);
+        addOptionValueConverter(
+                "preview-style",
+                value -> ((ValueMeaning) value).getValue(),
+                value -> {
+                    for (ValueMeaning item : previewStyle.getItems()) {
+                        if (Objects.equals(item.getValue(), value)) {
+                            return item;
+                        }
+                    }
+                    return null;
+                });
+        super.initialize(location, resources);
     }
 
     @Override

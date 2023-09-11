@@ -4,7 +4,7 @@
 <?import javafx.scene.input.*?>
 <?import pers.dog.infra.action.*?>
 <?import pers.dog.infra.action.application.ExitAction?>
-<?import pers.dog.infra.action.application.SettingAction?>
+<?import pers.dog.boot.component.setting.SettingAction?>
 <?import pers.dog.infra.action.editor.*?>
 <?import pers.dog.infra.action.markdown.HtmlToMarkdownAction?>
 <?import pers.dog.infra.action.project.*?>

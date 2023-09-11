@@ -1,6 +1,9 @@
 package pers.dog.api.controller;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -61,12 +64,13 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 import pers.dog.api.controller.setting.SettingMarkdownPreviewController;
+import pers.dog.api.dto.MarkdownPreview;
 import pers.dog.app.service.MarkdownExtension;
-import pers.dog.app.service.SettingService;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationException;
 import pers.dog.boot.component.file.FileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
+import pers.dog.boot.component.setting.SettingService;
 import pers.dog.boot.context.ApplicationContextHolder;
 import pers.dog.boot.infra.control.PropertySheetDialog;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
@@ -233,7 +237,8 @@ public class ProjectEditorController implements Initializable {
                     return super.visitFile(file, attrs);
                 }
             });
-            String style = Optional.ofNullable(settingService.getOption(SettingMarkdownPreviewController.SETTING_CODE, SettingMarkdownPreviewController.OPTION_PREVIEW_STYLE))
+            String style = Optional.ofNullable((MarkdownPreview) settingService.getOption(SettingMarkdownPreviewController.SETTING_CODE))
+                    .map(MarkdownPreview::getPreviewStyle)
                     .orElse(DEFAULT_STYLE_NAME) + ".css";
             Path markdownStyleDir = Path.of("style/markdown");
             if (Files.exists(markdownStyleDir) && Files.isDirectory(markdownStyleDir)) {

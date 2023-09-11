@@ -1,5 +1,12 @@
 package pers.dog.api.controller.markdown;
 
+import java.io.File;
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
+
 import com.azure.ai.translation.text.TextTranslationClient;
 import com.azure.ai.translation.text.TextTranslationClientBuilder;
 import com.azure.ai.translation.text.models.*;
@@ -17,20 +24,15 @@ import javafx.scene.web.WebView;
 import org.controlsfx.control.MaskerPane;
 import org.controlsfx.control.PrefixSelectionComboBox;
 import pers.dog.api.controller.setting.SettingToolTranslateController;
+import pers.dog.api.dto.ToolTranslate;
 import pers.dog.app.service.ProjectService;
-import pers.dog.app.service.SettingService;
+import pers.dog.boot.component.setting.SettingService;
 import pers.dog.boot.infra.dto.ValueMeaning;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.AlertUtils;
 import pers.dog.domain.entity.Project;
+import pers.dog.infra.constant.TranslateServiceType;
 import pers.dog.infra.control.MarkdownCodeArea;
-
-import java.io.File;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 /**
  * @author 废柴 2023/8/21 19:53
@@ -73,8 +75,8 @@ public class HtmlToMarkdownController implements Initializable {
     }
 
     public static class TranslateServiceFactory {
-        public static TranslateService getService(String serverType, String apiKey, String endpoint, String region) {
-            if ("AZURE_AI_TRANSLATE".equals(serverType)) {
+        public static TranslateService getService(TranslateServiceType serverType, String apiKey, String endpoint, String region) {
+            if (TranslateServiceType.AZURE_AI_TRANSLATE.equals(serverType)) {
                 return new AzureTranslateService(apiKey, endpoint, region);
             }
             return null;
@@ -140,14 +142,16 @@ public class HtmlToMarkdownController implements Initializable {
                         contentPreview.getEngine().getLoadWorker().getException());
             }
         });
-        String serverType = (String) settingService.getOption(SettingToolTranslateController.SETTING_CODE, SettingToolTranslateController.OPTION_SERVER_TYPE);
-        String apiKey = (String) settingService.getOption(SettingToolTranslateController.SETTING_CODE, SettingToolTranslateController.OPTION_API_KEY);
-        String endpoint = (String) settingService.getOption(SettingToolTranslateController.SETTING_CODE, SettingToolTranslateController.OPTION_ENDPOINT);
-        String region = (String) settingService.getOption(SettingToolTranslateController.SETTING_CODE, SettingToolTranslateController.OPTION_REGION);
-        translateService = TranslateServiceFactory.getService(serverType, apiKey, endpoint, region);
+        buildTranslateService(settingService.getOption(SettingToolTranslateController.SETTING_CODE));
+        settingService.onSettingChange(SettingToolTranslateController.SETTING_CODE, option -> buildTranslateService(settingService.getOption((String) option)));
+    }
+
+    private void buildTranslateService(ToolTranslate option) {
+        translateService = TranslateServiceFactory.getService(option.getServiceType(), option.getApiKey(), option.getEndpoint(), option.getRegion());
         sourceLanguage.setItems(FXCollections.observableArrayList(translateService.languages()));
         targetLanguage.setItems(FXCollections.observableArrayList(translateService.languages()));
     }
+
 
     public void saveToDirectory() {
         insertPosition.setItems(INSERT_POSITION_ALL);

@@ -1,4 +1,4 @@
-package pers.dog.api.dto;
+package pers.dog.boot.component.setting;
 
 import java.util.List;
 import java.util.Map;
@@ -8,6 +8,7 @@ import java.util.Map;
  */
 public class SettingGroup {
     private String code;
+    private Class<?> settingType;
     private String groupName;
     private List<SettingGroup> children;
     private String sceneName;
@@ -19,6 +20,15 @@ public class SettingGroup {
 
     public SettingGroup setCode(String code) {
         this.code = code;
+        return this;
+    }
+
+    public Class<?> getSettingType() {
+        return settingType;
+    }
+
+    public SettingGroup setSettingType(Class<?> settingType) {
+        this.settingType = settingType;
         return this;
     }
 

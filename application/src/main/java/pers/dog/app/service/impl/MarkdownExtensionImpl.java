@@ -17,8 +17,9 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.comparator.Comparators;
 import pers.dog.api.controller.setting.SettingMarkdownConfigController;
+import pers.dog.api.dto.MarkdownConfig;
 import pers.dog.app.service.MarkdownExtension;
-import pers.dog.app.service.SettingService;
+import pers.dog.boot.component.setting.SettingService;
 
 /**
  * @author 废柴 2023/8/29 17:07
@@ -35,7 +36,6 @@ public class MarkdownExtensionImpl implements MarkdownExtension {
     private static final List<String> EXTENSION_ENABLE_LIST = new ArrayList<>();
     private final ObservableList<Class<? extends Extension>> extensionEnabled = FXCollections.observableArrayList();
 
-    private final SettingService settingService;
     private final List<Consumer<List<Class<? extends Extension>>>> extensionChangeActions = new ArrayList<>();
 
     static {
@@ -68,9 +68,9 @@ public class MarkdownExtensionImpl implements MarkdownExtension {
 
     @SuppressWarnings("unchecked")
     public MarkdownExtensionImpl(SettingService settingService) {
-        this.settingService = settingService;
-        Boolean extensionAll = (Boolean) settingService.getOption(SettingMarkdownConfigController.SETTING_CODE, SettingMarkdownConfigController.OPTION_EXTENSION_ALL);
-        Set<String> enabledExtensions = (Set<String>) settingService.getOption(SettingMarkdownConfigController.SETTING_CODE, SettingMarkdownConfigController.OPTION_EXTENSION_ITEMS);
+        MarkdownConfig markdownConfig = settingService.getOption(SettingMarkdownConfigController.SETTING_CODE);
+        Boolean extensionAll = markdownConfig.isExtensionAll();
+        Set<String> enabledExtensions = markdownConfig.getExtensionItems();
         for (String extensionKey : EXTENSION_ENABLE_LIST) {
             if (BooleanUtils.isTrue(extensionAll) || (enabledExtensions != null && enabledExtensions.contains(extensionKey))) {
                 enableExtension(extensionKey);
@@ -111,7 +111,7 @@ public class MarkdownExtensionImpl implements MarkdownExtension {
     }
 
     public void onExtensionChanged(Consumer<List<Class<? extends Extension>>> action) {
-         this.extensionChangeActions.add(action);
+        this.extensionChangeActions.add(action);
     }
 
     public void removeOnExtensionChanged(Consumer<List<Class<? extends Extension>>> action) {

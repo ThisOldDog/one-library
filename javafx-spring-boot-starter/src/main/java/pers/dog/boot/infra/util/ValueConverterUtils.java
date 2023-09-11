@@ -136,6 +136,7 @@ public class ValueConverterUtils {
         // 时间
         TimeZone timeZone = TimeZone.getTimeZone(TIME_ZONE);
         FastDateFormat fastDateFormat = FastDateFormat.getInstance(ZONE_DATE_TIME_FORMAT, timeZone);
+
         SIMPLE_TYPE_PARAMETER_READER_HOLDER.put(Date.class, value -> {
             try {
                 return fastDateFormat.parse(String.valueOf(value));
@@ -233,10 +234,22 @@ public class ValueConverterUtils {
         return objectMapper;
     }
 
+    public static <T> T read(Object value, Class<T> type) {
+        if (value == null) {
+            return null;
+        }
+        if (type.isAssignableFrom(value.getClass())) {
+            return (T) value;
+        } else {
+            return read(String.valueOf(value), type);
+        }
+    }
+
     public static <T> T read(String value, Class<T> type) {
         return read(value, type, false);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T read(String value, Class<T> type, boolean withType) {
         // 是否为 null
         if (ObjectUtils.isEmpty(value)) {
@@ -246,6 +259,10 @@ public class ValueConverterUtils {
         ParameterValueReader parameterValueReader = SIMPLE_TYPE_PARAMETER_READER_HOLDER.get(type);
         if (parameterValueReader != null) {
             return (T) parameterValueReader.read(value);
+        }
+        // 枚举
+        if (Enum.class.isAssignableFrom(type)) {
+            return (T) Enum.valueOf((Class<? extends Enum>) type, value);
         }
         // 按照 JSON 处理
         try {

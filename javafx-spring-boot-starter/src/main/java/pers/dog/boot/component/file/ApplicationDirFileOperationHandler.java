@@ -12,6 +12,7 @@ public class ApplicationDirFileOperationHandler extends AbstractFileOperationHan
     public ApplicationDirFileOperationHandler(FileOperationOption.ApplicationDirOption option) {
         this.option = option;
         this.directory = Path.of(option.getPathPrefix()).toAbsolutePath();
+        setWithType(option.isWithType());
     }
 
     @Override

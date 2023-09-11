@@ -11,25 +11,29 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
 logging:
   config: classpath:logback-spring.xml
-one-library:
-  setting:
-    - group-name: info.setting.markdown
-      children:
-        - code: markdown-config
-          group-name: info.setting.markdown.config
-          scene-name: setting/setting-markdown-config
-          options:
-            extension-all: true
-        - code: markdown-preview
-          group-name: info.setting.markdown.preview
-          scene-name: setting/setting-markdown-preview
-          options:
-            preview-style: default-light
-    - group-name: info.setting.tool
-      children:
-        - code: tool-translate
-          group-name: info.setting.tool.translate
-          scene-name: setting/tool-translate
-          options:
-            service-type: AZURE_AI_TRANSLATE
-            endpoint: https://api.cognitive.microsofttranslator.com/
+javafx:
+  application:
+    setting:
+      - group-name: info.setting.markdown
+        children:
+          - code: markdown-config
+            group-name: info.setting.markdown.config
+            scene-name: setting/setting-markdown-config
+            setting-type: pers.dog.api.dto.MarkdownConfig
+            options:
+              extension-all: true
+          - code: markdown-preview
+            group-name: info.setting.markdown.preview
+            scene-name: setting/setting-markdown-preview
+            setting-type: pers.dog.api.dto.MarkdownPreview
+            options:
+              preview-style: default-light
+      - group-name: info.setting.tool
+        children:
+          - code: tool-translate
+            group-name: info.setting.tool.translate
+            scene-name: setting/tool-translate
+            setting-type: pers.dog.api.dto.ToolTranslate
+            options:
+              service-type: AZURE_AI_TRANSLATE
+              endpoint: https://api.cognitive.microsofttranslator.com/

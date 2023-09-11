@@ -115,11 +115,11 @@ public interface StatusStore<T, S> extends PriorityOrdered {
     }
 
     default Class<?> getType() {
-        return ReflectUtils.getClassGenericType(getClass(), 0);
+        return ReflectUtils.getClassInterfaceGenericType(getClass(), 0);
     }
 
     default Class<?> getValueType() {
-        return ReflectUtils.getClassGenericType(getClass(), 1);
+        return ReflectUtils.getClassInterfaceGenericType(getClass(), 1);
     }
 
     @Override

@@ -18,6 +18,7 @@ import pers.dog.api.controller.ProjectEditorController;
 import pers.dog.app.service.ProjectService;
 import pers.dog.boot.component.cache.status.StatusStore;
 import pers.dog.boot.component.control.FXMLControl;
+import pers.dog.boot.component.setting.SettingService;
 import pers.dog.domain.entity.Project;
 
 /**
@@ -133,10 +134,13 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
     private TabPane projectEditorWorkspace;
 
     private final ProjectService projectService;
+    private final SettingService settingService;
     private StageStatus stageStatus;
+
     @Autowired
-    public StageStatusStore(ProjectService projectService) {
+    public StageStatusStore(ProjectService projectService, SettingService settingService) {
         this.projectService = projectService;
+        this.settingService = settingService;
     }
 
     @Override
@@ -147,11 +151,12 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
     @Override
     public StageStatus storeStatus(BorderPane oneLibraryWorkspace) {
         Window window = oneLibraryWorkspace.getScene().getWindow();
+        StageStatus stageStatus = Optional.ofNullable(this.stageStatus)
+                .orElseGet(StageStatus::new);
+        stageStatus.setLatestSettingOption(settingService.getLatestSettingOption());
         if (window instanceof Stage) {
             Stage stage = (Stage) window;
-            StageStatus stageStatus = Optional.ofNullable(this.stageStatus)
-                    .orElseGet(StageStatus::new)
-                    .setMaximized(stage.isMaximized());
+            stageStatus.setMaximized(stage.isMaximized());
             if (stage.getScene() != null) {
                 stageStatus.setHeight(stage.getScene().getHeight())
                         .setWidth(stage.getScene().getWidth());
@@ -165,7 +170,8 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
                     .setOpenProjectIds(projectEditorWorkspace.getTabs()
                             .stream()
                             .mapToLong(tab -> ((ProjectEditorController) tab.getUserData()).getProject().getProjectId())
-                            .toArray());
+
+                           .toArray());
         }
         return null;
     }
@@ -192,6 +198,7 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
                 }
             }
         }
+        settingService.setLatestSettingOption(stageStatus.getLatestSettingOption());
     }
 
 

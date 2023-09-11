@@ -6,6 +6,9 @@ import org.springframework.util.StringUtils;
  * @author 废柴 2021/6/15 20:20
  */
 public class WordUtils {
+    private WordUtils() {
+    }
+
     /**
      * 分隔符转首字母大写转空格
      * hello-world -> Hello World
@@ -29,6 +32,26 @@ public class WordUtils {
                 } else {
                     sb.append(' ');
                     firstLetter = true;
+                }
+            }
+            return sb.toString();
+        }
+        return value;
+    }
+
+    public static String camelCaseToLowerKebabCase(String value) {
+        if (StringUtils.hasText(value)) {
+            char[] chars = value.toCharArray();
+            StringBuilder sb = new StringBuilder();
+            boolean firstLetter = true;
+            for (char letter : chars) {
+                if (firstLetter) {
+                    sb.append(Character.toLowerCase(letter));
+                    firstLetter = false;
+                } else if (letter >= 'A' && letter <= 'Z') {
+                    sb.append("-").append(Character.toLowerCase(letter));
+                } else {
+                    sb.append(letter);
                 }
             }
             return sb.toString();

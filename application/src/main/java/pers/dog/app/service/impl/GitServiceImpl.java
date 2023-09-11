@@ -38,7 +38,7 @@ import pers.dog.boot.infra.util.AlertUtils;
 import pers.dog.domain.entity.Project;
 import pers.dog.infra.constant.GitRepositoryType;
 import pers.dog.infra.constant.ProjectType;
-import pers.dog.infra.util.EncryptUtils;
+import pers.dog.infra.util.MessageDigestUtils;
 import pers.dog.boot.infra.util.FileUtils;
 import pers.dog.infra.util.FreeMarkerUtils;
 
@@ -209,7 +209,7 @@ public class GitServiceImpl implements GitService {
                         "error.action.git.push.not_exists.content_text"));
                 return null;
             }
-            String gitId = EncryptUtils.md5(
+            String gitId = MessageDigestUtils.md5(
                     GitRepositoryType.GitHub + "-" + setting.getUsername() + "-" + setting.getRepositoryName() + "-" + setting.getPrivateToken()
             );
             ApplicationDirFileOperationHandler pushHandler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix(".data/git/" + gitId));

@@ -13,11 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.util.CollectionUtils;
 import pers.dog.boot.component.cache.CacheProperties;
-import pers.dog.boot.component.cache.status.SceneStatueResumeListener;
-import pers.dog.boot.component.cache.status.StageStatueResumeListener;
-import pers.dog.boot.component.cache.status.StatueSaveListener;
-import pers.dog.boot.component.cache.status.StatusConstants;
-import pers.dog.boot.component.cache.status.StatusStore;
+import pers.dog.boot.component.cache.status.*;
 import pers.dog.boot.component.file.FileOperationHolder;
 import pers.dog.boot.context.property.ApplicationProperties;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
@@ -44,6 +40,7 @@ public class JavaFXSpringBootStarterAutoConfiguration {
                                                 @Value("${spring.application.name:application}") String applicationName) {
                 FileOperationHolder.registerAsDefault(StatusConstants.CACHE_FILE_HOLDER_NAME, cacheProperties, applicationName);
             }
+
             @Bean
             public StatueSaveListener statueSaveApplicationCloseEventListener(ApplicationProperties properties,
                                                                               ObjectProvider<List<? extends StatusStore>> statusStoreList) {

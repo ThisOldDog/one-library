@@ -1,11 +1,16 @@
 package pers.dog.api.controller.setting;
 
+import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.*;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -13,32 +18,26 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import pers.dog.api.dto.MarkdownConfig;
 import pers.dog.app.service.MarkdownExtension;
-import pers.dog.api.dto.SettingGroup;
+import pers.dog.boot.component.setting.AbstractSettingOptionController;
 
 /**
  * @author 废柴 2023/8/17 19:52
  */
 @SuppressWarnings("unchecked")
-public class SettingMarkdownConfigController implements SettingOptionController, Initializable {
+public class SettingMarkdownConfigController extends AbstractSettingOptionController<MarkdownConfig> {
     public static final String SETTING_CODE = "markdown-config";
-    public static final String OPTION_EXTENSION_ALL = "extension-all";
-    public static final String OPTION_EXTENSION_ITEMS = "extension-items";
-    public static final Set<String> OPTION_KEY_LIST = Set.of(OPTION_EXTENSION_ALL, OPTION_EXTENSION_ITEMS);
-    private final Map<String, Object> optionMap = new HashMap<>();
     @FXML
     public CheckBox extensionAll;
     @FXML
     public TextField extensionSearch;
     @FXML
-    public FlowPane extensionPane;
+    public FlowPane extensionItems;
     @FXML
     public Button cancelAllButton;
-    public final List<CheckBox> extensionCheckBoxList = FXCollections.observableArrayList();
-    public final List<CheckBox> matchedExtensionCheckBoxList = FXCollections.observableArrayList();
-    private SettingGroup settingGroup;
-    private boolean changed = false;
-
+    public final ObservableList<CheckBox> extensionCheckBoxList = FXCollections.observableArrayList();
+    public final ObservableList<CheckBox> matchedExtensionCheckBoxList = FXCollections.observableArrayList();
     private final MarkdownExtension markdownExtension;
 
     public SettingMarkdownConfigController(MarkdownExtension markdownExtension) {
@@ -53,22 +52,19 @@ public class SettingMarkdownConfigController implements SettingOptionController,
                     CheckBox checkBox = new CheckBox(extension);
                     FlowPane.setMargin(checkBox, new Insets(8, 0, 0, 8));
                     checkBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-                        changed = true;
-                        Set<String> extensionItemValue = (Set<String>) optionMap.computeIfAbsent(OPTION_EXTENSION_ITEMS, key -> new HashSet<String>());
+                        Set<String> extensionItemValue = getOption().getExtensionItems();
                         if (BooleanUtils.isTrue(newValue)) {
                             extensionItemValue.add(checkBox.getText());
                         } else {
                             extensionAll.setSelected(false);
                             extensionItemValue.remove(checkBox.getText());
                         }
+                        setChanged(true);
                     });
                     return checkBox;
                 }).toList());
-        extensionPane.getChildren().addAll(extensionCheckBoxList);
-
+        extensionItems.getChildren().addAll(extensionCheckBoxList);
         extensionAll.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            changed = true;
-            optionMap.put(OPTION_EXTENSION_ALL, newValue);
             if (BooleanUtils.isTrue(newValue)) {
                 for (CheckBox checkBox : extensionCheckBoxList) {
                     checkBox.setSelected(true);
@@ -84,9 +80,9 @@ public class SettingMarkdownConfigController implements SettingOptionController,
         });
 
         extensionSearch.textProperty().addListener((observable, oldValue, newValue) -> {
-            extensionPane.getChildren().clear();
+            extensionItems.getChildren().clear();
             if (ObjectUtils.isEmpty(newValue)) {
-                extensionPane.getChildren().addAll(extensionCheckBoxList);
+                extensionItems.getChildren().addAll(extensionCheckBoxList);
             } else {
                 matchedExtensionCheckBoxList.clear();
                 for (CheckBox checkBox : extensionCheckBoxList) {
@@ -94,52 +90,28 @@ public class SettingMarkdownConfigController implements SettingOptionController,
                         matchedExtensionCheckBoxList.add(checkBox);
                     }
                 }
-                extensionPane.getChildren().addAll(matchedExtensionCheckBoxList);
+                extensionItems.getChildren().addAll(matchedExtensionCheckBoxList);
             }
         });
-    }
-
-
-    @Override
-    public boolean changed() {
-        return changed;
-    }
-
-    @Override
-    public Map<String, Object> getOption() {
-        return optionMap;
-    }
-
-    @Override
-    public Set<String> optionKeys() {
-        return OPTION_KEY_LIST;
+        addOptionValueConverter(
+                "extension-items",
+                value -> extensionCheckBoxList.stream()
+                        .filter(CheckBox::isSelected)
+                        .map(CheckBox::getText)
+                        .collect(Collectors.toSet()),
+                value -> {
+                    extensionCheckBoxList.forEach(checkBox -> checkBox.setSelected(((Set<String>) value).contains(checkBox.getText())));
+                    return value;
+                });
+        super.initialize(location, resources);
     }
 
     @Override
-    public void loadOption(SettingGroup settingGroup) {
-        this.settingGroup = settingGroup;
-        loadOption(settingGroup.getOptions());
-    }
-
-    private void loadOption(Map<String, Object> option) {
-        optionMap.putAll(option);
-        Boolean extensionAllValue = (Boolean) option.get(OPTION_EXTENSION_ALL);
-        extensionAll.setSelected(BooleanUtils.isTrue(extensionAllValue));
-
-
-        Set<String> extensionItemsValue = (Set<String>) option.get(OPTION_EXTENSION_ITEMS);
-        if (extensionItemsValue != null) {
-            for (CheckBox checkBox : extensionCheckBoxList) {
-                checkBox.setSelected(extensionItemsValue.contains(checkBox.getText()));
-            }
+    protected WritableValue<?> setControlListener(String optionCode, Field field, Object control) {
+        if ("extensionItems".equals(field.getName())) {
+            return new SimpleObjectProperty<>(getOption().getExtensionItems());
         }
-        settingGroup.setOptions(optionMap);
-    }
-
-    @Override
-    public void setOption(Map<String, Object> option) {
-        changed = true;
-        loadOption(option);
+        return super.setControlListener(optionCode, field, control);
     }
 
     @Override

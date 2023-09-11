@@ -32,7 +32,7 @@ public class ControlProvider<T> {
     @SuppressWarnings("unchecked")
     public Class<?> getType() {
         if (type == null) {
-            type = (Class<T>) ReflectUtils.getClassGenericType(this.getClass(), 0);
+            type = (Class<T>) ReflectUtils.getClassInterfaceGenericType(this.getClass(), 0);
         }
         return type;
     }

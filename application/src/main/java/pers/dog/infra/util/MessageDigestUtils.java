@@ -7,8 +7,8 @@ import java.security.NoSuchAlgorithmException;
 /**
  * @author 废柴 2023/9/4 13:50
  */
-public class EncryptUtils {
-    private EncryptUtils() {
+public class MessageDigestUtils {
+    private MessageDigestUtils() {
     }
 
     public static String md5(String value) {
