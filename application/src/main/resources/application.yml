@@ -36,4 +36,4 @@ javafx:
             setting-type: pers.dog.api.dto.ToolTranslate
             options:
               service-type: AZURE_AI_TRANSLATE
-              endpoint: https://api.cognitive.microsofttranslator.com/
+              text-translate-endpoint: https://api.cognitive.microsofttranslator.com/
