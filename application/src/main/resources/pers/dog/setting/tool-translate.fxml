@@ -24,8 +24,8 @@
     <PrefixSelectionComboBox fx:id="serviceType" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
     <Label text="%info.setting.tool.translate.api_key" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
     <PasswordField fx:id="apiKey" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-    <Label text="%info.setting.tool.translate.endpoint" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-    <TextField fx:id="endpoint" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-    <Label text="%info.setting.tool.translate.region" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-    <TextField fx:id="region" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+    <Label text="%info.setting.tool.translate.region" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+    <TextField fx:id="region" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+    <Label text="%info.setting.tool.translate.text_endpoint" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+    <TextField fx:id="textTranslateEndpoint" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 </GridPane>

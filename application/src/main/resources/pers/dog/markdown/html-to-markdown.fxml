@@ -9,6 +9,7 @@
 <?import org.fxmisc.flowless.VirtualizedScrollPane?>
 <?import pers.dog.infra.control.MarkdownCodeArea?>
 <?import javafx.scene.text.Text?>
+<?import org.controlsfx.control.ToggleSwitch?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="pers.dog.api.controller.markdown.HtmlToMarkdownController">
@@ -44,7 +45,15 @@
                 <panes>
                     <TitledPane fx:id="translatePane" text="%info.project.html-to-markdown.translate">
                         <VBox>
-                            <Label text="%info.project.html-to-markdown.translate.source_language"/>
+                            <HBox>
+                                <Label text="%info.project.html-to-markdown.translate.open"/>
+                                <ToggleSwitch fx:id="open" disable="true"/>
+                            </HBox>
+                            <Label text="%info.project.html-to-markdown.translate.source_language">
+                                <VBox.margin>
+                                    <Insets top="12"/>
+                                </VBox.margin>
+                            </Label>
                             <PrefixSelectionComboBox fx:id="sourceLanguage" disable="true"/>
                             <Label text="%info.project.html-to-markdown.translate.target_language">
                                 <VBox.margin>

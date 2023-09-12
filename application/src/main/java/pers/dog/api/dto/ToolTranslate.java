@@ -8,8 +8,9 @@ import pers.dog.infra.constant.TranslateServiceType;
 public class ToolTranslate {
     private TranslateServiceType serviceType;
     private String apiKey;
-    private String endpoint;
     private String region;
+    private String textTranslateEndpoint;
+    private String documentTranslateEndpoint;
 
     public TranslateServiceType getServiceType() {
         return serviceType;
@@ -29,12 +30,12 @@ public class ToolTranslate {
         return this;
     }
 
-    public String getEndpoint() {
-        return endpoint;
+    public String getTextTranslateEndpoint() {
+        return textTranslateEndpoint;
     }
 
-    public ToolTranslate setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
+    public ToolTranslate setTextTranslateEndpoint(String textTranslateEndpoint) {
+        this.textTranslateEndpoint = textTranslateEndpoint;
         return this;
     }
 
@@ -44,6 +45,15 @@ public class ToolTranslate {
 
     public ToolTranslate setRegion(String region) {
         this.region = region;
+        return this;
+    }
+
+    public String getDocumentTranslateEndpoint() {
+        return documentTranslateEndpoint;
+    }
+
+    public ToolTranslate setDocumentTranslateEndpoint(String documentTranslateEndpoint) {
+        this.documentTranslateEndpoint = documentTranslateEndpoint;
         return this;
     }
 }

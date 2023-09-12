@@ -4,7 +4,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -23,9 +22,9 @@ public class SettingToolTranslateController extends AbstractSettingOptionControl
     @FXML
     public PasswordField apiKey;
     @FXML
-    public TextField endpoint;
-    @FXML
     public TextField region;
+    @FXML
+    public TextField textTranslateEndpoint;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
