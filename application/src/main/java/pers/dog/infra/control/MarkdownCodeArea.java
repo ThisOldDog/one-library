@@ -17,10 +17,13 @@ import javafx.scene.control.IndexRange;
 import javafx.scene.input.Clipboard;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.controlsfx.control.action.ActionUtils;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.*;
 import org.springframework.util.CollectionUtils;
+import pers.dog.boot.context.ApplicationContextHolder;
+import pers.dog.infra.action.tool.TranslateAction;
 import pers.dog.infra.control.event.PasteEvent;
 
 /**
@@ -148,6 +151,7 @@ public class MarkdownCodeArea extends CodeArea {
     private final ObjectProperty<Integer> searchCurrentIndex = new SimpleObjectProperty<>(-1);
     private final ObjectProperty<Boolean> circulateFlag = new SimpleObjectProperty<>(false);
     private final List<TextInsertionListener> insertionListeners;
+    private TranslateAction translateAction;
     private ExecutorService executor;
     private EventHandler<PasteEvent> pasteEventConsumer;
 
@@ -226,6 +230,15 @@ public class MarkdownCodeArea extends CodeArea {
                 }
             }
         });
+        // 翻译
+        this.translateAction = ApplicationContextHolder.getContext().getBean(TranslateAction.class);
+        selectedTextProperty().addListener((observable, oldValue, newValue) -> translateAction.setDisabled(ObjectUtils.isEmpty(newValue)));
+        translateAction.onSourceTextRequest(this::getSelectedText);
+        translateAction.onConsumerTextApply(this::replaceSelection);
+        // 上下文菜单
+        setContextMenu(ActionUtils.createContextMenu(Arrays.asList(
+                translateAction
+        )));
     }
 
     public void setOnPaste(EventHandler<PasteEvent> consumer) {

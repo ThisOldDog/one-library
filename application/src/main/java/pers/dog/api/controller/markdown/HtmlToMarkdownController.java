@@ -2,14 +2,9 @@ package pers.dog.api.controller.markdown;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import com.azure.ai.translation.text.TextTranslationClient;
-import com.azure.ai.translation.text.TextTranslationClientBuilder;
-import com.azure.ai.translation.text.models.*;
-import com.azure.core.credential.AzureKeyCredential;
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -26,16 +21,13 @@ import javafx.scene.web.WebView;
 import org.controlsfx.control.MaskerPane;
 import org.controlsfx.control.PrefixSelectionComboBox;
 import org.controlsfx.control.ToggleSwitch;
-import org.springframework.util.ObjectUtils;
-import pers.dog.api.controller.setting.SettingToolTranslateController;
-import pers.dog.api.dto.ToolTranslate;
 import pers.dog.app.service.ProjectService;
-import pers.dog.boot.component.setting.SettingService;
 import pers.dog.boot.infra.dto.ValueMeaning;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.AlertUtils;
+import pers.dog.component.translate.TranslateService;
+import pers.dog.component.translate.TranslateServiceFactory;
 import pers.dog.domain.entity.Project;
-import pers.dog.infra.constant.TranslateServiceType;
 import pers.dog.infra.control.MarkdownCodeArea;
 
 /**
@@ -43,49 +35,6 @@ import pers.dog.infra.control.MarkdownCodeArea;
  */
 public class HtmlToMarkdownController implements Initializable {
 
-
-    public interface TranslateService {
-        List<ValueMeaning> languages();
-
-        String translateMarkdown(String document, String sourceLanguage, String targetLanguage);
-    }
-
-    public static class AzureTranslateService implements TranslateService {
-        private final TextTranslationClient textClient;
-
-        public AzureTranslateService(String apiKey, String region, String textTranslateEndpoint) {
-            textClient = new TextTranslationClientBuilder()
-                    .credential(new AzureKeyCredential(apiKey))
-                    .endpoint(textTranslateEndpoint)
-                    .region(region)
-                    .buildClient();
-        }
-
-        @Override
-        public List<ValueMeaning> languages() {
-            return textClient.getLanguages(null, null, "zh-hans", null)
-                    .getTranslation()
-                    .entrySet()
-                    .stream()
-                    .map(entry -> new ValueMeaning().setValue(entry.getKey()).setMeaning(entry.getValue().getName()))
-                    .toList();
-        }
-
-        @Override
-        public String translateMarkdown(String document, String sourceLanguage, String targetLanguage) {
-            List<TranslatedTextItem> translate = textClient.translate(Collections.singletonList(targetLanguage), Collections.singletonList(new InputTextItem(document)), null, sourceLanguage, TextType.HTML, null, ProfanityAction.NO_ACTION, ProfanityMarker.ASTERISK, false, false, null, null, null, false);
-            return translate.get(0).getTranslations().get(0).getText();
-        }
-    }
-
-    public static class TranslateServiceFactory {
-        public static TranslateService getService(TranslateServiceType serverType, String apiKey, String region, String textTranslateEndpoint) {
-            if (TranslateServiceType.AZURE_AI_TRANSLATE.equals(serverType)) {
-                return new AzureTranslateService(apiKey, region, textTranslateEndpoint);
-            }
-            return null;
-        }
-    }
 
     private static final ObservableList<ValueMeaning> INSERT_POSITION_ALL = FXCollections.observableArrayList(
             new ValueMeaning()
@@ -121,12 +70,12 @@ public class HtmlToMarkdownController implements Initializable {
     private final FlexmarkHtmlConverter converter = FlexmarkHtmlConverter.builder().build();
 
     private final ProjectService projectService;
-    private final SettingService settingService;
+    private final TranslateServiceFactory translateServiceFactory;
     private final ObjectProperty<TranslateService> translateService = new SimpleObjectProperty<>();
 
-    public HtmlToMarkdownController(ProjectService projectService, SettingService settingService) {
+    public HtmlToMarkdownController(ProjectService projectService, TranslateServiceFactory translateServiceFactory) {
         this.projectService = projectService;
-        this.settingService = settingService;
+        this.translateServiceFactory = translateServiceFactory;
     }
 
     @Override
@@ -167,19 +116,16 @@ public class HtmlToMarkdownController implements Initializable {
             targetLanguage.setDisable(newValue == null);
             open.setDisable(newValue == null);
         });
-        buildTranslateService(settingService.getOption(SettingToolTranslateController.SETTING_CODE));
-        settingService.onSettingChange(SettingToolTranslateController.SETTING_CODE, option -> buildTranslateService(settingService.getOption((String) option)));
+        buildTranslateService(translateServiceFactory.getService());
+        translateServiceFactory.onServiceChange((observable, oldValue, newValue) -> buildTranslateService(newValue));
     }
 
-    private void buildTranslateService(ToolTranslate option) {
-        if (ObjectUtils.isEmpty(option.getServiceType())
-                || ObjectUtils.isEmpty(option.getApiKey())
-                || ObjectUtils.isEmpty(option.getRegion())
-                || ObjectUtils.isEmpty(option.getTextTranslateEndpoint())) {
+    private void buildTranslateService(TranslateService service) {
+        if (service == null) {
             translateService.setValue(null);
             return;
         }
-        translateService.setValue(TranslateServiceFactory.getService(option.getServiceType(), option.getApiKey(), option.getRegion(), option.getTextTranslateEndpoint()));
+        translateService.setValue(service);
         if (translateService.getValue() != null) {
             List<ValueMeaning> languages = translateService.getValue().languages();
             sourceLanguage.setItems(FXCollections.observableArrayList(languages));

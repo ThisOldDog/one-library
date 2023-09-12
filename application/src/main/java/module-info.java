@@ -93,15 +93,18 @@ module pers.dog {
     opens pers.dog.setting;
     opens pers.dog.markdown;
     opens pers.dog.git;
+    opens pers.dog.tool;
     // package
     opens pers.dog.api.controller;
     opens pers.dog.api.controller.setting;
     opens pers.dog.api.controller.markdown;
     opens pers.dog.api.controller.git;
+    opens pers.dog.api.controller.tool;
     opens pers.dog.api.callback;
     opens pers.dog.api.dto;
     opens pers.dog.app.service;
     opens pers.dog.app.service.impl;
+    opens pers.dog.component.translate;
     opens pers.dog.domain.entity;
     opens pers.dog.domain.repository;
     opens pers.dog.infra.action;
@@ -117,5 +120,6 @@ module pers.dog {
     opens pers.dog.infra.resource;
     opens pers.dog.infra.status;
     opens messages;
+    opens pers.dog.infra.action.tool;
 
 }

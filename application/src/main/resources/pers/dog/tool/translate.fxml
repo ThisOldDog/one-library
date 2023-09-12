@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import org.controlsfx.control.PrefixSelectionComboBox?>
+<?import org.controlsfx.glyphfont.Glyph?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pers.dog.api.controller.tool.TranslateController"
+      prefHeight="240.0" prefWidth="720.0">
+    <padding>
+        <Insets top="4" bottom="4" left="4" right="4"/>
+    </padding>
+    <HBox alignment="CENTER">
+        <PrefixSelectionComboBox fx:id="sourceLanguage" disable="true"/>
+        <Button onAction="#swapLanguage" focusTraversable="false">
+            <HBox.margin>
+                <Insets left="16" right="16"/>
+            </HBox.margin>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="ARROWS_H"/>
+            </graphic>
+        </Button>
+        <PrefixSelectionComboBox fx:id="targetLanguage" disable="true"/>
+    </HBox>
+    <SplitPane dividerPositions="0.5">
+        <VBox.margin>
+            <Insets top="8"/>
+        </VBox.margin>
+        <TextArea fx:id="sourceText" wrapText="true"/>
+        <TextArea fx:id="targetText" wrapText="true"/>
+    </SplitPane>
+</VBox>
