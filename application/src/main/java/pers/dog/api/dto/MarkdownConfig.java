@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/9/11 16:17
+ * @author 废柴 2023/9/11 16:17
  */
 public class MarkdownConfig {
     private boolean extensionAll;

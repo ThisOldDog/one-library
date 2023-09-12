@@ -3,7 +3,7 @@ package pers.dog.infra.property;
 import pers.dog.boot.infra.control.I18nProperty;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/9/5 15:25
+ * @author 废柴 2023/9/5 15:25
  */
 @I18nProperty(name = "info.project.name")
 public class NameProperty {

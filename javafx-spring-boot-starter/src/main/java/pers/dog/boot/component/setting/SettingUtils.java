@@ -8,7 +8,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import pers.dog.boot.infra.util.WordUtils;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/9/11 15:31
+ * @author 废柴 2023/9/11 15:31
  */
 public class SettingUtils {
 

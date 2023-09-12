@@ -8,6 +8,7 @@
 <?import org.controlsfx.control.PrefixSelectionComboBox?>
 <?import org.fxmisc.flowless.VirtualizedScrollPane?>
 <?import pers.dog.infra.control.MarkdownCodeArea?>
+<?import javafx.scene.text.Text?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="pers.dog.api.controller.markdown.HtmlToMarkdownController">
@@ -36,18 +37,26 @@
                 </VBox.margin>
             </Label>
             <TextField fx:id="projectName" disable="true"/>
-            <Accordion>
+            <Accordion expandedPane="$translatePane">
+                <VBox.margin>
+                    <Insets top="12"/>
+                </VBox.margin>
                 <panes>
-                    <TitledPane text="%info.project.html-to-markdown.translate">
+                    <TitledPane fx:id="translatePane" text="%info.project.html-to-markdown.translate">
                         <VBox>
                             <Label text="%info.project.html-to-markdown.translate.source_language"/>
-                            <PrefixSelectionComboBox fx:id="sourceLanguage"/>
+                            <PrefixSelectionComboBox fx:id="sourceLanguage" disable="true"/>
                             <Label text="%info.project.html-to-markdown.translate.target_language">
                                 <VBox.margin>
                                     <Insets top="12"/>
                                 </VBox.margin>
                             </Label>
-                            <PrefixSelectionComboBox fx:id="targetLanguage"/>
+                            <PrefixSelectionComboBox fx:id="targetLanguage" disable="true"/>
+                            <FlowPane fx:id="toolTranslateHint" alignment="CENTER_LEFT" minHeight="24">
+                                <Text text="%info.project.html-to-markdown.translate.undefined.prefix"/>
+                                <Hyperlink text="%info.project.html-to-markdown.translate.undefined.setting"/>
+                                <Text text="%info.project.html-to-markdown.translate.undefined.suffix"/>
+                            </FlowPane>
                         </VBox>
                     </TitledPane>
                 </panes>

@@ -1,7 +1,7 @@
 package pers.dog.boot.component.setting;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/9/11 20:38
+ * @author 废柴 2023/9/11 20:38
  */
 @FunctionalInterface
 public interface SettingChangeListener {

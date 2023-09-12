@@ -5,13 +5,14 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 import com.azure.ai.translation.text.TextTranslationClient;
 import com.azure.ai.translation.text.TextTranslationClientBuilder;
 import com.azure.ai.translation.text.models.*;
 import com.azure.core.credential.AzureKeyCredential;
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
@@ -20,9 +21,11 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.web.WebView;
 import org.controlsfx.control.MaskerPane;
 import org.controlsfx.control.PrefixSelectionComboBox;
+import org.springframework.util.ObjectUtils;
 import pers.dog.api.controller.setting.SettingToolTranslateController;
 import pers.dog.api.dto.ToolTranslate;
 import pers.dog.app.service.ProjectService;
@@ -38,6 +41,7 @@ import pers.dog.infra.control.MarkdownCodeArea;
  * @author 废柴 2023/8/21 19:53
  */
 public class HtmlToMarkdownController implements Initializable {
+
     public interface TranslateService {
         List<ValueMeaning> languages();
 
@@ -46,7 +50,6 @@ public class HtmlToMarkdownController implements Initializable {
 
     public static class AzureTranslateService implements TranslateService {
         private final TextTranslationClient client;
-        private final List<ValueMeaning> languages;
 
         public AzureTranslateService(String apiKey, String endpoint, String region) {
             client = new TextTranslationClientBuilder()
@@ -54,17 +57,16 @@ public class HtmlToMarkdownController implements Initializable {
                     .endpoint(endpoint)
                     .region(region)
                     .buildClient();
-            languages = client.getLanguages()
-                    .getTranslation()
-                    .values()
-                    .stream()
-                    .map(translationLanguage -> new ValueMeaning().setValue(translationLanguage.getName()).setMeaning(translationLanguage.getNativeName()))
-                    .collect(Collectors.toList());
         }
 
         @Override
         public List<ValueMeaning> languages() {
-            return languages;
+            return client.getLanguages(null, null, "zh-hans", null)
+                    .getTranslation()
+                    .entrySet()
+                    .stream()
+                    .map(entry -> new ValueMeaning().setValue(entry.getKey()).setMeaning(entry.getValue().getName()))
+                    .toList();
         }
 
         @Override
@@ -106,13 +108,17 @@ public class HtmlToMarkdownController implements Initializable {
     public TextField directory;
     @FXML
     public TextField projectName;
+    @FXML
+    public PrefixSelectionComboBox<ValueMeaning> sourceLanguage;
+    @FXML
+    public PrefixSelectionComboBox<ValueMeaning> targetLanguage;
+    @FXML
+    public FlowPane toolTranslateHint;
     private final FlexmarkHtmlConverter converter = FlexmarkHtmlConverter.builder().build();
 
     private final ProjectService projectService;
     private final SettingService settingService;
-    public PrefixSelectionComboBox<ValueMeaning> sourceLanguage;
-    public PrefixSelectionComboBox<ValueMeaning> targetLanguage;
-    private TranslateService translateService;
+    private final ObjectProperty<TranslateService> translateService = new SimpleObjectProperty<>();
 
     public HtmlToMarkdownController(ProjectService projectService, SettingService settingService) {
         this.projectService = projectService;
@@ -125,8 +131,16 @@ public class HtmlToMarkdownController implements Initializable {
             if (newValue == Worker.State.SUCCEEDED) {
                 try {
                     String document = String.valueOf(contentPreview.getEngine().executeScript("document.documentElement.outerHTML"));
-                    if (sourceLanguage.getValue() != null && targetLanguage.getValue() != null) {
-                        document = translateService.translateHtml(document, sourceLanguage.getValue().getValue(), targetLanguage.getValue().getValue());
+                    if (translateService.getValue() != null && sourceLanguage.getValue() != null && targetLanguage.getValue() != null) {
+                        try {
+                            document = translateService.getValue().translateHtml(document, sourceLanguage.getValue().getValue(), targetLanguage.getValue().getValue());
+                        } catch (Exception e) {
+                            AlertUtils.showException("info.project.html-to-markdown.translate.title",
+                                    "info.project.html-to-markdown.translate.header_text",
+                                    "info.project.html-to-markdown.translate.content_text",
+                                    "info.project.html-to-markdown.translate.exception_stacktrace",
+                                    e);
+                        }
                     }
                     String markdown = converter.convert(document);
                     markdownPreview.replaceText(markdown);
@@ -142,14 +156,37 @@ public class HtmlToMarkdownController implements Initializable {
                         contentPreview.getEngine().getLoadWorker().getException());
             }
         });
+        translateService.addListener((observable, oldValue, newValue) -> {
+            toolTranslateHint.setVisible(newValue == null);
+            sourceLanguage.setDisable(newValue == null);
+            targetLanguage.setDisable(newValue == null);
+        });
         buildTranslateService(settingService.getOption(SettingToolTranslateController.SETTING_CODE));
         settingService.onSettingChange(SettingToolTranslateController.SETTING_CODE, option -> buildTranslateService(settingService.getOption((String) option)));
     }
 
     private void buildTranslateService(ToolTranslate option) {
-        translateService = TranslateServiceFactory.getService(option.getServiceType(), option.getApiKey(), option.getEndpoint(), option.getRegion());
-        sourceLanguage.setItems(FXCollections.observableArrayList(translateService.languages()));
-        targetLanguage.setItems(FXCollections.observableArrayList(translateService.languages()));
+        if (ObjectUtils.isEmpty(option.getServiceType())
+                || ObjectUtils.isEmpty(option.getApiKey())
+                || ObjectUtils.isEmpty(option.getEndpoint())
+                || ObjectUtils.isEmpty(option.getRegion())) {
+            translateService.setValue(null);
+            return;
+        }
+        translateService.setValue(TranslateServiceFactory.getService(option.getServiceType(), option.getApiKey(), option.getEndpoint(), option.getRegion()));
+        if (translateService.getValue() != null) {
+            List<ValueMeaning> languages = translateService.getValue().languages();
+            sourceLanguage.setItems(FXCollections.observableArrayList(languages));
+            targetLanguage.setItems(FXCollections.observableArrayList(languages));
+            for (ValueMeaning language : languages) {
+                if (language.getValue() != null && language.getValue().startsWith("en")) {
+                    sourceLanguage.setValue(language);
+                }
+                if (language.getValue() != null && language.getValue().startsWith("zh")) {
+                    targetLanguage.setValue(language);
+                }
+            }
+        }
     }
 
 

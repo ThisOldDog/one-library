@@ -3,7 +3,7 @@ package pers.dog.api.dto;
 import pers.dog.infra.constant.TranslateServiceType;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/9/11 14:00
+ * @author 废柴 2023/9/11 14:00
  */
 public class ToolTranslate {
     private TranslateServiceType serviceType;
