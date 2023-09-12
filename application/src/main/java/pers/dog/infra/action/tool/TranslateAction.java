@@ -79,6 +79,7 @@ public class TranslateAction extends Action {
             }
         });
         dialogPane.autosize();
+        cache = dialog;
         return dialog;
     }
 }
