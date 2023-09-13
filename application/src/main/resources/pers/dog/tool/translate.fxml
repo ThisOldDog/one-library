@@ -27,7 +27,7 @@
         </Button>
         <PrefixSelectionComboBox fx:id="targetLanguage" disable="true"/>
     </HBox>
-    <SplitPane dividerPositions="0.5">
+    <SplitPane dividerPositions="0.5" VBox.vgrow="ALWAYS">
         <VBox.margin>
             <Insets top="8"/>
         </VBox.margin>

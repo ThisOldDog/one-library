@@ -12,11 +12,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.Clipboard;
+import javafx.scene.input.Mnemonic;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
@@ -236,9 +239,22 @@ public class MarkdownCodeArea extends CodeArea {
         translateAction.onSourceTextRequest(this::getSelectedText);
         translateAction.onConsumerTextApply(this::replaceSelection);
         // 上下文菜单
-        setContextMenu(ActionUtils.createContextMenu(Arrays.asList(
-                translateAction
-        )));
+        List<Action> contextMenuItemList = Arrays.asList(
+                translateAction,
+                ActionUtils.ACTION_SEPARATOR
+        );
+        setContextMenu(ActionUtils.createContextMenu(contextMenuItemList));
+        for (Action action : contextMenuItemList) {
+            if (action.getAccelerator() != null) {
+                ApplicationContextHolder.getStage().getScene().getAccelerators()
+                        .put(action.getAccelerator(), () -> {
+                            if (action.isDisabled()) {
+                                return;
+                            }
+                            action.handle(new ActionEvent(getContextMenu(), this));
+                        });
+            }
+        }
     }
 
     public void setOnPaste(EventHandler<PasteEvent> consumer) {

@@ -9,12 +9,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import org.apache.commons.lang3.BooleanUtils;
 import org.controlsfx.control.action.Action;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import pers.dog.api.controller.tool.TranslateController;
-import pers.dog.app.service.ProjectEditorService;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.FXMLUtils;
 
@@ -26,9 +28,11 @@ public class TranslateAction extends Action {
     private Consumer<String> consumerText;
     private Dialog<Void> cache;
 
-    public TranslateAction(ProjectEditorService editorService) {
+    // Ctrl + Shift + T
+    public TranslateAction() {
         super(I18nMessageSource.getResource("info.tool.translate"));
         super.setEventHandler(this::onAction);
+        setAccelerator(new KeyCodeCombination(KeyCode.T, KeyCombination.ModifierValue.DOWN, KeyCombination.ModifierValue.DOWN, KeyCombination.ModifierValue.UP, KeyCombination.ModifierValue.UP, KeyCombination.ModifierValue.UP));
         getDialog();
     }
 
@@ -74,8 +78,8 @@ public class TranslateAction extends Action {
         });
         dialog.showingProperty().addListener((observable, oldValue, newValue) -> {
             if (BooleanUtils.isTrue(newValue) && (sourceText != null)) {
-                    controller.setSourceText(sourceText.get());
-                    controller.translate();
+                controller.setSourceText(sourceText.get());
+                controller.translate();
             }
         });
         dialogPane.autosize();
