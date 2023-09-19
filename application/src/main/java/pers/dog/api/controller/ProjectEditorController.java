@@ -129,9 +129,11 @@ public class ProjectEditorController implements Initializable {
             // Set src to absolute path
             if (Image.class.isAssignableFrom(node.getClass())) {
                 Attribute src = mutableAttributes.get("src");
-                String srcValue = src.getValue();
-                if (srcValue != null && srcValue.startsWith("one-library://")) {
-                    mutableAttributes.replaceValue("src", controller.path + srcValue.substring(14));
+                if (src != null) {
+                    String srcValue = src.getValue();
+                    if (srcValue != null && srcValue.startsWith("one-library://")) {
+                        mutableAttributes.replaceValue("src", controller.path + srcValue.substring(14));
+                    }
                 }
             }
         }
