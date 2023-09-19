@@ -20,6 +20,7 @@ import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
 import pers.dog.boot.infra.control.PropertySheetDialog;
+import pers.dog.boot.infra.control.PropertySheetDialogResult;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.FXMLUtils;
 import pers.dog.domain.entity.Project;
@@ -78,11 +79,14 @@ public class ProjectServiceImpl implements ProjectService {
         Assert.isTrue(ProjectType.DIRECTORY.equals(projectType) || fileType != null, "[Project] When the project type is file, the type of the file cannot be null.");
         NameProperty nameProperty = new NameProperty();
         nameProperty.setName(fileName != null ? fileName : buildFileName(parent, projectType, fileType));
-        nameProperty = new PropertySheetDialog<>(nameProperty, ButtonType.OK)
+        PropertySheetDialogResult<NameProperty> result = new PropertySheetDialog<>(nameProperty, ButtonType.OK)
                 .showAndWait()
                 .orElse(null);
+        nameProperty = result == null ? null : result.getResult();
         if (nameProperty == null || ObjectUtils.isEmpty(nameProperty.getName())) {
-            alertNameEmpty();
+            if (result != null && ButtonType.OK.equals(result.getType())) {
+                alertNameEmpty();
+            }
             return null;
         }
         if (fileType != null && !nameProperty.getName().endsWith(fileType.getSuffix())) {

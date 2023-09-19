@@ -562,7 +562,7 @@ public class ProjectEditorController implements Initializable {
 
     public void header() {
         int currentParagraph = codeArea.getCurrentParagraph();
-        new PropertySheetDialog<>(new HeaderProperty()).showAndWait().ifPresent(headerProperty -> startWith(currentParagraph, repeat('#', headerProperty.getLevel().getLevel()) + " ", Set.of('#', ' ')));
+        new PropertySheetDialog<>(new HeaderProperty()).showAndWait().ifPresent(result -> startWith(currentParagraph, repeat('#', result.getResult().getLevel().getLevel()) + " ", Set.of('#', ' ')));
     }
 
     public void blockQuote() {
@@ -593,7 +593,7 @@ public class ProjectEditorController implements Initializable {
 
     public void table() {
         int currentParagraph = codeArea.getCurrentParagraph();
-        new PropertySheetDialog<>(new TableProperty()).showAndWait().ifPresent(property -> appendNewLine(currentParagraph, buildMarkdownTable(property)));
+        new PropertySheetDialog<>(new TableProperty()).showAndWait().ifPresent(result -> appendNewLine(currentParagraph, buildMarkdownTable(result.getResult())));
     }
 
     public void dividingLine() {
@@ -602,13 +602,13 @@ public class ProjectEditorController implements Initializable {
 
     public void link() {
         IndexRange selection = codeArea.getSelection();
-        new PropertySheetDialog<>(new LinkProperty()).showAndWait().ifPresent(property -> wrapSelection(null, new IndexRange(selection.getEnd(), selection.getEnd()), String.format("[%s](%s)", property.getTitle(), property.getUrl()), ""));
+        new PropertySheetDialog<>(new LinkProperty()).showAndWait().ifPresent(result -> wrapSelection(null, new IndexRange(selection.getEnd(), selection.getEnd()), String.format("[%s](%s)", result.getResult().getTitle(), result.getResult().getUrl()), ""));
     }
 
 
     public void image() {
         IndexRange selection = codeArea.getSelection();
-        new PropertySheetDialog<>(new ImageProperty()).showAndWait().ifPresent(property -> wrapSelection(null, new IndexRange(selection.getEnd(), selection.getEnd()), String.format("![%s](%s \"%s\")", property.getName(), property.getUrl(), property.getTitle()), ""));
+        new PropertySheetDialog<>(new ImageProperty()).showAndWait().ifPresent(result -> wrapSelection(null, new IndexRange(selection.getEnd(), selection.getEnd()), String.format("![%s](%s \"%s\")", result.getResult().getName(), result.getResult().getUrl(), result.getResult().getTitle()), ""));
     }
 
     public void codeInline() {

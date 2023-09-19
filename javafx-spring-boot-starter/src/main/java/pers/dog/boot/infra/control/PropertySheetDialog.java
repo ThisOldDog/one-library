@@ -12,7 +12,7 @@ import org.controlsfx.property.BeanProperty;
 import org.springframework.util.ObjectUtils;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 
-public class PropertySheetDialog<T> extends Dialog<T> {
+public class PropertySheetDialog<T> extends Dialog<PropertySheetDialogResult<T>> {
     public static class I18nBeanProperty extends BeanProperty {
         private final String name;
         private final String description;
@@ -79,6 +79,7 @@ public class PropertySheetDialog<T> extends Dialog<T> {
         propertySheet.setMinHeight(minHeight);
         propertySheet.setMaxWidth(maxWidth);
         propertySheet.setMaxHeight(maxHeight);
+        propertySheet.requestFocus();
         dialogPane.requestLayout();
         dialogPane.autosize();
 
@@ -88,8 +89,11 @@ public class PropertySheetDialog<T> extends Dialog<T> {
             dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         }
         setResultConverter(buttonType ->
-                ButtonType.OK.equals(buttonType) ? this.value : null
+                ButtonType.OK.equals(buttonType)
+                        ? new PropertySheetDialogResult<T>().setType(buttonType).setResult(this.value)
+                        : new PropertySheetDialogResult<T>().setType(buttonType).setResult(null)
         );
+
     }
 
     private PropertySheet buildFormPane(T value) {
