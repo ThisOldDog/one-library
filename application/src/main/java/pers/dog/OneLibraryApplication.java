@@ -8,6 +8,7 @@ import pers.dog.boot.JavaFXSpringBootApplication;
  */
 @SpringBootApplication
 public class OneLibraryApplication extends JavaFXSpringBootApplication {
+
     public static void main(String[] args) {
         run(OneLibraryApplication.class, args);
     }

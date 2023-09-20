@@ -40,3 +40,7 @@
 .button-save-dirty {
     -fx-background-color: tan;
 }
+
+.markdown-editor-strong {
+    -fx-border-style: SOLID;
+}

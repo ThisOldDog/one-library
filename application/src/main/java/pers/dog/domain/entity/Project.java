@@ -65,7 +65,7 @@ public class Project {
         if (ProjectType.DIRECTORY.equals(projectType)) {
             return setNewProjectName(text);
         }
-        return setNewProjectName(text + "." + fileType.getSuffix());
+        return setNewProjectName(text + fileType.getSuffix());
     }
 
     /* Getter / Setter */

@@ -21,32 +21,77 @@
     -fx-fill: cadetblue;
     -fx-font-weight: bold;
 }
+
 .bold-italic {
     -fx-font-weight: bold;
     -fx-font-style: italic;
 }
+
 .bold {
     -fx-font-weight: bold;
 }
+
 .italic {
     -fx-font-style: italic;
 }
+
 .reference {
     -fx-fill: olivedrab;
 }
+
 .ordered-list {
     -fx-fill: orange;
 }
+
 .unordered-list {
     -fx-fill: orangered;
 }
+
 .code {
     -fx-fill: firebrick;
 }
+
 .fenced-code {
     -fx-fill: grey;
 }
 
 .file-internal-search-candidate {
     -rtfx-background-color: skyblue;
+}
+
+
+.markdown-editor-header {
+    -fx-fill: dodgerblue;
+}
+
+.markdown-editor-block-quote {
+    -fx-fill: dodgerblue;
+}
+
+.markdown-editor-unordered-lis {
+    -fx-fill: seagreen;
+}
+
+.markdown-editor-ordered-lis {
+    -fx-fill: seagreen;
+}
+
+.markdown-editor-line-break {
+    -fx-fill: slategray;
+}
+
+.markdown-editor-link-image {
+    -fx-fill: dodgerblue;
+}
+
+.markdown-editor-code-inline {
+    -fx-fill: orangered;
+}
+
+.markdown-editor-code-fence {
+    -fx-fill: firebrick;
+}
+
+.markdown-editor-strong {
+    -fx-fill: dodgerblue;
 }

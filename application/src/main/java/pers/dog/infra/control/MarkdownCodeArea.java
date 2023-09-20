@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
@@ -16,9 +18,11 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.IndexRange;
 import javafx.scene.input.Clipboard;
-import javafx.scene.input.Mnemonic;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
 import org.fxmisc.richtext.CodeArea;
@@ -150,11 +154,45 @@ public class MarkdownCodeArea extends CodeArea {
             '(', ')');
     private static final List<String> BRACKET_MATCH_STYLE = Collections.singletonList("bracket-match");
     private static final Collection<String> SEARCH_CANDIDATE_STYLE_CLASS = Collections.singletonList("file-internal-search-candidate");
+    /*
+     * 代码高亮-块高亮
+     */
+    private static final String HEADER_PATTERN = "^#{1,6} [ \\t\\S]*";
+    private static final String BLOCK_QUOTE_PATTERN = "^>{1,6} [ \\t\\S]*";
+    private static final String UNORDERED_LIS_PATTERN = "^[ \\t>]*[-+*] [ \\t\\S]*";
+    private static final String ORDERED_LIS_PATTERN = "^[ \\t>]*\\d+\\. [ \\t\\S]*";
+    private static final String LINE_BREAK_PATTERN = "<br[ /]*>";
+    private static final String LINK_IMAGE_PATTERN = "!?\\[.*?\\]\\(.*?\\)";
+    private static final String CODE_INLINE_PATTERN = "`[ \\t\\S]*`";
+    private static final String CODE_FENCE_PATTERN = "[ \\t\\n]*```[\\s\\S^$]*?```$";
+    private static final String STRONG_PATTERN = "(\\*{1,2}.+?\\*{1,2})|( \\*{3}.+?\\*{3} )|( _{1,3}.+?_{1,3} )|( -{1,3}.+?-{1,3} )";
+    private static final Pattern PATTERN = Pattern.compile(
+            "(?<HEADER>" + HEADER_PATTERN + ")"
+                    + "|(?<BLOCKQUOTE>" + BLOCK_QUOTE_PATTERN + ")"
+                    + "|(?<UNORDEREDLIS>" + UNORDERED_LIS_PATTERN + ")"
+                    + "|(?<ORDEREDLIS>" + ORDERED_LIS_PATTERN + ")"
+                    + "|(?<LINEBREAK>" + LINE_BREAK_PATTERN + ")"
+                    + "|(?<LINKIMAGE>" + LINK_IMAGE_PATTERN + ")"
+                    + "|(?<CODEINLINE>" + CODE_INLINE_PATTERN + ")"
+                    + "|(?<CODEFENCE>" + CODE_FENCE_PATTERN + ")"
+                    + "|(?<STRONG>" + STRONG_PATTERN + ")",
+            Pattern.MULTILINE
+    );
+    private static final List<Pair<String, Collection<String>>> PATTERN_STYLE_MAP = List.of(
+            Pair.of("HEADER", Collections.singletonList("markdown-editor-header")),
+            Pair.of("BLOCKQUOTE", Collections.singletonList("markdown-editor-block-quote")),
+            Pair.of("UNORDEREDLIS", Collections.singletonList("markdown-editor-unordered-lis")),
+            Pair.of("ORDEREDLIS", Collections.singletonList("markdown-editor-ordered-lis")),
+            Pair.of("LINEBREAK", Collections.singletonList("markdown-editor-line-break")),
+            Pair.of("LINKIMAGE", Collections.singletonList("markdown-editor-link-image")),
+            Pair.of("CODEINLINE", Collections.singletonList("markdown-editor-code-inline")),
+            Pair.of("CODEFENCE", Collections.singletonList("markdown-editor-code-fence")),
+            Pair.of("STRONG", Collections.singletonList("markdown-editor-strong"))
+    );
     private final ObservableList<IndexRange> searchCandidateList = FXCollections.observableArrayList();
     private final ObjectProperty<Integer> searchCurrentIndex = new SimpleObjectProperty<>(-1);
     private final ObjectProperty<Boolean> circulateFlag = new SimpleObjectProperty<>(false);
     private final List<TextInsertionListener> insertionListeners;
-    private TranslateAction translateAction;
     private ExecutorService executor;
     private EventHandler<PasteEvent> pasteEventConsumer;
 
@@ -180,6 +218,28 @@ public class MarkdownCodeArea extends CodeArea {
     }
 
     private void init(MarkdownCodeArea codeArea) {
+        addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (KeyCode.TAB.equals(event.getCode())) {
+                // Tab 转空格
+                replaceSelection("    ");
+                event.consume();
+            } else if (KeyCode.ENTER.equals(event.getCode())) {
+                // 换行自动填充空格
+                Paragraph<Collection<String>, String, Collection<String>> paragraph = getParagraph(getCurrentParagraph());
+                String text = paragraph.getText();
+                if (text != null) {
+                    char[] charArray = text.toCharArray();
+                    int i;
+                    for (i = 0; i < charArray.length; i++) {
+                        if (charArray[i] != ' ') {
+                            break;
+                        }
+                    }
+                    replaceSelection("\n" + " ".repeat(i));
+                }
+                event.consume();
+            }
+        });
         // 行号
         setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         // 高亮
@@ -234,7 +294,7 @@ public class MarkdownCodeArea extends CodeArea {
             }
         });
         // 翻译
-        this.translateAction = ApplicationContextHolder.getContext().getBean(TranslateAction.class);
+        TranslateAction translateAction = ApplicationContextHolder.getContext().getBean(TranslateAction.class);
         selectedTextProperty().addListener((observable, oldValue, newValue) -> translateAction.setDisabled(ObjectUtils.isEmpty(newValue)));
         translateAction.onSourceTextRequest(this::getSelectedText);
         translateAction.onConsumerTextApply(this::replaceSelection);
@@ -260,6 +320,7 @@ public class MarkdownCodeArea extends CodeArea {
     public void setOnPaste(EventHandler<PasteEvent> consumer) {
         this.pasteEventConsumer = consumer;
     }
+
     @Override
     public void paste() {
         Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -314,6 +375,17 @@ public class MarkdownCodeArea extends CodeArea {
         }
         // 匹配括号
         computeHighlightingBracketPair(treeStyleSpansBuilder, text);
+        // 代码高亮
+        Matcher matcher = PATTERN.matcher(text);
+        while (matcher.find()) {
+            for (Pair<String, Collection<String>> patternStyle : PATTERN_STYLE_MAP) {
+                if (matcher.group(patternStyle.getLeft()) != null) {
+                    treeStyleSpansBuilder.addChild(matcher.start(), matcher.end(), patternStyle.getRight());
+                    break;
+                }
+            }
+        }
+        // 行高亮
         return treeStyleSpansBuilder.create();
     }
 
