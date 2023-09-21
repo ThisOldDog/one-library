@@ -3,7 +3,7 @@ package pers.dog.boot.infra.control;
 import javafx.scene.control.ButtonType;
 
 /**
- * @author qingsheng.chen@hand-china.com 2023/9/19 17:25
+ * @author 废柴 2023/9/19 17:25
  */
 public class PropertySheetDialogResult<T> {
     private ButtonType type;

@@ -37,3 +37,12 @@ javafx:
             options:
               service-type: AZURE_AI_TRANSLATE
               text-translate-endpoint: https://api.cognitive.microsofttranslator.com/
+      - group-name: info.setting.system
+        children:
+          - code: http-proxy
+            group-name: info.setting.system.http-proxy
+            scene-name: setting/system-http-proxy
+            setting-type: pers.dog.api.dto.HttpProxy
+            options:
+              no-proxy: true
+              manual-proxy-http: true

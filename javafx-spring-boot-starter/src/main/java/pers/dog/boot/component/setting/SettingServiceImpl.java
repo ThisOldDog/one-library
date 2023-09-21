@@ -6,6 +6,7 @@ import java.util.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.scene.control.TreeItem;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
@@ -25,10 +26,10 @@ public class SettingServiceImpl implements SettingService {
 
     private final ApplicationDirFileOperationHandler handler;
     private final Map<String, Object> settingLocalMap;
+    private final Map<String, List<SettingChangeListener>> settingChangeListenerMap = new HashMap<>();
     private String latestSettingOption;
-    private Map<String, List<SettingChangeListener>> settingChangeListenerMap = new HashMap<>();
 
-    public SettingServiceImpl(ApplicationProperties applicationProperties) {
+    public SettingServiceImpl(ApplicationProperties applicationProperties, ObjectProvider<List<SettingLoadedListener>> loadedListenerProvider) {
         this.applicationProperties = applicationProperties;
 
         FileOperationOption.ApplicationDirOption applicationDirOption = new FileOperationOption.ApplicationDirOption().setPathPrefix(".data/conf");
@@ -39,6 +40,12 @@ public class SettingServiceImpl implements SettingService {
                 .map(HashMap::new)
                 .orElseGet(HashMap::new);
         setDefaultValue(applicationProperties.getSetting());
+        List<SettingLoadedListener> loadedListeners = loadedListenerProvider.getIfAvailable();
+        if (!CollectionUtils.isEmpty(loadedListeners)) {
+            for (SettingLoadedListener loadedListener : loadedListeners) {
+                loadedListener.onSettingLoaded(this);
+            }
+        }
     }
 
     private void setDefaultValue(List<SettingGroup> setting) {

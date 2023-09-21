@@ -1,5 +1,6 @@
 module pers.dog {
     requires java.sql;
+    requires java.net.http;
 
     requires javafx.controls;
     requires javafx.fxml;

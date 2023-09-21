@@ -52,7 +52,6 @@ public class GitPullAction extends Action {
                 default ->
                         Platform.runLater(() -> progressDialog.setText(I18nMessageSource.getResource("confirmation.git.copy_to_local")));
             }
-            progressDialog.getDialogPane().autosize();
         };
         new Thread(() -> {
             Platform.runLater(() -> progressDialog.setText(I18nMessageSource.getResource("confirmation.git.project.dirty_check")));

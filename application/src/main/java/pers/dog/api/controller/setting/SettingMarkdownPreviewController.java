@@ -67,6 +67,7 @@ public class SettingMarkdownPreviewController extends AbstractSettingOptionContr
 
     @Override
     public void apply() {
+        super.apply();
         Platform.runLater(projectEditorService::reloadAllSetting);
     }
 }

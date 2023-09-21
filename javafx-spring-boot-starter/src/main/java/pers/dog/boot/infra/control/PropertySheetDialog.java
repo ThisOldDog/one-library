@@ -14,9 +14,9 @@ import pers.dog.boot.infra.i18n.I18nMessageSource;
 
 public class PropertySheetDialog<T> extends Dialog<PropertySheetDialogResult<T>> {
     public static class I18nBeanProperty extends BeanProperty {
+
         private final String name;
         private final String description;
-
         public I18nBeanProperty(Object bean, PropertyDescriptor propertyDescriptor) {
             super(bean, propertyDescriptor);
             I18nProperty i18nProperty = propertyDescriptor.getReadMethod().getAnnotation(I18nProperty.class);
@@ -40,9 +40,9 @@ public class PropertySheetDialog<T> extends Dialog<PropertySheetDialogResult<T>>
         public String getDescription() {
             return ObjectUtils.isEmpty(description) ? super.getName() : description;
         }
+
     }
     private T value;
-
     public PropertySheetDialog(T value) {
         this(value, 360D, 60D, 1200D, 1000D);
     }
@@ -94,6 +94,11 @@ public class PropertySheetDialog<T> extends Dialog<PropertySheetDialogResult<T>>
                         : new PropertySheetDialogResult<T>().setType(buttonType).setResult(null)
         );
 
+    }
+
+    public PropertySheetDialog<T> headerText(String headerText) {
+        setHeaderText(I18nMessageSource.getResource(headerText));
+        return this;
     }
 
     private PropertySheet buildFormPane(T value) {

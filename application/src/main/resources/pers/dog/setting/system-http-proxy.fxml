@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.MaskerPane?>
+<?import pers.dog.boot.component.control.NumberField?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="pers.dog.api.controller.setting.SettingSystemHttpProxyController">
+    <GridPane prefHeight="400.0" prefWidth="600.0" vgap="8" hgap="8">
+        <padding>
+            <Insets top="16" bottom="16" left="16" right="16"/>
+        </padding>
+        <columnConstraints>
+            <ColumnConstraints maxWidth="32" prefWidth="32"/>
+            <ColumnConstraints maxWidth="32" prefWidth="32"/>
+            <ColumnConstraints maxWidth="280" prefWidth="280"/>
+            <ColumnConstraints maxWidth="32" prefWidth="32"/>
+            <ColumnConstraints maxWidth="720" prefWidth="560"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0"/>
+        </rowConstraints>
+        <fx:define>
+            <ToggleGroup fx:id="httpProxyTypeGroup"/>
+            <ToggleGroup fx:id="manualProxyTypeGroup"/>
+        </fx:define>
+
+        <RadioButton fx:id="noProxy"  GridPane.rowIndex="0" GridPane.columnIndex="0" toggleGroup="$httpProxyTypeGroup"/>
+        <Label text="%info.setting.system.http-proxy.no-proxy" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.columnSpan="4"/>
+
+        <RadioButton fx:id="manualProxy"  GridPane.rowIndex="1" GridPane.columnIndex="0" toggleGroup="$httpProxyTypeGroup"/>
+        <Label text="%info.setting.system.http-proxy.manual-proxy" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.columnSpan="4"/>
+
+        <RadioButton fx:id="manualProxyHttp"  GridPane.rowIndex="2" GridPane.columnIndex="1" toggleGroup="$manualProxyTypeGroup"/>
+        <Label text="%info.setting.system.http-proxy.manual-proxy.http" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+        <RadioButton fx:id="manualProxySocks"  GridPane.rowIndex="2" GridPane.columnIndex="3" toggleGroup="$manualProxyTypeGroup"/>
+        <Label text="%info.setting.system.http-proxy.manual-proxy.socks" GridPane.rowIndex="2" GridPane.columnIndex="4"/>
+
+
+        <Label text="%info.setting.system.http-proxy.manual-proxy.host-name" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+        <TextField fx:id="hostName" GridPane.rowIndex="3" GridPane.columnIndex="3" GridPane.columnSpan="2"/>
+        <Label text="%info.setting.system.http-proxy.manual-proxy.port-number" GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+        <NumberField fx:id="portNumber" max="65535" maxWidth="80" GridPane.rowIndex="4" GridPane.columnIndex="3" GridPane.columnSpan="2"/>
+        <Label text="%info.setting.system.http-proxy.manual-proxy.no-proxy-host-name" GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+        <TextField fx:id="noProxyHostName" GridPane.rowIndex="5" GridPane.columnIndex="3" GridPane.columnSpan="2"/>
+        <Label text="%info.setting.system.http-proxy.manual-proxy.no-proxy-host-name.example" GridPane.rowIndex="6" GridPane.columnIndex="3" GridPane.columnSpan="2"/>
+
+        <Separator GridPane.rowIndex="7" GridPane.columnIndex="0" GridPane.columnSpan="5"/>
+        <Label text="%info.setting.system.http-proxy.manual-proxy.test.header" GridPane.rowIndex="8" GridPane.columnIndex="0" GridPane.columnSpan="5"/>
+        <TextField fx:id="testConnectionHostName" text="http://" GridPane.rowIndex="9" GridPane.columnIndex="0" GridPane.columnSpan="5"/>
+        <Button fx:id="testConnectionButton" onAction="#testConnection" text="%info.setting.system.http-proxy.manual-proxy.test" GridPane.rowIndex="10" GridPane.columnIndex="0" GridPane.columnSpan="4"/>
+        <HBox fx:id="testConnectionResult" GridPane.rowIndex="11" GridPane.columnIndex="0" GridPane.columnSpan="5"/>
+    </GridPane>
+    <MaskerPane fx:id="masker" visible="false" text="%info.wait.later"/>
+</StackPane>
+

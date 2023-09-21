@@ -12,11 +12,11 @@ import java.util.function.Consumer;
 
 import javafx.application.Platform;
 import javafx.scene.control.TreeItem;
-import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.RefNotAdvertisedException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.kohsuke.github.GHFileNotFoundException;
 import org.kohsuke.github.GitHubBuilder;
@@ -35,12 +35,12 @@ import pers.dog.boot.component.file.ApplicationDirFileOperationHandler;
 import pers.dog.boot.component.file.FileOperationOption;
 import pers.dog.boot.context.ApplicationContextHolder;
 import pers.dog.boot.infra.util.AlertUtils;
+import pers.dog.boot.infra.util.FileUtils;
 import pers.dog.domain.entity.Project;
 import pers.dog.infra.constant.GitRepositoryType;
 import pers.dog.infra.constant.ProjectType;
-import pers.dog.infra.util.MessageDigestUtils;
-import pers.dog.boot.infra.util.FileUtils;
 import pers.dog.infra.util.FreeMarkerUtils;
+import pers.dog.infra.util.MessageDigestUtils;
 
 /**
  * @author 废柴 2023/8/30 15:32
@@ -156,12 +156,13 @@ public class GitServiceImpl implements GitService {
                 return;
             }
             pullStepListener.accept(GitStep.OPEN);
-            try (Git git = open(dir, setting)) {
+            UsernamePasswordCredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider("PRIVATE-TOKEN", setting.getPrivateToken());
+            try (Git git = open(dir, setting, credentialsProvider)) {
                 if (git == null) {
                     return;
                 }
                 pullStepListener.accept(GitStep.PULL);
-                if (!pull(git)) {
+                if (!pull(git, credentialsProvider)) {
                     return;
                 }
                 pullStepListener.accept(GitStep.COPY_TO_LOCAL);
@@ -177,12 +178,13 @@ public class GitServiceImpl implements GitService {
                 return;
             }
             pushStepListener.accept(GitStep.OPEN);
-            try (Git git = open(dir, setting)) {
+            UsernamePasswordCredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider("PRIVATE-TOKEN", setting.getPrivateToken());
+            try (Git git = open(dir, setting, credentialsProvider)) {
                 if (git == null) {
                     return;
                 }
                 pushStepListener.accept(GitStep.PULL);
-                if (!pull(git)) {
+                if (!pull(git, credentialsProvider)) {
                     return;
                 }
                 pushStepListener.accept(GitStep.COPY_TO_REPOSITORY);
@@ -190,7 +192,7 @@ public class GitServiceImpl implements GitService {
                     return;
                 }
                 pushStepListener.accept(GitStep.PUSH);
-                push(git);
+                push(git, credentialsProvider);
             }
         }
 
@@ -228,7 +230,7 @@ public class GitServiceImpl implements GitService {
             return pushHandler.directory();
         }
 
-        private Git open(Path dir, GitSetting setting) {
+        private Git open(Path dir, GitSetting setting, UsernamePasswordCredentialsProvider credentialsProvider) {
             Path repositoryPath = dir.resolve(setting.getRepositoryName());
             Git git = null;
             if (Files.exists(repositoryPath)) {
@@ -245,12 +247,18 @@ public class GitServiceImpl implements GitService {
                 }
             }
             if (git == null) {
+
                 try {
                     git = Git.cloneRepository()
                             .setDirectory(repositoryPath.toFile())
                             .setURI(String.format("https://github.com/%s/%s.git", setting.getUsername(), setting.getRepositoryName()))
-                            .setCredentialsProvider(new UsernamePasswordCredentialsProvider("PRIVATE-TOKEN", setting.getPrivateToken()))
+                            .setCredentialsProvider(credentialsProvider)
                             .call();
+                    List<Ref> branchList = git.branchList().call();
+                    if (branchList.isEmpty()) {
+                        logger.info("[Git] Empty repository");
+                        git = Git.init().setGitDir(git.getRepository().getDirectory()).setInitialBranch("master").call();
+                    }
                 } catch (GitAPIException e) {
                     Platform.runLater(() -> AlertUtils.showException("error.action.git.push.clone.title",
                             "error.action.git.push.clone.header_text",
@@ -259,35 +267,26 @@ public class GitServiceImpl implements GitService {
                             e));
                 }
             }
+
             return git;
         }
 
-        private boolean pull(Git git) {
+        private boolean pull(Git git, UsernamePasswordCredentialsProvider credentialsProvider) {
             try {
-                PullResult result = git.pull().call();
+                if (git.branchList().call().isEmpty()) {
+                    return true;
+                }
+                PullResult result = git.pull().setCredentialsProvider(credentialsProvider).call();
                 if (!result.isSuccessful()) {
                     Platform.runLater(() -> AlertUtils.showError("error.action.git.push.pull.title",
                             "error.action.git.push.pull.header_text",
                             "error.action.git.push.pull.content_text"));
-                }
-                return true;
-            } catch (RefNotAdvertisedException e) {
-                logger.info("[Git] Empty repository", e);
-                try {
-                    git.branchCreate()
-                            .setName("master")
-                            .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
-                            .setStartPoint("origin/master").call();
-                } catch (GitAPIException ex) {
-                    Platform.runLater(() -> AlertUtils.showException("error.action.git.push.pull.title",
-                            "error.action.git.push.pull.header_text",
-                            "error.action.git.push.pull.content_text",
-                            "error.action.git.push.pull.exception_stacktrace",
-                            ex));
                     return false;
                 }
                 return true;
-            } catch (GitAPIException e) {
+            } catch (RefNotFoundException e) {
+                logger.error("Ref not found.", e);
+            } catch (Exception e) {
                 Platform.runLater(() -> AlertUtils.showException("error.action.git.push.pull.title",
                         "error.action.git.push.pull.header_text",
                         "error.action.git.push.pull.content_text",
@@ -330,11 +329,11 @@ public class GitServiceImpl implements GitService {
             }
         }
 
-        private void push(Git git) {
+        private void push(Git git, UsernamePasswordCredentialsProvider credentialsProvider) {
             try {
                 git.add().addFilepattern(".").call();
                 git.commit().setMessage(String.format("[One Library] push %s", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))).call();
-                git.push().call();
+                git.push().setCredentialsProvider(credentialsProvider).call();
             } catch (GitAPIException e) {
                 Platform.runLater(() -> AlertUtils.showException("error.action.git.push.push.title",
                         "error.action.git.push.push.header_text",

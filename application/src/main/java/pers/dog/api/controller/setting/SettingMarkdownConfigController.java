@@ -116,6 +116,7 @@ public class SettingMarkdownConfigController extends AbstractSettingOptionContro
 
     @Override
     public void apply() {
+        super.apply();
         for (CheckBox checkBox : extensionCheckBoxList) {
             if (checkBox.isSelected()) {
                 markdownExtension.enableExtension(checkBox.getText());

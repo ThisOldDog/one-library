@@ -1,6 +1,7 @@
 package pers.dog.boot.component.setting;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,18 +10,18 @@ import java.util.function.Function;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBoxBase;
-import javafx.scene.control.TextInputControl;
+import javafx.scene.control.*;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.Assert;
+import pers.dog.boot.component.control.NumberField;
 import pers.dog.boot.infra.util.ReflectUtils;
 import pers.dog.boot.infra.util.ValueConverterUtils;
 import pers.dog.boot.infra.util.WordUtils;
@@ -34,7 +35,8 @@ public abstract class AbstractSettingOptionController<T> implements Initializabl
     private final Map<String, WritableValue<?>> optionMap = FXCollections.observableHashMap();
     private final Map<String, Pair<Function<Object, Object>, Function<Object, Object>>> optionValueConverter = new HashMap<>();
     private final T option;
-    private boolean changed = false;
+    private BooleanProperty initialized = new SimpleBooleanProperty(false);
+    private BooleanProperty changed = new SimpleBooleanProperty(false);
 
     @SuppressWarnings("unchecked")
     protected AbstractSettingOptionController() {
@@ -81,7 +83,7 @@ public abstract class AbstractSettingOptionController<T> implements Initializabl
     protected WritableValue<?> setControlListener(String optionCode, Field field, Object control) {
         ChangeListener<Object> changeListener = (observable, oldValue, newValue) -> {
             // 修改状态
-            changed = true;
+            changed.setValue(initialized.getValue());
             // 实体类赋值
             try {
                 Field propertyField = optionFieldMap.get(optionCode);
@@ -90,7 +92,11 @@ public abstract class AbstractSettingOptionController<T> implements Initializabl
                 throw new IllegalStateException("Unable set control " + field.getName() + " on controller " + this.getClass(), e);
             }
         };
-        if (control instanceof TextInputControl) {
+        if (control instanceof NumberField) {
+            ObjectProperty<BigDecimal> property = ((NumberField) control).valueProperty();
+            property.addListener(changeListener);
+            return property;
+        } else if (control instanceof TextInputControl) {
             StringProperty property = ((TextInputControl) control).textProperty();
             property.addListener(changeListener);
             return property;
@@ -100,6 +106,10 @@ public abstract class AbstractSettingOptionController<T> implements Initializabl
             return property;
         } else if (control instanceof CheckBox) {
             BooleanProperty property = ((CheckBox) control).selectedProperty();
+            property.addListener(changeListener);
+            return property;
+        } else if (control instanceof ToggleButton)  {
+            BooleanProperty property = ((ToggleButton) control).selectedProperty();
             property.addListener(changeListener);
             return property;
         }
@@ -131,11 +141,15 @@ public abstract class AbstractSettingOptionController<T> implements Initializabl
     }
 
     public boolean changed() {
-        return changed;
+        return changed.get();
     }
 
     public void setChanged(boolean changed) {
-        this.changed = changed;
+        this.changed.setValue(changed);
+    }
+
+    public BooleanProperty changedProperty() {
+        return changed;
     }
 
     public T getOption() {
@@ -154,12 +168,11 @@ public abstract class AbstractSettingOptionController<T> implements Initializabl
                 if (observableValue != null && value != null) {
                     observableValue.setValue(toControlValue(optionCode, value, field));
                 }
-
-            } catch (IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new IllegalStateException("Unable get option " + field.getName() + " on class " + this.getClass(), e);
             }
         });
-        changed = false;
+        initialized.setValue(true);
     }
 
     public Object toControlValue(String optionCode, Object value, Field field) {
@@ -171,6 +184,6 @@ public abstract class AbstractSettingOptionController<T> implements Initializabl
     }
 
     public void apply() {
-
+        changed.setValue(false);
     }
 }
