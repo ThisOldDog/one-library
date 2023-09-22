@@ -2,18 +2,16 @@ package pers.dog.infra.control;
 
 import java.util.Objects;
 
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.scene.Parent;
 import javafx.scene.control.SkinBase;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.controlsfx.control.action.Action;
-import pers.dog.api.controller.FileInternalSearchController;
+import pers.dog.api.controller.tool.FileInternalSearchController;
 import pers.dog.boot.infra.util.FXMLUtils;
 
 public class FileInternalSearchSkin extends SkinBase<FileInternalSearch> {
-    private static final String FXML = "file-internal-search";
+    private static final String FXML = "tool/file-internal-search";
     private final FileInternalSearchController controller;
 
     public FileInternalSearchSkin(FileInternalSearch view) {

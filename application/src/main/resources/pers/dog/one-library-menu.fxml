@@ -37,6 +37,8 @@
             </disabled>
         </SaveAllProjectAction>
         <ActionSeparator fx:factory="getInstance"/>
+        <RecycleAction/>
+        <ActionSeparator fx:factory="getInstance"/>
         <ActionGroup text="%info.action.edit.export">
             <ExportProjectToHtmlAction/>
             <ExportProjectToHtmlWithoutStyleAction/>
@@ -182,9 +184,9 @@
         <HtmlToMarkdownAction text="%info.project.html-to-markdown.sava-to-file" saveToProject="true"/>
     </ActionGroup>
     <ActionGroup text="%info.action.git">
-        <GitPullAction />
-        <GitPushAction />
+        <GitPullAction/>
+        <GitPushAction/>
         <ActionSeparator fx:factory="getInstance"/>
-        <GitSettingAction />
+        <GitSettingAction/>
     </ActionGroup>
 </ActionMenuBar>

@@ -75,6 +75,23 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
     }
 
     @Override
+    public byte[] read(String filename, String... relativePath) {
+        Path target = targetFile(filename, relativePath);
+        try {
+            if (!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
+                logger.info("[File Operation] File not exists {}", target);
+                return new byte[]{};
+            }
+            logger.info("[File Operation] Read from file {}", target);
+            return Files.readAllBytes(target);
+        } catch (IOException e) {
+            String exceptionMessage = String.format("[File Operation] Unable to read setting from %s", target);
+            logger.error(exceptionMessage, e);
+            throw new FileOperationException("Unable to read file: " + target.toAbsolutePath());
+        }
+    }
+
+    @Override
     public <T> T read(String filename, Class<T> type, String... relativePath) {
         Path target = targetFile(filename, relativePath);
         try {
@@ -202,13 +219,18 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
 
     @Override
     public void move(String name, String[] sourcePath, String[] targetPath) {
-        Path source = targetFile(name, sourcePath);
         Path target = targetFile(name, targetPath);
+        move(name, sourcePath, target);
+    }
+
+    @Override
+    public void move(String name, String[] sourcePath, Path targetPath) {
+        Path source = targetFile(name, sourcePath);
         try {
-            FileUtils.replace(source, target);
+            FileUtils.replace(source, targetPath);
             FileUtils.delete(source);
         } catch (IOException e) {
-            String exceptionMessage = String.format("[File Operation] Unable to move file from %s to %s", source, target);
+            String exceptionMessage = String.format("[File Operation] Unable to move file from %s to %s", source, targetPath);
             logger.error(exceptionMessage, e);
             throw new FileOperationException(exceptionMessage);
         }

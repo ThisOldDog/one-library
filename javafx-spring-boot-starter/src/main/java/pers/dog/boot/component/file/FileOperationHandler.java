@@ -24,6 +24,8 @@ public interface FileOperationHandler {
 
     List<String> readAllLines(String filename, String... relativePath);
 
+    byte[] read(String filename, String... relativePath);
+
     <T> T read(String filename, Class<T> type, String... relativePath);
 
     <T> T read(String filename, TypeReference<T> type, String... relativePath);
@@ -41,4 +43,6 @@ public interface FileOperationHandler {
     boolean rename(String name, String newName, String[] relativePath);
 
     void move(String name, String[] sourcePath, String[] targetPath);
+
+    void move(String name, String[] sourcePath, Path targetPath);
 }

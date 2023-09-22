@@ -1,5 +1,20 @@
 package pers.dog.app.service.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
@@ -24,21 +39,13 @@ import pers.dog.boot.infra.control.PropertySheetDialogResult;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.FXMLUtils;
 import pers.dog.domain.entity.Project;
+import pers.dog.domain.entity.Recycle;
 import pers.dog.domain.repository.ProjectRepository;
+import pers.dog.domain.repository.RecycleRepository;
+import pers.dog.infra.constant.DeleteType;
 import pers.dog.infra.constant.FileType;
 import pers.dog.infra.constant.ProjectType;
 import pers.dog.infra.property.NameProperty;
-
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author 废柴 2022/8/19 15:59
@@ -48,16 +55,18 @@ public class ProjectServiceImpl implements ProjectService {
     private static final String PROJECT_EDITOR_FXML = "project-editor";
     private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
     private final ProjectRepository projectRepository;
-    private final FileOperationHandler fileOperationHandler;
+    private final RecycleRepository recycleRepository;
+    private final FileOperationHandler fileHandler;
     @SuppressWarnings("unused")
     @FXMLControl(controller = OneLibraryController.class)
     private TreeView<Project> projectTree;
     @FXMLControl(controller = OneLibraryController.class)
     private TabPane projectEditorWorkspace;
 
-    public ProjectServiceImpl(ProjectRepository projectRepository) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, RecycleRepository recycleRepository) {
         this.projectRepository = projectRepository;
-        this.fileOperationHandler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix(".data/document"));
+        this.recycleRepository = recycleRepository;
+        this.fileHandler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix(".data/document"));
     }
 
     @Override
@@ -105,9 +114,9 @@ public class ProjectServiceImpl implements ProjectService {
             return null;
         }
         if (ProjectType.DIRECTORY.equals(projectType)) {
-            fileOperationHandler.createDirectory(project.getProjectName(), getRelativePath(parent));
+            fileHandler.createDirectory(project.getProjectName(), getRelativePath(parent));
         } else {
-            fileOperationHandler.createFile(project.getProjectName(), getRelativePath(parent));
+            fileHandler.createFile(project.getProjectName(), getRelativePath(parent));
         }
         projectRepository.save(project);
         TreeItem<Project> treeItem = new TreeItem<>(project);
@@ -123,7 +132,7 @@ public class ProjectServiceImpl implements ProjectService {
     public TreeItem<Project> createFile(ProjectType projectType, FileType fileType, String fileName, String markdown) {
         TreeItem<Project> projectTreeItem = createFile(projectType, fileType, fileName);
         if (projectTreeItem != null && !ObjectUtils.isEmpty(markdown)) {
-            fileOperationHandler.write(projectTreeItem.getValue().getProjectName(), markdown, getRelativePath(currentDirectory()));
+            fileHandler.write(projectTreeItem.getValue().getProjectName(), markdown, getRelativePath(currentDirectory()));
             openFile(projectTreeItem.getValue());
         }
         return projectTreeItem;
@@ -135,7 +144,7 @@ public class ProjectServiceImpl implements ProjectService {
             return;
         }
         TreeItem<Project> parent = currentParent();
-        boolean renamed = fileOperationHandler.rename(project.getProjectName(), project.getNewProjectName(), getRelativePath(parent));
+        boolean renamed = fileHandler.rename(project.getProjectName(), project.getNewProjectName(), getRelativePath(parent));
         if (renamed) {
             projectRepository.save(project.setProjectName(project.getNewProjectName()));
         } else {
@@ -152,11 +161,11 @@ public class ProjectServiceImpl implements ProjectService {
         if (Objects.equals(projectValue.getParentProjectId(), parent.getValue().getProjectId())) {
             return true;
         }
-        if (fileOperationHandler.exists(projectValue.getProjectName(), getRelativePath(parent))) {
+        if (fileHandler.exists(projectValue.getProjectName(), getRelativePath(parent))) {
             alertNameDuplicate();
             return false;
         } else {
-            fileOperationHandler.move(projectValue.getProjectName(), getRelativePath(project.getParent()), getRelativePath(parent));
+            fileHandler.move(projectValue.getProjectName(), getRelativePath(project.getParent()), getRelativePath(parent));
             projectValue.setParentProjectId(parent.getValue().getProjectId());
             projectRepository.save(projectValue);
             return true;
@@ -170,7 +179,7 @@ public class ProjectServiceImpl implements ProjectService {
         logger.info("[One Library] Start sync local file.");
         AtomicReference<Project> parent = new AtomicReference<>();
         AtomicBoolean root = new AtomicBoolean(false);
-        fileOperationHandler.walkFileTree(new SimpleFileVisitor<>() {
+        fileHandler.walkFileTree(new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                 if (!root.get()) {
@@ -263,7 +272,7 @@ public class ProjectServiceImpl implements ProjectService {
         while (parent != null) {
             parent = parentMap.get(parent.getParentProjectId());
             if (parent != null) {
-                path = parent.getProjectName() + "/" + path;
+                path = parent.getProjectName() + File.separator + path;
             }
         }
         return path;
@@ -317,11 +326,13 @@ public class ProjectServiceImpl implements ProjectService {
             confirmation.setHeaderText(I18nMessageSource.getResource("confirmation.project.delete.project.confirmation.multi"));
         }
         confirmation.setContentText(I18nMessageSource.getResource("confirmation.project.delete.project.confirmation.prompt"));
+        confirmation.getButtonTypes().add(ButtonType.APPLY);
+        ((Button) confirmation.getDialogPane().lookupButton(ButtonType.APPLY)).setText(I18nMessageSource.getResource("confirmation.project.delete.project.confirmation.move-recycle"));
         confirmation.showAndWait().ifPresent(buttonType -> {
-            if (ButtonType.OK.equals(buttonType)) {
+            if (ButtonType.OK.equals(buttonType) || ButtonType.APPLY.equals(buttonType)) {
                 List<TreeItem<Project>> tmp = new ArrayList<>(selected);
                 for (TreeItem<Project> projectTreeItem : tmp) {
-                    delete(projectTreeItem);
+                    delete(projectTreeItem, ButtonType.OK.equals(buttonType) ? DeleteType.DELETE : DeleteType.RECYCLE);
                 }
             }
         });
@@ -442,7 +453,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public Path documentDir() {
-        return fileOperationHandler.directory();
+        return fileHandler.directory();
     }
 
     public Project currentProjectValue() {
@@ -461,9 +472,9 @@ public class ProjectServiceImpl implements ProjectService {
         return parentNode.getParent();
     }
 
-    private void delete(TreeItem<Project> selected) {
+    private void delete(TreeItem<Project> selected, DeleteType deleteType) {
         TreeItem<Project> parent = selected.getParent();
-        deleteFile(selected);
+        deleteFile(selected, deleteType);
         deleteData(selected);
         deleteView(selected);
         ObservableList<TreeItem<Project>> children = parent.getChildren();
@@ -474,8 +485,19 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
-    private void deleteFile(TreeItem<Project> selected) {
-        fileOperationHandler.delete(selected.getValue().getProjectName(), getRelativePath(selected.getParent()));
+    private void deleteFile(TreeItem<Project> selected, DeleteType deleteType) {
+        Project project = selected.getValue();
+        String[] relativePath = getRelativePath(selected.getParent());
+        if (DeleteType.RECYCLE.equals(deleteType) && ProjectType.FILE.equals(project.getProjectType())) {
+            recycleRepository.save(new Recycle()
+                    .setProjectName(project.getProjectName())
+                    .setFileType(project.getFileType())
+                    .setLocation(String.join(File.separator, relativePath))
+                    .setDeleteDateTime(ZonedDateTime.now())
+                    .setContent(fileHandler.read(project.getProjectName(), relativePath))
+            );
+        }
+        fileHandler.delete(project.getProjectName(), relativePath);
     }
 
     private void deleteData(TreeItem<Project> selected) {
@@ -515,7 +537,7 @@ public class ProjectServiceImpl implements ProjectService {
                     projectName = I18nMessageSource.getResource("info.project.default_directory_name_duplicate", fileIndex);
                 }
             }
-            if (fileOperationHandler.exists(fileType != null ? (projectName + fileType.getSuffix()) : projectName, getRelativePath(parent))) {
+            if (fileHandler.exists(fileType != null ? (projectName + fileType.getSuffix()) : projectName, getRelativePath(parent))) {
                 projectName = null;
             }
             fileIndex++;

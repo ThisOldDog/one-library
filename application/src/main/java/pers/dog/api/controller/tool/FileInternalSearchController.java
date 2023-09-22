@@ -1,7 +1,6 @@
-package pers.dog.api.controller;
+package pers.dog.api.controller.tool;
 
 import java.net.URL;
-import java.util.Objects;
 import java.util.ResourceBundle;
 
 import javafx.application.Platform;
