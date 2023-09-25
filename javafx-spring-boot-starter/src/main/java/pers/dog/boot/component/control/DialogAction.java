@@ -29,7 +29,13 @@ public abstract class DialogAction<T> extends Action {
     }
 
     public void doAction(ActionEvent actionEvent) {
-        getDialog().showAndWait();
+        Dialog<Void> dialog = getDialog();
+        beforeShow(dialog, controller);
+        dialog.showAndWait();
+    }
+
+    public void beforeShow(Dialog<Void> dialog, T controller) {
+
     }
 
     public void addButton(ButtonType buttonType, EventHandler<? super ActionEvent> eventFilter, String text, Object... args) {
@@ -45,7 +51,7 @@ public abstract class DialogAction<T> extends Action {
         }
     }
 
-    abstract public String getView();
+    public abstract String getView();
 
     public Dialog<Void> getDialog() {
         if (cache != null) {

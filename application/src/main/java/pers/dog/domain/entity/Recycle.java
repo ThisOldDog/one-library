@@ -29,7 +29,7 @@ public class Recycle {
     @Column(nullable = false)
     private ZonedDateTime deleteDateTime;
 
-    @Column
+    @Column(columnDefinition="BLOB NOT NULL")
     private byte[] content;
 
     public Long getRecycleId() {

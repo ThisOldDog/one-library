@@ -10,6 +10,7 @@ module javafx.spring.boot.starter {
     requires spring.boot;
     requires spring.boot.autoconfigure;
     requires spring.data.commons;
+    requires spring.expression;
     requires static spring.boot.starter.data.jpa;
 
     requires org.slf4j;
