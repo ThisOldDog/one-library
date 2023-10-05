@@ -1,5 +1,6 @@
 package pers.dog.boot.infra.util;
 
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -21,22 +22,24 @@ public class AlertUtils {
 
     public static void showException(String title, String headerText, String contentText, String labelText, Throwable e) {
         logger.error("[Alert Error] " + e.getMessage(), e);
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(I18nMessageSource.getResource(title));
-        alert.setHeaderText(I18nMessageSource.getResource(headerText));
-        alert.setContentText(I18nMessageSource.getResource(contentText));
-        Label label = new Label(I18nMessageSource.getResource(labelText));
-        TextArea textArea = new TextArea(ExceptionUtils.getStackTrace(e));
-        textArea.setMaxWidth(Double.MAX_VALUE);
-        textArea.setMaxHeight(Double.MAX_VALUE);
-        GridPane.setVgrow(textArea, Priority.ALWAYS);
-        GridPane.setHgrow(textArea, Priority.ALWAYS);
-        GridPane content = new GridPane();
-        content.setMaxWidth(Double.MAX_VALUE);
-        content.add(label, 0, 0);
-        content.add(textArea, 0, 1);
-        alert.getDialogPane().setExpandableContent(content);
-        alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle(I18nMessageSource.getResource(title));
+            alert.setHeaderText(I18nMessageSource.getResource(headerText));
+            alert.setContentText(I18nMessageSource.getResource(contentText));
+            Label label = new Label(I18nMessageSource.getResource(labelText));
+            TextArea textArea = new TextArea(ExceptionUtils.getStackTrace(e));
+            textArea.setMaxWidth(Double.MAX_VALUE);
+            textArea.setMaxHeight(Double.MAX_VALUE);
+            GridPane.setVgrow(textArea, Priority.ALWAYS);
+            GridPane.setHgrow(textArea, Priority.ALWAYS);
+            GridPane content = new GridPane();
+            content.setMaxWidth(Double.MAX_VALUE);
+            content.add(label, 0, 0);
+            content.add(textArea, 0, 1);
+            alert.getDialogPane().setExpandableContent(content);
+            alert.showAndWait();
+        });
     }
 
     public static void showWarning(String title, String headerText, String contentText) {
@@ -49,10 +52,12 @@ public class AlertUtils {
 
     private static void showAlert(Alert.AlertType alertType, String title, String headerText, String contentText) {
         logger.warn("[Alert {}] {}", alertType, title);
-        Alert alert = new Alert(alertType);
-        alert.setTitle(I18nMessageSource.getResource(title));
-        alert.setHeaderText(I18nMessageSource.getResource(headerText));
-        alert.setContentText(I18nMessageSource.getResource(contentText));
-        alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(alertType);
+            alert.setTitle(I18nMessageSource.getResource(title));
+            alert.setHeaderText(I18nMessageSource.getResource(headerText));
+            alert.setContentText(I18nMessageSource.getResource(contentText));
+            alert.showAndWait();
+        });
     }
 }

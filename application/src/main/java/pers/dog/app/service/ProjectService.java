@@ -21,6 +21,8 @@ public interface ProjectService {
 
     TreeItem<Project> createFile(ProjectType projectType, FileType fileType, String fileName, String markdown);
 
+    TreeItem<Project> createFile(ProjectType projectType, FileType fileType, String projectName, byte[] content, String[] paths);
+
     void updateProject(Project project);
 
     boolean move(TreeItem<Project> project, TreeItem<Project> parent);

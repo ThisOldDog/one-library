@@ -1,9 +1,12 @@
 package pers.dog.app.service.impl;
 
+import java.io.File;
 import java.util.List;
 
+import javafx.scene.control.TreeItem;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import pers.dog.app.service.ProjectService;
 import pers.dog.app.service.RecycleService;
 import pers.dog.domain.entity.Project;
@@ -29,15 +32,17 @@ public class RecycleServiceImpl implements RecycleService {
         if (ObjectUtils.isEmpty(keyword)) {
             return recycleRepository.findAll();
         }
+        keyword = "%" + keyword + "%";
         return recycleRepository.findByProjectNameLikeIgnoreCaseOrLocationLikeIgnoreCase(keyword, keyword);
     }
 
     @Override
     public Project recover(Recycle recycle) {
-        // TODO
-        Project project = projectService.createFile(ProjectType.FILE, recycle.getFileType(), recycle.getProjectName(), recycle.getContent(), recycle.getLocation())
+        TreeItem<Project> project = projectService.createFile(ProjectType.FILE, recycle.getFileType(), recycle.getProjectName(), recycle.getContent(),
+                ObjectUtils.isEmpty(recycle.getLocation()) ? null : StringUtils.split(recycle.getLocation(), File.separator));
         if (project != null) {
             recycleRepository.deleteById(recycle.getRecycleId());
+            return project.getValue();
         }
         return null;
     }

@@ -38,6 +38,24 @@ public abstract class AbstractFileOperationHandler implements FileOperationHandl
     }
 
     @Override
+    public void write(WriteOption writeOption, String filename, byte[] content, String... relativePath) {
+        Path target = targetFile(filename, relativePath);
+        try {
+            Path directory = target.getParent();
+            if (!Files.exists(directory, LinkOption.NOFOLLOW_LINKS)) {
+                logger.info("[File Operation] Target directory doesn't exists {}, try to create.", target);
+                Files.createDirectories(directory);
+            }
+            logger.info("[File Operation] Write to file {}", target);
+            Files.write(target, content, writeOption.toOpenOption());
+        } catch (IOException e) {
+            String exceptionMessage = String.format("[File Operation] Unable to write setting to %s", target);
+            logger.error(exceptionMessage, e);
+            throw new FileOperationException("Unable to write file: " + target.toAbsolutePath());
+        }
+    }
+
+    @Override
     public void write(WriteOption writeOption, String filename, Object content, String... relativePath) {
         Path target = targetFile(filename, relativePath);
         try {

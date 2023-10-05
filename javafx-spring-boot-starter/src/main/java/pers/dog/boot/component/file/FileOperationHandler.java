@@ -20,6 +20,10 @@ public interface FileOperationHandler {
         write(WriteOption.CREATE_NEW, filename, content, relativePath);
     }
 
+    default void write(String filename, byte[] content, String... relativePath) {
+        write(WriteOption.CREATE_NEW, filename, content, relativePath);
+    }
+    void write(WriteOption writeOption, String filename, byte[] content, String... relativePath);
     void write(WriteOption writeOption, String filename, Object content, String... relativePath);
 
     List<String> readAllLines(String filename, String... relativePath);

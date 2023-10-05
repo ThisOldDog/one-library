@@ -3,7 +3,6 @@ package pers.dog.app.service.impl;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -13,7 +12,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -85,6 +83,10 @@ public class ProjectServiceImpl implements ProjectService {
 
     public TreeItem<Project> createFile(ProjectType projectType, FileType fileType, String fileName) {
         TreeItem<Project> parent = currentDirectory();
+        return createFile(projectType, fileType, fileName, parent);
+    }
+
+    private TreeItem<Project> createFile(ProjectType projectType, FileType fileType, String fileName, TreeItem<Project> parent) {
         Assert.isTrue(ProjectType.DIRECTORY.equals(projectType) || fileType != null, "[Project] When the project type is file, the type of the file cannot be null.");
         NameProperty nameProperty = new NameProperty();
         nameProperty.setName(fileName != null ? fileName : buildFileName(parent, projectType, fileType));
@@ -136,6 +138,39 @@ public class ProjectServiceImpl implements ProjectService {
             openFile(projectTreeItem.getValue());
         }
         return projectTreeItem;
+    }
+
+    @Override
+    public TreeItem<Project> createFile(ProjectType projectType, FileType fileType, String projectName, byte[] content, String[] paths) {
+        TreeItem<Project> directory = createDirectory(paths);
+        if (directory == null) {
+            return null;
+        }
+        TreeItem<Project> projectTreeItem = createFile(projectType, fileType, projectName, directory);
+        if (projectTreeItem != null && content != null && content.length > 0) {
+            fileHandler.write(projectTreeItem.getValue().getProjectName(), content, getRelativePath(currentDirectory()));
+            openFile(projectTreeItem.getValue());
+        }
+        return projectTreeItem;
+    }
+
+    private TreeItem<Project> createDirectory(String[] paths) {
+        return createDirectory(ROOT, paths, 0);
+    }
+
+    private TreeItem<Project> createDirectory(TreeItem<Project> parent, String[] paths, int index) {
+        if (parent == null || paths == null || index >= paths.length) {
+            return parent;
+        }
+        if (!CollectionUtils.isEmpty(parent.getChildren())) {
+            for (TreeItem<Project> child : parent.getChildren()) {
+                if (Objects.equals(paths[index], child.getValue().getProjectName())) {
+                    return createDirectory(child, paths, index + 1);
+                }
+            }
+        }
+        TreeItem<Project> child = createFile(ProjectType.DIRECTORY, null, paths[index], parent);
+        return createDirectory(child, paths, index + 1);
     }
 
     @Override
@@ -486,6 +521,9 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private void deleteFile(TreeItem<Project> selected, DeleteType deleteType) {
+        for (TreeItem<Project> child : selected.getChildren()) {
+            deleteFile(child, deleteType);
+        }
         Project project = selected.getValue();
         String[] relativePath = getRelativePath(selected.getParent());
         if (DeleteType.RECYCLE.equals(deleteType) && ProjectType.FILE.equals(project.getProjectType())) {
@@ -508,7 +546,19 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private void deleteView(TreeItem<Project> selected) {
+        for (TreeItem<Project> child : selected.getChildren()) {
+            closeView(child);
+        }
         selected.getParent().getChildren().remove(selected);
+    }
+
+    private void closeView(TreeItem<Project> selected) {
+        for (Tab tab : projectEditorWorkspace.getTabs()) {
+            if (Objects.equals(((ProjectEditorController) tab.getUserData()).getProject().getProjectId(), selected.getValue().getProjectId())) {
+                projectEditorWorkspace.getTabs().remove(tab);
+                break;
+            }
+        }
     }
 
     private String[] getRelativePath(TreeItem<Project> parent) {

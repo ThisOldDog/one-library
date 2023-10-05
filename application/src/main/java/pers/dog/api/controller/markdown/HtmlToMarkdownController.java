@@ -89,10 +89,10 @@ public class HtmlToMarkdownController implements Initializable {
                         try {
                             markdown = translateService.getValue().translateMarkdown(markdown, sourceLanguage.getValue().getValue(), targetLanguage.getValue().getValue());
                         } catch (Exception e) {
-                            AlertUtils.showException("info.project.html-to-markdown.translate.title",
-                                    "info.project.html-to-markdown.translate.header_text",
-                                    "info.project.html-to-markdown.translate.content_text",
-                                    "info.project.html-to-markdown.translate.exception_stacktrace",
+                            AlertUtils.showException("error.project.html-to-markdown.translate.title",
+                                    "error.project.html-to-markdown.translate.header_text",
+                                    "error.project.html-to-markdown.translate.content_text",
+                                    "error.project.html-to-markdown.translate.exception_stacktrace",
                                     e);
                         }
                     }
