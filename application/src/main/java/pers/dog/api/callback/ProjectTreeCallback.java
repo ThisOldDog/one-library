@@ -28,10 +28,7 @@ import pers.dog.boot.infra.util.FXMLUtils;
 import pers.dog.domain.entity.Project;
 import pers.dog.infra.action.ActionGroup;
 import pers.dog.infra.action.markdown.HtmlToMarkdownAction;
-import pers.dog.infra.action.project.CreateDirectoryAction;
-import pers.dog.infra.action.project.CreateMarkdownAction;
-import pers.dog.infra.action.project.DeleteProjectAction;
-import pers.dog.infra.action.project.OpenRenameProjectAction;
+import pers.dog.infra.action.project.*;
 import pers.dog.infra.constant.ProjectType;
 
 /**
@@ -61,7 +58,8 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                                CreateDirectoryAction createDirectoryAction,
                                DeleteProjectAction deleteProjectAction,
                                OpenRenameProjectAction openRenameProjectAction,
-                               HtmlToMarkdownAction htmlToMarkdownAction) {
+                               HtmlToMarkdownAction htmlToMarkdownAction,
+                               OpenInExplorerProjectAction openInExplorerProjectAction) {
         this.projectService = projectService;
         ActionGroup markdownActionGroup = new ActionGroup(
                 I18nMessageSource.getResource("info.action.markdown"),
@@ -77,6 +75,8 @@ public class ProjectTreeCallback implements Callback<TreeView<Project>, TreeCell
                 createDirectoryAction,
                 ActionUtils.ACTION_SEPARATOR,
                 openRenameProjectAction,
+                ActionUtils.ACTION_SEPARATOR,
+                openInExplorerProjectAction,
                 ActionUtils.ACTION_SEPARATOR,
                 markdownActionGroup,
                 ActionUtils.ACTION_SEPARATOR,

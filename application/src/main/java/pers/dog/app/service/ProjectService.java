@@ -48,4 +48,6 @@ public interface ProjectService {
     void saveAll();
 
     Path documentDir();
+
+    void openInExplorer();
 }

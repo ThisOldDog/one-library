@@ -491,6 +491,21 @@ public class ProjectServiceImpl implements ProjectService {
         return fileHandler.directory();
     }
 
+    @Override
+    public void openInExplorer() {
+        TreeItem<Project> projectTreeItem = currentParent();
+        String[] relativePath = getRelativePath(projectTreeItem);
+        Path target = fileHandler.directory();
+        for (String itemPath : relativePath) {
+            target = target.resolve(itemPath);
+        }
+        try {
+            Runtime.getRuntime().exec("explorer.exe /select," + target);
+        } catch (IOException e) {
+            logger.error("[Project] Open in explorer failed: " + target, e);
+        }
+    }
+
     public Project currentProjectValue() {
         TreeItem<Project> selectedItem = projectTree.getSelectionModel().getSelectedItem();
         if (selectedItem == null || selectedItem.getValue() == null) {
