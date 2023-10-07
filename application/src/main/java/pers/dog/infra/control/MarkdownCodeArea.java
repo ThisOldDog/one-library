@@ -231,12 +231,25 @@ public class MarkdownCodeArea extends CodeArea {
                 if (text != null) {
                     char[] charArray = text.toCharArray();
                     int i;
+                    int no = -1;
+                    boolean orderList = false;
                     for (i = 0; i < charArray.length; i++) {
-                        if (charArray[i] != ' ') {
+                        if ((i == 0 || no >= 0) && charArray[i] >= '0' && charArray[i] <= '9') {
+                            no = (no == -1 ? 0 : no) * 10 + charArray[i] - '0';
+                        } else if (no >= 0 && charArray[i] == '.') {
+                            orderList = true;
+                        } else if (no >= 0) {
+                            i = -1;
+                            break;
+                        } else if (charArray[i] != ' '
+                                && charArray[i] != '>'
+                                && charArray[i] != '-'
+                                && charArray[i] != '+'
+                                && charArray[i] != '*') {
                             break;
                         }
                     }
-                    replaceSelection("\n" + " ".repeat(i));
+                    replaceSelection("\n" + (!orderList ? ((i == -1 || no >= 0) ? "" : text.substring(0, i)) : (no + 1 + ". ")));
                 }
                 event.consume();
             }
