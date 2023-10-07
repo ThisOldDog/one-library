@@ -283,12 +283,11 @@ public class ProjectEditorController implements Initializable {
         this.fileInternalSearch.setCloseAction(new Action(actionEvent -> closeSearch()));
         this.fileInternalSearch.setReplaceAction(new Action(actionEvent -> codeArea.replaceSearch(this.fileInternalSearch.getReplaceText())));
         this.fileInternalSearch.setReplaceAllAction(new Action(actionEvent -> codeArea.replaceSearchAll(this.fileInternalSearch.getReplaceText())));
+        this.previewArea.setContextMenuEnabled(false);
         this.engine = previewArea.getEngine();
         this.engine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == Worker.State.SUCCEEDED) {
-                {
-                    scrollEngine();
-                }
+                scrollEngine();
             }
         });
         this.codeArea.getSearchCandidateList().addListener((InvalidationListener) observable -> this.fileInternalSearch.searchCandidateCountProperty().set(codeArea.getSearchCandidateList().size()));
