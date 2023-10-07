@@ -493,7 +493,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void openInExplorer() {
-        TreeItem<Project> projectTreeItem = currentParent();
+        TreeItem<Project> projectTreeItem = currentProject();
         String[] relativePath = getRelativePath(projectTreeItem);
         Path target = fileHandler.directory();
         for (String itemPath : relativePath) {

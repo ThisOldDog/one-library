@@ -131,7 +131,7 @@ public class ProjectEditorController implements Initializable {
             if (src != null) {
                 String srcValue = src.getValue();
                 if (srcValue != null && srcValue.startsWith("./")) {
-                    mutableAttributes.replaceValue("src", controller.path + srcValue.substring(14));
+                    mutableAttributes.replaceValue("src", controller.path + srcValue.substring(2));
                 }
             }
         }
