@@ -130,7 +130,7 @@ public class ProjectEditorController implements Initializable {
             Attribute src = mutableAttributes.get("src");
             if (src != null) {
                 String srcValue = src.getValue();
-                if (srcValue != null && srcValue.startsWith("one-library://")) {
+                if (srcValue != null && srcValue.startsWith("./")) {
                     mutableAttributes.replaceValue("src", controller.path + srcValue.substring(14));
                 }
             }
@@ -305,7 +305,7 @@ public class ProjectEditorController implements Initializable {
                     } catch (IOException e) {
                         throw new IllegalStateException("Unable read image from clipboard", e);
                     }
-                    codeArea.replaceSelection(String.format("![%s](%s)", fileName, "one-library://" + URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20")));
+                    codeArea.replaceSelection(String.format("![%s](%s)", fileName, "./" + URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20")));
                 });
             } else if (clipboard.hasString()) {
                 String text = clipboard.getString();
