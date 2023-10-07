@@ -177,9 +177,21 @@
                 <Glyph fontFamily="FontAwesome" icon="COLUMNS"/>
             </graphic>
         </Button>
+        <Separator/>
+        <Button fx:id="outlineButton" onAction="#outline" focusTraversable="false" styleClass="button-outline-enabled">
+            <tooltip>
+                <Tooltip text="%info.editor.toolbar.outline"/>
+            </tooltip>
+            <graphic>
+                <Glyph fontFamily="FontAwesome" icon="NAVICON"/>
+            </graphic>
+        </Button>
     </ToolBar>
     <VBox fx:id="searchWorkspace"/>
-    <SplitPane fx:id="projectEditorWorkspace" VBox.vgrow="ALWAYS" dividerPositions="0.5">
+    <SplitPane fx:id="projectEditorWorkspace" VBox.vgrow="ALWAYS" dividerPositions="0.1,0.6">
+        <VBox fx:id="outlineBox">
+            <TreeView fx:id="outlineTree" focusTraversable="false" showRoot="false" VBox.vgrow="ALWAYS"/>
+        </VBox>
         <VirtualizedScrollPane fx:id="codeAreaWorkspace">
             <content>
                 <MarkdownCodeArea fx:id="codeArea" wrapText="true"/>

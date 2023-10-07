@@ -41,6 +41,10 @@
     -fx-background-color: tan;
 }
 
+.button-outline-enabled {
+    -fx-background-color: mediumseagreen;
+}
+
 .markdown-editor-strong {
     -fx-border-style: SOLID;
 }

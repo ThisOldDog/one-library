@@ -318,7 +318,7 @@ public class MarkdownCodeArea extends CodeArea {
         }
         // 高亮选中行
         currentParagraphProperty().addListener((observable, oldValue, newValue) -> Platform.runLater(() -> {
-            if (oldValue != null) {
+            if (oldValue != null && getParagraphs().size() > oldValue) {
                 clearParagraphStyle(oldValue);
             }
             if (newValue != null) {

@@ -43,9 +43,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.IndexRange;
-import javafx.scene.control.SplitPane;
+import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
@@ -72,6 +70,7 @@ import pers.dog.boot.component.file.FileOperationOption;
 import pers.dog.boot.component.setting.SettingService;
 import pers.dog.boot.context.ApplicationContextHolder;
 import pers.dog.boot.infra.control.PropertySheetDialog;
+import pers.dog.boot.infra.dto.ValueMeaning;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.PlatformUtils;
 import pers.dog.domain.entity.Project;
@@ -156,6 +155,7 @@ public class ProjectEditorController implements Initializable {
 
     private static final Logger logger = LoggerFactory.getLogger(ProjectEditorController.class);
     private static final String STYLE_CLASS_BUTTON_SAVE_DIRTY = "button-save-dirty";
+    private static final String STYLE_CLASS_BUTTON_OUTLINE_ENABLED = "button-outline-enabled";
     private static final String DEFAULT_STYLE_NAME = "default-light";
     private final ObjectProperty<Project> projectProperty = new SimpleObjectProperty<>();
     private final ProjectRepository projectRepository;
@@ -193,6 +193,12 @@ public class ProjectEditorController implements Initializable {
     public Button onlyPreviewButton;
     @FXML
     public Button editorAndPreviewButton;
+    @FXML
+    public Button outlineButton;
+    @FXML
+    public VBox outlineBox;
+    @FXML
+    public TreeView<ValueMeaning> outlineTree;
 
     private FileOperationHandler fileOperationHandler;
     private String localText;
@@ -312,7 +318,58 @@ public class ProjectEditorController implements Initializable {
                 }
             }
         });
+        this.codeArea.textProperty().addListener((observable, oldValue, newValue) ->
+                PlatformUtils.runLater("MarkdownOutline", Duration.seconds(1), () -> outlineTree.setRoot(buildOutline(newValue)))
+        );
         this.codeAreaWorkspace.estimatedScrollYProperty().addListener(observable -> scrollEngine());
+        this.outlineTree.setOnMouseClicked(event -> {
+            TreeItem<ValueMeaning> title = this.outlineTree.getSelectionModel().getSelectedItem();
+            if (title != null && title.getValue() != null) {
+                int lineNumber = Integer.parseInt(title.getValue().getValue());
+                codeArea.showParagraphAtTop(lineNumber);
+                codeArea.moveTo(lineNumber, 0);
+            }
+        });
+    }
+
+    private TreeItem<ValueMeaning> buildOutline(String newValue) {
+        TreeItem<ValueMeaning> root = new TreeItem<>();
+        TreeItem<ValueMeaning>[] parent = new TreeItem[6];
+        parent[0] = root;
+        if (newValue != null) {
+            String[] lines = newValue.split("\\n");
+            for (int lineNumber = 0; lineNumber < lines.length; lineNumber++) {
+                String line = lines[lineNumber];
+                if (!line.startsWith("#")) {
+                    continue;
+                }
+                int index = 0;
+                String title = null;
+                for (char token : line.toCharArray()) {
+                    if ('#' == token) {
+                        index++;
+                    } else {
+                        title = line.substring(index).trim();
+                        break;
+                    }
+                }
+                if (index > 0 && index < 6) {
+                    TreeItem<ValueMeaning> node = new TreeItem<>(new ValueMeaning().setValue(String.valueOf(lineNumber)).setMeaning(title));
+                    for (int i = index - 1; i >= 0; i--) {
+                        if (parent[i] != null) {
+                            parent[i].getChildren().add(node);
+                            parent[i].setExpanded(true);
+                            break;
+                        }
+                    }
+                    parent[index] = node;
+                    for (int i = index + 1; i < parent.length; i++) {
+                        parent[i] = null;
+                    }
+                }
+            }
+        }
+        return root;
     }
 
     private void scrollEngine() {
@@ -676,6 +733,22 @@ public class ProjectEditorController implements Initializable {
             onlyPreviewButton.setDisable(false);
             editorAndPreviewButton.setDisable(true);
         });
+    }
+
+    public void outline() {
+        ObservableList<Node> items = projectEditorWorkspace.getItems();
+        if (!items.isEmpty() && items.get(0).equals(outlineBox)) {
+            items.remove(0);
+            outlineButton.getStyleClass().remove(STYLE_CLASS_BUTTON_OUTLINE_ENABLED);
+        } else {
+            double[] dividerPositions = projectEditorWorkspace.getDividerPositions();
+            double[] newValue = new double[dividerPositions.length + 1];
+            System.arraycopy(dividerPositions, 0, newValue, 1, dividerPositions.length);
+            newValue[0] = 0.1;
+            items.add(0, outlineBox);
+            outlineButton.getStyleClass().add(STYLE_CLASS_BUTTON_OUTLINE_ENABLED);
+            projectEditorWorkspace.setDividerPositions(newValue);
+        }
     }
 
     public void requestFocus() {
