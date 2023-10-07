@@ -154,6 +154,7 @@ public class MarkdownCodeArea extends CodeArea {
             '(', ')');
     private static final List<String> BRACKET_MATCH_STYLE = Collections.singletonList("bracket-match");
     private static final Collection<String> SEARCH_CANDIDATE_STYLE_CLASS = Collections.singletonList("file-internal-search-candidate");
+    private static final Collection<String> CURRENT_PARAGRAPH_STYLE_CLASS = Collections.singletonList("current-paragraph-search-candidate");
     /*
      * 代码高亮-块高亮
      */
@@ -163,7 +164,7 @@ public class MarkdownCodeArea extends CodeArea {
     private static final String ORDERED_LIS_PATTERN = "^[ \\t>]*\\d+\\. [ \\t\\S]*";
     private static final String LINE_BREAK_PATTERN = "<br[ /]*>";
     private static final String LINK_IMAGE_PATTERN = "!?\\[.*?\\]\\(.*?\\)";
-    private static final String CODE_INLINE_PATTERN = "`[ \\t\\S]*`";
+    private static final String CODE_INLINE_PATTERN = "`[ \\t\\S]*?`";
     private static final String CODE_FENCE_PATTERN = "[ \\t\\n]*```[\\s\\S^$]*?```$";
     private static final String STRONG_PATTERN = "(\\*{1,2}.+?\\*{1,2})|( \\*{3}.+?\\*{3} )|( _{1,3}.+?_{1,3} )|( -{1,3}.+?-{1,3} )";
     private static final Pattern PATTERN = Pattern.compile(
@@ -315,6 +316,15 @@ public class MarkdownCodeArea extends CodeArea {
                         });
             }
         }
+        // 高亮选中行
+        currentParagraphProperty().addListener((observable, oldValue, newValue) -> Platform.runLater(() -> {
+            if (oldValue != null) {
+                clearParagraphStyle(oldValue);
+            }
+            if (newValue != null) {
+                setParagraphStyle(newValue, CURRENT_PARAGRAPH_STYLE_CLASS);
+            }
+        }));
     }
 
     public void setOnPaste(EventHandler<PasteEvent> consumer) {

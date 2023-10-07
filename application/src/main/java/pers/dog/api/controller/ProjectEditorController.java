@@ -125,7 +125,6 @@ public class ProjectEditorController implements Initializable {
             if (node instanceof FencedCodeBlock fencedCodeBlock) {
                 mutableAttributes.replaceValue("language", fencedCodeBlock.getInfo().toStringOrNull());
             }
-            logger.info("{} / {} / {}", nodeType, styleClass, node.getClass());
             // Set src to absolute path
             Attribute src = mutableAttributes.get("src");
             if (src != null) {
