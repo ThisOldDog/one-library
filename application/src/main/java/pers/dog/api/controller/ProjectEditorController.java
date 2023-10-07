@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 
 import com.vladsch.flexmark.ast.FencedCodeBlock;
-import com.vladsch.flexmark.ast.Image;
 import com.vladsch.flexmark.html.AttributeProvider;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.html.IndependentAttributeProviderFactory;
@@ -126,14 +125,13 @@ public class ProjectEditorController implements Initializable {
             if (node instanceof FencedCodeBlock fencedCodeBlock) {
                 mutableAttributes.replaceValue("language", fencedCodeBlock.getInfo().toStringOrNull());
             }
+            logger.info("{} / {} / {}", nodeType, styleClass, node.getClass());
             // Set src to absolute path
-            if (Image.class.isAssignableFrom(node.getClass())) {
-                Attribute src = mutableAttributes.get("src");
-                if (src != null) {
-                    String srcValue = src.getValue();
-                    if (srcValue != null && srcValue.startsWith("one-library://")) {
-                        mutableAttributes.replaceValue("src", controller.path + srcValue.substring(14));
-                    }
+            Attribute src = mutableAttributes.get("src");
+            if (src != null) {
+                String srcValue = src.getValue();
+                if (srcValue != null && srcValue.startsWith("one-library://")) {
+                    mutableAttributes.replaceValue("src", controller.path + srcValue.substring(14));
                 }
             }
         }
