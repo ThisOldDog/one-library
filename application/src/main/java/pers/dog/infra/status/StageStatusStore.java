@@ -1,6 +1,10 @@
 package pers.dog.infra.status;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TabPane;
@@ -28,6 +32,18 @@ import pers.dog.domain.entity.Project;
  */
 @Component
 public class StageStatusStore implements StatusStore<BorderPane, StageStatusStore.StageStatus> {
+    public static class ViewStatus {
+        private boolean showSidebar = true;
+
+        public boolean isShowSidebar() {
+            return showSidebar;
+        }
+
+        public ViewStatus setShowSidebar(boolean showSidebar) {
+            this.showSidebar = showSidebar;
+            return this;
+        }
+    }
 
     public static class StageStatus {
 
@@ -42,6 +58,7 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
 
         private String latestExportDirectory;
         private String latestSettingOption;
+        private ViewStatus viewStatus = new ViewStatus();
 
 
         public boolean isMaximized() {
@@ -124,6 +141,15 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
             this.latestSettingOption = latestSettingOption;
             return this;
         }
+
+        public ViewStatus getViewStatus() {
+            return viewStatus;
+        }
+
+        public StageStatus setViewStatus(ViewStatus viewStatus) {
+            this.viewStatus = viewStatus;
+            return this;
+        }
     }
 
     @FXMLControl(controller = OneLibraryController.class)
@@ -136,7 +162,8 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
     private final ProjectService projectService;
     private final SettingService settingService;
     private StageStatus stageStatus;
-
+    private List<Consumer<StageStatus>> afterReadListener = new ArrayList<>();
+    private AtomicBoolean ready = new AtomicBoolean(false);
     @Autowired
     public StageStatusStore(ProjectService projectService, SettingService settingService) {
         this.projectService = projectService;
@@ -171,7 +198,7 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
                             .stream()
                             .mapToLong(tab -> ((ProjectEditorController) tab.getUserData()).getProject().getProjectId())
 
-                           .toArray());
+                            .toArray());
         }
         return null;
     }
@@ -179,26 +206,29 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
     @Override
     public void readStatus(BorderPane oneLibraryWorkspace, StageStatus stageStatus) {
         if (stageStatus == null) {
-            return;
-        }
-        this.stageStatus = stageStatus;
-        Window window = oneLibraryWorkspace.getScene().getWindow();
-        if (window instanceof Stage) {
-            Stage stage = (Stage) window;
-            stage.setMaximized(stageStatus.isMaximized());
-            stage.setHeight(stageStatus.getHeight());
-            stage.setWidth(stageStatus.getWidth());
-            stage.setX(stageStatus.getX());
-            stage.setY(stageStatus.getY());
+            this.stageStatus = new StageStatus();
+        } else {
+            this.stageStatus = stageStatus;
+            ready.set(true);
+            Window window = oneLibraryWorkspace.getScene().getWindow();
+            if (window instanceof Stage) {
+                Stage stage = (Stage) window;
+                stage.setMaximized(stageStatus.isMaximized());
+                stage.setHeight(stageStatus.getHeight());
+                stage.setWidth(stageStatus.getWidth());
+                stage.setX(stageStatus.getX());
+                stage.setY(stageStatus.getY());
 
-            projectSplitPane.setDividerPositions(stageStatus.dividers);
-            if (!ObjectUtils.isEmpty(stageStatus.getOpenProjectIds())) {
-                for (long projectId : stageStatus.getOpenProjectIds()) {
-                    openProject(projectId);
+                projectSplitPane.setDividerPositions(stageStatus.dividers);
+                if (!ObjectUtils.isEmpty(stageStatus.getOpenProjectIds())) {
+                    for (long projectId : stageStatus.getOpenProjectIds()) {
+                        openProject(projectId);
+                    }
                 }
             }
+            settingService.setLatestSettingOption(stageStatus.getLatestSettingOption());
+            afterReadListener.forEach(listener -> listener.accept(this.stageStatus));
         }
-        settingService.setLatestSettingOption(stageStatus.getLatestSettingOption());
     }
 
 
@@ -226,6 +256,14 @@ public class StageStatusStore implements StatusStore<BorderPane, StageStatusStor
     public StageStatusStore setStageStatus(StageStatus stageStatus) {
         this.stageStatus = stageStatus;
         return this;
+    }
+
+    public void addAfterReadListener(Consumer<StageStatus> listener) {
+        if (ready.get()) {
+            listener.accept(getStageStatus());
+        } else {
+            afterReadListener.add(listener);
+        }
     }
 
     @Override

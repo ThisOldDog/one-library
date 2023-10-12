@@ -115,6 +115,7 @@ module pers.dog {
     opens pers.dog.infra.action.editor;
     opens pers.dog.infra.action.markdown;
     opens pers.dog.infra.action.git;
+    opens pers.dog.infra.action.view;
     opens pers.dog.infra.constant;
     opens pers.dog.infra.control;
     opens pers.dog.infra.property;

@@ -222,7 +222,21 @@ public class MarkdownCodeArea extends CodeArea {
         addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (KeyCode.TAB.equals(event.getCode())) {
                 // Tab 转空格
-                replaceSelection("    ");
+                IndexRange selection = getSelection();
+                if (selection == null || selection.getStart() == selection.getEnd()) {
+                    replaceSelection("    ");
+                } else {
+                    List<Integer> selectedLine = new ArrayList<>();
+                    for (int i = 0; i < getParagraphs().size(); i++) {
+                        IndexRange paragraphSelection = getParagraphSelection(i);
+                        if (paragraphSelection.getStart() < paragraphSelection.getEnd()) {
+                            selectedLine.add(i);
+                        }
+                    }
+                    for (Integer lineNumber : selectedLine) {
+                        insertText(lineNumber, 0, "    ");
+                    }
+                }
                 event.consume();
             } else if (KeyCode.ENTER.equals(event.getCode())) {
                 // 换行自动填充空格

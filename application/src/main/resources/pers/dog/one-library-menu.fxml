@@ -12,6 +12,7 @@
 <?import pers.dog.infra.action.git.GitSettingAction?>
 <?import pers.dog.infra.action.git.GitPushAction?>
 <?import pers.dog.infra.action.git.GitPullAction?>
+<?import pers.dog.infra.action.view.SidebarVisibleAction?>
 <ActionMenuBar xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
                maxWidth="Infinity">
     <ActionGroup text="%info.action.file">
@@ -160,6 +161,13 @@
                 </disabled>
             </CodeBlockAction>
         </ActionGroup>
+    </ActionGroup>
+    <ActionGroup text="%info.action.view">
+        <SidebarVisibleAction>
+            <accelerator>
+                <KeyCodeCombination code="T" shift="DOWN" control="DOWN" alt="DOWN" meta="UP" shortcut="DOWN"/>
+            </accelerator>
+        </SidebarVisibleAction>
     </ActionGroup>
     <ActionGroup text="%info.action.search">
         <SearchAction>

@@ -4,6 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.textfield.CustomTextField?>
+<?import org.controlsfx.glyphfont.Glyph?>
 <BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
             fx:id="oneLibraryWorkspace"
             fx:controller="pers.dog.api.controller.OneLibraryController">
@@ -40,4 +41,23 @@
             <TabPane fx:id="projectEditorWorkspace"/>
         </SplitPane>
     </center>
+    <bottom>
+        <HBox>
+            <padding>
+                <Insets top="2" bottom="2" left="2" right="2"/>
+            </padding>
+            <HBox alignment="CENTER_LEFT">
+                <Button fx:id="sidebarVisibleButton" focusTraversable="false" maxWidth="8" maxHeight="8">
+                    <tooltip>
+                        <Tooltip text="%info.action.view.sidebar.hide"/>
+                    </tooltip>
+                    <graphic>
+                        <Glyph fontFamily="FontAwesome" icon="STEP_BACKWARD"/>
+                    </graphic>
+                </Button>
+            </HBox>
+            <HBox HBox.hgrow="ALWAYS" alignment="CENTER_RIGHT">
+            </HBox>
+        </HBox>
+    </bottom>
 </BorderPane>

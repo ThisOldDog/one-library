@@ -560,7 +560,7 @@ public class ProjectEditorController implements Initializable {
     }
 
     private String buildMarkdownTable(TableProperty property) {
-        if (property.getColumn() <= 0 || property.getRow() <= 0) {
+        if (property == null || property.getColumn() <= 0 || property.getRow() <= 0) {
             return "";
         }
         StringBuilder tableBuilder = new StringBuilder();

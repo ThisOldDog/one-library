@@ -9,10 +9,13 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import org.controlsfx.control.textfield.CustomTextField;
 import org.springframework.data.util.Pair;
@@ -24,6 +27,8 @@ import pers.dog.domain.entity.Project;
 
 public class OneLibraryController implements Initializable {
 
+    @FXML
+    public BorderPane oneLibraryWorkspace;
     @FXML
     private SplitPane projectSplitPane;
     @FXML
@@ -38,6 +43,8 @@ public class OneLibraryController implements Initializable {
     private TabPane projectEditorWorkspace;
     @FXML
     private TreeView<Project> projectTree;
+    @FXML
+    public Button sidebarVisibleButton;
 
     private final ProjectService projectService;
     private final ProjectTreeCallback projectTreeCallback;
