@@ -344,7 +344,7 @@ public class ProjectEditorController implements Initializable {
                 if (line.trim().startsWith("```")) {
                     skip = !skip;
                 }
-                if (!line.startsWith("#") || skip) {
+                if (skip || !line.startsWith("#") ) {
                     continue;
                 }
                 int index = 0;
