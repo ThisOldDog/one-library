@@ -337,10 +337,14 @@ public class ProjectEditorController implements Initializable {
         TreeItem<ValueMeaning>[] parent = new TreeItem[6];
         parent[0] = root;
         if (newValue != null) {
+            boolean skip = false;
             String[] lines = newValue.split("\\n");
             for (int lineNumber = 0; lineNumber < lines.length; lineNumber++) {
                 String line = lines[lineNumber];
-                if (!line.startsWith("#")) {
+                if (line.trim().startsWith("```")) {
+                    skip = !skip;
+                }
+                if (!line.startsWith("#") || skip) {
                     continue;
                 }
                 int index = 0;
