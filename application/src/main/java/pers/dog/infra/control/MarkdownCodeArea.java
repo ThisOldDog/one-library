@@ -286,7 +286,7 @@ public class MarkdownCodeArea extends CodeArea {
                     }
                 })
                 .subscribe(codeArea::applyHighlighting);
-        codeArea.caretPositionProperty().addListener((obs, oldVal, newVal) -> Platform.runLater(this::applyHighlighting));
+//        codeArea.caretPositionProperty().addListener((obs, oldVal, newVal) -> Platform.runLater(this::applyHighlighting));
         // 搜索自动滚动
         searchCurrentIndex.addListener((observable, oldValue, newValue) -> {
             if (newValue < 0) {
@@ -411,7 +411,7 @@ public class MarkdownCodeArea extends CodeArea {
             treeStyleSpansBuilder.addChild(indexRange.getStart(), indexRange.getEnd(), SEARCH_CANDIDATE_STYLE_CLASS);
         }
         // 匹配括号
-        computeHighlightingBracketPair(treeStyleSpansBuilder, text);
+//        computeHighlightingBracketPair(treeStyleSpansBuilder, text);
         // 代码高亮
         Matcher matcher = PATTERN.matcher(text);
         while (matcher.find()) {

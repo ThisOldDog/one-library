@@ -24,6 +24,7 @@ import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.html.IndependentAttributeProviderFactory;
 import com.vladsch.flexmark.html.renderer.AttributablePart;
 import com.vladsch.flexmark.html.renderer.LinkResolverContext;
+import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.parser.PegdownExtensions;
 import com.vladsch.flexmark.profile.pegdown.PegdownOptionsAdapter;
@@ -164,6 +165,7 @@ public class ProjectEditorController implements Initializable {
     private final MarkdownExtension markdownExtension;
     private final ObjectProperty<Boolean> dirty = new SimpleObjectProperty<>(false);
     private final AtomicBoolean loaded = new AtomicBoolean(false);
+    private final FlexmarkHtmlConverter converter = FlexmarkHtmlConverter.builder().build();
     private final Consumer<List<Class<? extends Extension>>> enabledExtensionChanged = enabledExtension -> {
         DataHolder markdownParserOptions = PegdownOptionsAdapter.flexmarkOptions(PegdownExtensions.ALL, getOptions(enabledExtension));
         this.parser = Parser.builder(markdownParserOptions).build();
@@ -311,6 +313,11 @@ public class ProjectEditorController implements Initializable {
                     }
                     codeArea.replaceSelection(String.format("![%s](%s)", fileName, "./" + URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20")));
                 });
+            } else if (clipboard.hasHtml()) {
+                String text = clipboard.getHtml();
+                if (text != null) {
+                    codeArea.replaceSelection(converter.convert(text));
+                }
             } else if (clipboard.hasString()) {
                 String text = clipboard.getString();
                 if (text != null) {
@@ -344,7 +351,7 @@ public class ProjectEditorController implements Initializable {
                 if (line.trim().startsWith("```")) {
                     skip = !skip;
                 }
-                if (skip || !line.startsWith("#") ) {
+                if (skip || !line.startsWith("#")) {
                     continue;
                 }
                 int index = 0;
