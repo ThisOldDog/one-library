@@ -1,6 +1,7 @@
 package pers.dog.app.service.impl;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -353,7 +354,7 @@ public class GitServiceImpl implements GitService {
                 if (ProjectType.DIRECTORY.equals(child.getValue().getProjectType())) {
                     projectList.add(buildProjectParam(child));
                 } else {
-                    singleProjectList.add(String.format("- [%s](%s)", child.getValue().getSimpleProjectName(), "./document/" + child.getValue().getProjectName()));
+                    singleProjectList.add(String.format("- [%s](%s)", child.getValue().getSimpleProjectName(), "./document/" + urlEncode(child.getValue().getProjectName())));
                 }
             }
             return paramMap;
@@ -361,10 +362,17 @@ public class GitServiceImpl implements GitService {
 
         private Map<String, String> buildProjectParam(TreeItem<Project> project) {
             StringBuilder buildDirectoryTree = new StringBuilder();
-            buildDirectoryParam(0, buildDirectoryTree, project, "./document/");
+            buildDirectoryParam(0, buildDirectoryTree, project, "./document/" + urlEncode(project.getValue().getProjectName()) + "/");
             return Map.of(
                     "title", project.getValue().getSimpleProjectName(),
                     "directory", buildDirectoryTree.toString());
+        }
+
+        private String urlEncode(String value) {
+            if (ObjectUtils.isEmpty(value)) {
+                return "";
+            }
+            return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
         }
 
         private void buildDirectoryParam(int level, StringBuilder buildDirectoryTree, TreeItem<Project> project, String parentPath) {
