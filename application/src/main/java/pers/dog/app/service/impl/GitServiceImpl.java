@@ -332,7 +332,7 @@ public class GitServiceImpl implements GitService {
 
         private void push(Git git, UsernamePasswordCredentialsProvider credentialsProvider) {
             try {
-                git.add().addFilepattern(".").call();
+                git.add().setUpdate(true).addFilepattern(".").call();
                 git.commit().setMessage(String.format("[One Library] push %s", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))).call();
                 git.push().setCredentialsProvider(credentialsProvider).call();
             } catch (GitAPIException e) {
