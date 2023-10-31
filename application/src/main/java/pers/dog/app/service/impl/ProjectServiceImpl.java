@@ -6,7 +6,10 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -20,6 +23,7 @@ import javafx.scene.control.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -36,6 +40,7 @@ import pers.dog.boot.infra.control.PropertySheetDialog;
 import pers.dog.boot.infra.control.PropertySheetDialogResult;
 import pers.dog.boot.infra.i18n.I18nMessageSource;
 import pers.dog.boot.infra.util.FXMLUtils;
+import pers.dog.boot.infra.util.FileUtils;
 import pers.dog.domain.entity.Project;
 import pers.dog.domain.entity.Recycle;
 import pers.dog.domain.repository.ProjectRepository;
@@ -55,6 +60,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final RecycleRepository recycleRepository;
     private final FileOperationHandler fileHandler;
+    private final FileOperationHandler backupFileHandler;
     @SuppressWarnings("unused")
     @FXMLControl(controller = OneLibraryController.class)
     private TreeView<Project> projectTree;
@@ -65,6 +71,22 @@ public class ProjectServiceImpl implements ProjectService {
         this.projectRepository = projectRepository;
         this.recycleRepository = recycleRepository;
         this.fileHandler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix(".data/document"));
+        this.backupFileHandler = new ApplicationDirFileOperationHandler(new FileOperationOption.ApplicationDirOption().setPathPrefix(".data/cache/backup"));
+    }
+
+    @Scheduled(fixedDelay = 300000, initialDelay = 300000)
+    public void autoBackup() {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        String start = dateTimeFormatter.format(LocalDateTime.now());
+        logger.info("[AutoBackup] Started in {}", start);
+        try {
+            FileUtils.replace(fileHandler.directory(), backupFileHandler.directory(), FileUtils.FileReplaceOption.DELETE_IF_NOT_EXISTS);
+        } catch (IOException e) {
+            logger.error("[AutoBackup] Failed.", e);
+        }
+        backupFileHandler.write(".project", projectRepository.findAll());
+        String end = dateTimeFormatter.format(LocalDateTime.now());
+        logger.info("[AutoBackup] Ended in {}", end);
     }
 
     @Override
