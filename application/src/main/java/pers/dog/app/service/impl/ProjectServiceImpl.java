@@ -154,6 +154,38 @@ public class ProjectServiceImpl implements ProjectService {
         return projectTreeItem;
     }
 
+    @Override
+    public void appendProject(List<Project> projectList) {
+        appendProject(null, projectList, projectRepository.findMaxSortIndex().orElse(0) + 1);
+        // 重建文档树
+        ROOT.getChildren().clear();
+        tree();
+    }
+
+    private void appendProject(Project parent, List<Project> projectList, int offset) {
+        if (CollectionUtils.isEmpty(projectList)) {
+            return;
+        }
+        for (Project project : projectList) {
+            Project exists;
+            if (parent != null) {
+                exists = projectRepository.findByProjectNameAndProjectTypeAndParentProjectId(project.getProjectName(), project.getProjectType(), parent.getProjectId());
+            } else {
+                exists = projectRepository.findByProjectNameAndProjectTypeAndParentProjectIdIsNull(project.getProjectName(), project.getProjectType());
+            }
+            int childrenOffset = 1;
+            if (exists == null) {
+                if (parent != null) {
+                    project.setParentProjectId(parent.getProjectId());
+                }
+                exists = projectRepository.save(project.setSortIndex(offset++));
+            } else {
+                childrenOffset = projectRepository.findMaxSortIndex(project.getProjectId()).orElse(0) + 1;
+            }
+            appendProject(exists, project.getChildren(), childrenOffset);
+        }
+    }
+
     private TreeItem<Project> createDirectory(String[] paths) {
         return createDirectory(ROOT, paths, 0);
     }
@@ -578,7 +610,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     private String[] getRelativePath(TreeItem<Project> parent) {
         ArrayDeque<String> relativePath = new ArrayDeque<>();
-        while (!ROOT.equals(parent)) {
+        while (!ROOT.equals(parent) && parent.getValue() != null) {
             relativePath.addFirst(parent.getValue().getProjectName());
             parent = parent.getParent();
         }

@@ -23,6 +23,8 @@ public interface ProjectService {
 
     TreeItem<Project> createFile(ProjectType projectType, FileType fileType, String projectName, byte[] content, String[] paths);
 
+    void appendProject(List<Project> projectList);
+
     void updateProject(Project project);
 
     boolean move(TreeItem<Project> project, TreeItem<Project> parent);

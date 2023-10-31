@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import pers.dog.domain.entity.Project;
+import pers.dog.infra.constant.ProjectType;
 
 /**
  * @author 废柴 2023/2/21 23:21
@@ -22,4 +23,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long>, JpaSpec
     Optional<Integer> findMaxSortIndex(long parentProjectId);
 
     List<Project> findByParentProjectId(Long parentProjectId);
+
+    Project findByProjectNameAndProjectTypeAndParentProjectId(String projectName, ProjectType projectType, long parentProjectId);
+
+    Project findByProjectNameAndProjectTypeAndParentProjectIdIsNull(String projectName, ProjectType projectType);
 }

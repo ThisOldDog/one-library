@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
 import javafx.scene.control.TreeItem;
 import org.eclipse.jgit.api.Git;
@@ -37,6 +38,7 @@ import pers.dog.boot.component.file.FileOperationOption;
 import pers.dog.boot.context.ApplicationContextHolder;
 import pers.dog.boot.infra.util.AlertUtils;
 import pers.dog.boot.infra.util.FileUtils;
+import pers.dog.boot.infra.util.ObjectMapperUtils;
 import pers.dog.domain.entity.Project;
 import pers.dog.infra.constant.GitRepositoryType;
 import pers.dog.infra.constant.ProjectType;
@@ -49,6 +51,7 @@ import pers.dog.infra.util.MessageDigestUtils;
 @Service
 public class GitServiceImpl implements GitService {
     private static final Logger logger = LoggerFactory.getLogger(GitServiceImpl.class);
+    public static final String SORT_FILE = ".sort";
 
     public enum GitStep {
         CHECK,
@@ -306,6 +309,9 @@ public class GitServiceImpl implements GitService {
                 String readme = FreeMarkerUtils.templateProcess(template, buildParam());
 
                 Files.writeString(repository.resolve("README.md"), readme, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+                String buildSort = buildSort();
+                Files.writeString(repository.resolve(SORT_FILE), buildSort, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                 return true;
             } catch (IOException e) {
                 Platform.runLater(() -> AlertUtils.showException("error.action.git.push.copy.title",
@@ -321,6 +327,9 @@ public class GitServiceImpl implements GitService {
             try {
                 Path repository = git.getRepository().getDirectory().toPath().getParent();
                 FileUtils.replace(repository.resolve("document"), projectService.documentDir());
+                List<Project> projectList = ObjectMapperUtils.readValue(Files.readString(repository.resolve(SORT_FILE)), new TypeReference<List<Project>>() {
+                });
+                projectService.appendProject(projectList);
             } catch (IOException e) {
                 Platform.runLater(() -> AlertUtils.showException("error.action.git.push.copy.title",
                         "error.action.git.push.copy.header_text",
@@ -332,7 +341,8 @@ public class GitServiceImpl implements GitService {
 
         private void push(Git git, UsernamePasswordCredentialsProvider credentialsProvider) {
             try {
-                git.add().setUpdate(true).addFilepattern(".").call();
+                git.add().addFilepattern(".").call();
+                git.add().addFilepattern(".").setUpdate(true).call();
                 git.commit().setMessage(String.format("[One Library] push %s", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))).call();
                 git.push().setCredentialsProvider(credentialsProvider).call();
             } catch (GitAPIException e) {
@@ -341,6 +351,26 @@ public class GitServiceImpl implements GitService {
                         "error.action.git.push.push.content_text",
                         "error.action.git.push.push.exception_stacktrace",
                         e));
+            }
+        }
+
+        private String buildSort() {
+            List<Project> tree = new ArrayList<>();
+            buildSort(tree, ProjectService.ROOT.getChildren());
+            return ObjectMapperUtils.writeAsString(tree);
+        }
+
+        private void buildSort(List<Project> tree, List<TreeItem<Project>> list) {
+            if (CollectionUtils.isEmpty(list)) {
+                return;
+            }
+            for (TreeItem<Project> projectTreeItem : list) {
+                Project project = new Project();
+                BeanUtils.copyProperties(projectTreeItem.getValue(), project,
+                        "projectId", "parentProjectId", "simpleProjectName", "newProjectName", "parent", "children");
+                project.setChildren(new ArrayList<>());
+                tree.add(project);
+                buildSort(project.getChildren(), projectTreeItem.getChildren());
             }
         }
 
@@ -381,7 +411,7 @@ public class GitServiceImpl implements GitService {
             }
             String prefix = " ".repeat(level << 1);
             for (TreeItem<Project> child : project.getChildren()) {
-                String path = parentPath + child.getValue().getProjectName();
+                String path = parentPath + urlEncode(child.getValue().getProjectName());
                 if (ProjectType.DIRECTORY.equals(child.getValue().getProjectType())) {
                     buildDirectoryTree.append(prefix).append("- ").append(child.getValue().getSimpleProjectName()).append("\n");
                     buildDirectoryParam(level + 1, buildDirectoryTree, child, path + "/");

@@ -1,5 +1,6 @@
 package pers.dog.domain.entity;
 
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -44,6 +45,8 @@ public class Project {
     private String newProjectName;
     @Transient
     private Project parent;
+    @Transient
+    private List<Project> children;
 
     /* Function */
     public String getSimpleProjectName() {
@@ -140,6 +143,20 @@ public class Project {
 
     public Project setParent(Project parent) {
         this.parent = parent;
+        return this;
+    }
+
+    public Project setSimpleProjectName(String simpleProjectName) {
+        this.simpleProjectName = simpleProjectName;
+        return this;
+    }
+
+    public List<Project> getChildren() {
+        return children;
+    }
+
+    public Project setChildren(List<Project> children) {
+        this.children = children;
         return this;
     }
 }
