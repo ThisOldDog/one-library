@@ -14,7 +14,7 @@
     <center>
         <SplitPane fx:id="projectSplitPane" dividerPositions="0.2">
             <!-- 左侧视图：文档树以及操作列表 -->
-            <VBox fx:id="projectWorkspace" maxWidth="480" minWidth="160" prefWidth="360">
+            <VBox fx:id="projectWorkspace" maxWidth="480" minWidth="160" prefWidth="360" SplitPane.resizableWithParent="false">
                 <HBox>
                     <CustomTextField fx:id="projectSearch" focusTraversable="false" prefWidth="6400"
                                      promptText="%info.project.search"/>

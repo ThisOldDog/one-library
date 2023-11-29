@@ -348,10 +348,11 @@ public class ProjectEditorController implements Initializable {
             String[] lines = newValue.split("\\n");
             for (int lineNumber = 0; lineNumber < lines.length; lineNumber++) {
                 String line = lines[lineNumber];
+                int headerLineNumber = lineNumber;
                 if (line.trim().startsWith("```")) {
                     skip = !skip;
                 }
-                if (skip || !line.startsWith("#")) {
+                if (skip || (!line.startsWith("#") && !line.startsWith("=") && !line.startsWith("-"))) {
                     continue;
                 }
                 int index = 0;
@@ -364,8 +365,26 @@ public class ProjectEditorController implements Initializable {
                         break;
                     }
                 }
+                if (index == 0 && lineNumber > 0 && line.length() > 3) {
+                    boolean level1 = true;
+                    boolean level2 = true;
+                    char[] charArray = line.toCharArray();
+                    for (int i = 0, charArrayLength = charArray.length; i < charArrayLength && (level1 || level2); i++) {
+                        char token = charArray[i];
+                        level1 = token == '=';
+                        level2 = token == '-';
+                    }
+                    if (level1) {
+                        index = 1;
+                    }
+                    if (level2) {
+                        index = 2;
+                    }
+                    headerLineNumber -= 1;
+                    title = lines[headerLineNumber];
+                }
                 if (index > 0 && index < 6) {
-                    TreeItem<ValueMeaning> node = new TreeItem<>(new ValueMeaning().setValue(String.valueOf(lineNumber)).setMeaning(title));
+                    TreeItem<ValueMeaning> node = new TreeItem<>(new ValueMeaning().setValue(String.valueOf(headerLineNumber)).setMeaning(title));
                     for (int i = index - 1; i >= 0; i--) {
                         if (parent[i] != null) {
                             parent[i].getChildren().add(node);
